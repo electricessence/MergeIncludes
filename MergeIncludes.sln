@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MergeIncludes", "MergeIncludes\MergeIncludes.csproj", "{7671A16E-76AD-4176-B305-363A36341566}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MergeIncludes.Tests", "MergeIncludes.Tests\MergeIncludes.Tests.csproj", "{0071106E-85FF-46CC-B371-305B664AED38}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7671A16E-76AD-4176-B305-363A36341566}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7671A16E-76AD-4176-B305-363A36341566}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7671A16E-76AD-4176-B305-363A36341566}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7671A16E-76AD-4176-B305-363A36341566}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0071106E-85FF-46CC-B371-305B664AED38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0071106E-85FF-46CC-B371-305B664AED38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0071106E-85FF-46CC-B371-305B664AED38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0071106E-85FF-46CC-B371-305B664AED38}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8B3583AE-4D76-4B50-A04D-C368D523E9DB}
+	EndGlobalSection
+EndGlobal
