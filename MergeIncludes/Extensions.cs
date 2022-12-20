@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Text.RegularExpressions;
 using Throw;
 
@@ -11,23 +12,63 @@ public static partial class Extensions
 
 	public static IAsyncEnumerable<string> MergeIncludesAsync(
 		this FileInfo root,
-		HashSet<string>? includes = null)
+		Action<FileInfo>? onFileAccessed = null)
 	{
-		if (!root.Exists)
-			throw new FileNotFoundException(root.FullName);
+		root.ThrowIfNull();
+		Contract.EndContractBlock();
 
-		includes ??= new();
-		if (includes.Contains(root.FullName))
+		Dictionary<string, FileInfo> registry = new();
+		Register(root.FullName, registry, onFileAccessed);
+		return MergeIncludesAsync(root.FullName, registry, onFileAccessed);
+	}
+
+	static FileInfo Register(
+		string filePath,
+		Dictionary<string, FileInfo> registry,
+		Action<FileInfo>? onFileAccessed = null)
+	{
+		filePath.ThrowIfNull().OnlyInDebug();
+		registry.ThrowIfNull().OnlyInDebug();
+		Contract.EndContractBlock();
+
+		if (registry.TryGetValue(filePath, out var file))
+			return file;
+
+		file = new FileInfo(filePath);
+		if (!file.Exists)
+			throw new FileNotFoundException(file.FullName);
+
+		registry.Add(filePath, file);
+		onFileAccessed?.Invoke(file);
+		return file;
+	}
+
+	static IAsyncEnumerable<string> MergeIncludesAsync(
+		string rootFileName,
+		Dictionary<string, FileInfo> registry,
+		Action<FileInfo>? onFileAccessed = null,
+		HashSet<string>? active = null)
+	{
+		rootFileName.ThrowIfNull().OnlyInDebug();
+		registry.ThrowIfNull().OnlyInDebug();
+		Contract.EndContractBlock();
+
+		var root = Register(rootFileName, registry, onFileAccessed);
+
+		active ??= new();
+		if (active.Contains(root.FullName))
 			throw new InvalidOperationException($"Detected recursive reference to {root.FullName}.");
 
-		return MergeIncludesAsyncCore(root, includes);
+		return MergeIncludesAsyncCore(root, registry, active, onFileAccessed);
 
 		static async IAsyncEnumerable<string> MergeIncludesAsyncCore(
 			FileInfo root,
-			HashSet<string> includes)
+			Dictionary<string, FileInfo> registry,
+			HashSet<string> active,
+			Action<FileInfo>? onFileAccessed)
 		{
 			var rootFileName = root.FullName;
-			if (!includes.Add(rootFileName))
+			if (!active.Add(rootFileName))
 				throw new UnreachableException();
 
 			var includePattern = GetIncludePattern();
@@ -40,7 +81,7 @@ public static partial class Extensions
 			var line = await reader.ReadLineAsync().ConfigureAwait(false);
 			if (line is null)
 			{
-				includes.Remove(rootFileName);
+				active.Remove(rootFileName);
 				yield break;
 			}
 
@@ -57,9 +98,9 @@ public static partial class Extensions
 			IAsyncEnumerable<string> included;
 			try
 			{
-				included = new FileInfo(includePath).MergeIncludesAsync(includes);
+				included = MergeIncludesAsync(includePath, registry, onFileAccessed);
 			}
-			catch(FileNotFoundException ex)
+			catch (FileNotFoundException ex)
 			{
 				throw new FileNotFoundException($"Could not find include file on line {lineNumber} in {root.FullName}", includePath, ex);
 			}

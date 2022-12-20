@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "MergeIncludes": {
-      "commandName": "Project",
-      "commandLineArgs": "-r ../MergeIncludes.Tests/sample.txt\r\n-o ./bin/sample.merged.txt",
-      "workingDirectory": "./"
-    }
-  }
-}

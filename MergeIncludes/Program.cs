@@ -10,16 +10,20 @@ await Parser.Default
 		var rootFile = o.GetRootFile();
 		var outputFile = o.GetOutputFile(rootFile);
 
+		Console.WriteLine("Files read from:");
 		using var output = outputFile.OpenWrite();
 		using var writer = new StreamWriter(output);
-		await foreach(var line in rootFile.MergeIncludesAsync())
+		await foreach (var line in rootFile.MergeIncludesAsync(OnFileAccessed))
 		{
-			await writer.WriteLineAsync(line);
+			await writer.WriteAsync(line);
 		}
 
-		Console.WriteLine("Successfully merged include references to file:");
+		Console.WriteLine();
+		Console.WriteLine("Successfully merged include references to:");
 		Console.WriteLine(outputFile.FullName);
 	});
+
+static void OnFileAccessed(FileInfo info) => Console.WriteLine(info.FullName);
 
 class Options
 {
@@ -35,7 +39,7 @@ class Options
 		RootFilePath.Throw().IfEmpty().OnlyInDebug();
 		RootFilePath.Throw().IfWhiteSpace();
 		var file = new FileInfo(RootFilePath);
-		if(!file.Exists)
+		if (!file.Exists)
 			throw new FileNotFoundException(RootFilePath);
 		return file;
 	}
@@ -43,7 +47,7 @@ class Options
 	public FileInfo GetOutputFile(FileInfo root)
 	{
 		root.ThrowIfNull().OnlyInDebug();
-		if(string.IsNullOrEmpty(OutputFilePath))
+		if (string.IsNullOrEmpty(OutputFilePath))
 		{
 			DirectoryInfo dir = root.Directory.ThrowIfNull();
 			return new FileInfo(Path.Combine(
