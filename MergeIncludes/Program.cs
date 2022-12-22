@@ -13,7 +13,13 @@ await Parser.Default
 		Console.WriteLine("Files read from:");
 		using var output = outputFile.OpenWrite();
 		using var writer = new StreamWriter(output);
-		await foreach (var line in rootFile.MergeIncludesAsync(OnFileAccessed))
+		await foreach (var line in rootFile.MergeIncludesAsync(info =>
+		{
+			if (info.FullName == outputFile.FullName)
+				throw new InvalidOperationException("Attempting to include the output file.");
+
+			Console.WriteLine(info.FullName);
+		}))
 		{
 			await writer.WriteAsync(line);
 		}
@@ -22,8 +28,6 @@ await Parser.Default
 		Console.WriteLine("Successfully merged include references to:");
 		Console.WriteLine(outputFile.FullName);
 	});
-
-static void OnFileAccessed(FileInfo info) => Console.WriteLine(info.FullName);
 
 class Options
 {
