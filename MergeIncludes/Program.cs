@@ -10,23 +10,50 @@ await Parser.Default
 		var rootFile = o.GetRootFile();
 		var outputFile = o.GetOutputFile(rootFile);
 
-		Console.WriteLine("Files read from:");
-		using var output = outputFile.OpenWrite();
-		using var writer = new StreamWriter(output);
-		await foreach (var line in rootFile.MergeIncludesAsync(info =>
-		{
-			if (info.FullName == outputFile.FullName)
-				throw new InvalidOperationException("Attempting to include the output file.");
+		var files = await Merge();
 
-			Console.WriteLine(info.FullName);
-		}))
+		if (!o.Watch) return;
+
+		using var cancelSource = new CancellationTokenSource();
+		var token = cancelSource.Token;
+		while(!token.IsCancellationRequested)
 		{
-			await writer.WriteAsync(line);
+			try
+			{
+				await FileWatcher.WatchAsync(files, 1000, token);
+				files = await Merge();
+			}
+			catch (OperationCanceledException)
+			{
+				break;
+			}
 		}
 
-		Console.WriteLine();
-		Console.WriteLine("Successfully merged include references to:");
-		Console.WriteLine(outputFile.FullName);
+		async ValueTask<List<FileInfo>> Merge()
+		{
+			Console.WriteLine("Files read from:");
+			using var output = outputFile.OpenWrite();
+			using var writer = new StreamWriter(output);
+			var list = new List<FileInfo>();
+
+			await foreach (var line in rootFile.MergeIncludesAsync(info =>
+			{
+				if (info.FullName == outputFile.FullName)
+					throw new InvalidOperationException("Attempting to include the output file.");
+
+				Console.WriteLine(info.FullName);
+				list.Add(info);
+			}))
+			{
+				await writer.WriteAsync(line);
+			}
+
+			Console.WriteLine();
+			Console.WriteLine("Successfully merged include references to:");
+			Console.WriteLine(outputFile.FullName);
+			Console.WriteLine();
+			return list;
+		}
 	});
 
 class Options
@@ -36,6 +63,9 @@ class Options
 
 	[Option('o', "out", Required = false, HelpText = "The file to render the results to.")]
 	public string? OutputFilePath { get; set; }
+
+	[Option('w', "watch", Required = false, HelpText = "Will keep this running to wait for changes.")]
+	public bool Watch { get; set; }
 
 	public FileInfo GetRootFile()
 	{
