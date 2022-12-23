@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MergeIncludes", "MergeIncludes\MergeIncludes.csproj", "{7671A16E-76AD-4176-B305-363A36341566}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MergeIncludes", "MergeIncludes\MergeIncludes.csproj", "{7671A16E-76AD-4176-B305-363A36341566}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MergeIncludes.Tests", "MergeIncludes.Tests\MergeIncludes.Tests.csproj", "{0071106E-85FF-46CC-B371-305B664AED38}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MergeIncludes.Tests", "MergeIncludes.Tests\MergeIncludes.Tests.csproj", "{0071106E-85FF-46CC-B371-305B664AED38}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spectre.Console.Extensions", "Spectre.Console.Extensions\Spectre.Console.Extensions.csproj", "{DE9A5D1F-4580-4835-89D8-1BF71EB97685}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{0071106E-85FF-46CC-B371-305B664AED38}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0071106E-85FF-46CC-B371-305B664AED38}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0071106E-85FF-46CC-B371-305B664AED38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE9A5D1F-4580-4835-89D8-1BF71EB97685}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE9A5D1F-4580-4835-89D8-1BF71EB97685}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE9A5D1F-4580-4835-89D8-1BF71EB97685}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE9A5D1F-4580-4835-89D8-1BF71EB97685}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

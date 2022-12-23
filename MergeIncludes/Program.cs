@@ -1,5 +1,7 @@
 ﻿using CommandLine;
 using MergeIncludes;
+using Spectre.Console;
+using Spectre.Console.Extensions;
 using Throw;
 
 await Parser.Default
@@ -8,6 +10,15 @@ await Parser.Default
 	{
 		o.ThrowIfNull().OnlyInDebug();
 		var rootFile = o.GetRootFile();
+
+		if (!rootFile.Exists)
+		{
+			AnsiConsole.MarkupLine("[red]Root file not found:[/]");
+			var path = new TextPath(rootFile.FullName);
+			AnsiConsole.Write(path);
+			return;
+		}
+
 		var outputFile = o.GetOutputFile(rootFile);
 
 		var files = await Merge();
@@ -16,79 +27,70 @@ await Parser.Default
 
 		using var cancelSource = new CancellationTokenSource();
 		var token = cancelSource.Token;
-		while(!token.IsCancellationRequested)
-		{
-			try
-			{
-				await FileWatcher.WatchAsync(files, 1000, token);
-				files = await Merge();
-			}
-			catch (OperationCanceledException)
-			{
-				break;
-			}
-		}
+		_ = Task.Run(async () =>
+			await AnsiConsole.Status()
+				.StartAsync("[turquoise2]Watching files for changes. (Press any key to stop watching.)[/]",
+				async _ =>
+				{
+					while (!token.IsCancellationRequested)
+					{
+						try
+						{
+							int count = 0;
+							await foreach (var file in FileWatcher.WatchAsync(files, 1000, token))
+							{
+								if (count++ == 0)
+									AnsiConsole.MarkupLine("[yellow]Changes detected: [/]");
+								AnsiConsole.Write(new TextPath(file));
+							}
+							AnsiConsole.WriteLine();
+
+							if (token.IsCancellationRequested)
+								return;
+
+							files = await Merge();
+						}
+						catch (OperationCanceledException)
+						{
+							return;
+						}
+					}
+				}));
+
+		Console.ReadKey();
+		cancelSource.Cancel();
 
 		async ValueTask<List<FileInfo>> Merge()
 		{
-			Console.WriteLine("Files read from:");
-			using var output = outputFile.OpenWrite();
-			using var writer = new StreamWriter(output);
 			var list = new List<FileInfo>();
-
-			await foreach (var line in rootFile.MergeIncludesAsync(info =>
 			{
-				if (info.FullName == outputFile.FullName)
-					throw new InvalidOperationException("Attempting to include the output file.");
+				var panel = new PanelBuilder("[white]Files read from:[/]");
+				using var output = outputFile.Open(FileMode.Create, FileAccess.Write);
+				using var writer = new StreamWriter(output);
 
-				Console.WriteLine(info.FullName);
-				list.Add(info);
-			}))
-			{
-				await writer.WriteAsync(line);
+				await foreach (var line in rootFile.MergeIncludesAsync(info =>
+				{
+					if (info.FullName == outputFile.FullName)
+						throw new InvalidOperationException("Attempting to include the output file.");
+
+					panel.Add(new TextPath(info.FullName));
+					list.Add(info);
+				}))
+				{
+					await writer.WriteLineAsync(line);
+				}
+
+				await writer.FlushAsync();
+				AnsiConsole.Write(panel);
 			}
 
-			Console.WriteLine();
-			Console.WriteLine("Successfully merged include references to:");
-			Console.WriteLine(outputFile.FullName);
-			Console.WriteLine();
+			{
+				var mergePath = new TextPath(outputFile.FullName);
+				AnsiConsole.Write(new Panel(mergePath)
+				{
+					Header = new PanelHeader("[springgreen1]Successfully merged include references to:[/]")
+				});
+			}
 			return list;
 		}
 	});
-
-class Options
-{
-	[Option('r', "root", Required = true, HelpText = "The root file path to start from.")]
-	public string? RootFilePath { get; set; }
-
-	[Option('o', "out", Required = false, HelpText = "The file to render the results to.")]
-	public string? OutputFilePath { get; set; }
-
-	[Option('w', "watch", Required = false, HelpText = "Will keep this running to wait for changes.")]
-	public bool Watch { get; set; }
-
-	public FileInfo GetRootFile()
-	{
-		RootFilePath.ThrowIfNull().OnlyInDebug();
-		RootFilePath.Throw().IfEmpty().OnlyInDebug();
-		RootFilePath.Throw().IfWhiteSpace();
-		var file = new FileInfo(RootFilePath);
-		if (!file.Exists)
-			throw new FileNotFoundException(RootFilePath);
-		return file;
-	}
-
-	public FileInfo GetOutputFile(FileInfo root)
-	{
-		root.ThrowIfNull().OnlyInDebug();
-		if (string.IsNullOrEmpty(OutputFilePath))
-		{
-			DirectoryInfo dir = root.Directory.ThrowIfNull();
-			return new FileInfo(Path.Combine(
-				dir.FullName,
-				$"{Path.GetFileNameWithoutExtension(root.Name)}.merged{root.Extension}"));
-		}
-
-		return new FileInfo(OutputFilePath);
-	}
-}

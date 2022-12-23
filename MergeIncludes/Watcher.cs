@@ -1,8 +1,12 @@
-﻿namespace MergeIncludes;
+﻿using Spectre.Console;
+using System.Diagnostics;
+using System.Threading.Channels;
+
+namespace MergeIncludes;
 
 static class FileWatcher
 {
-	public static Task WatchAsync(
+	public static IAsyncEnumerable<string> WatchAsync(
 		IEnumerable<string> files,
 		int msDelay,
 		CancellationToken cancellationToken)
@@ -27,65 +31,92 @@ static class FileWatcher
 		if (fileList.Length == 0)
 			throw new ArgumentException("No files provided.", nameof(files));
 
-		if (cancellationToken.IsCancellationRequested)
-			return Task.FromCanceled(cancellationToken);
+		cancellationToken.ThrowIfCancellationRequested();
 
 		return WatchAsyncCore(fileList, msDelay, cancellationToken);
 
-		async Task WatchAsyncCore(
-			IList<(string, string)> files,
+		IAsyncEnumerable<string> WatchAsyncCore(
+			IList<(string dirName, string fileName)> files,
 			int msDelay,
 			CancellationToken cancellationToken)
 		{
-			var tcs = new TaskCompletionSource();
-			using var ctr = cancellationToken
-				.Register(() => tcs.TrySetCanceled(cancellationToken));
+			var changes = Channel.CreateUnbounded<string>();
+			var changeReg = new HashSet<string>();
 
-			// Create a timer that will complete after the specified delay
-			// if no more changes have occurred
-			using var timer = new Timer(
-				(_) => tcs.TrySetResult(),
-				null,
-				Timeout.Infinite,
-				Timeout.Infinite);
-
-			// Reset the timer anytime a file changes
-			void OnChanged(object sender, FileSystemEventArgs e)
-				=> timer.Change(msDelay, Timeout.Infinite);
-
-			// Create a FileSystemWatcher for each file
-			var watchers = new List<FileSystemWatcher>();
-			foreach (var (dirName, fileName) in files)
+			_ = Task.Run(async () =>
 			{
-				var watcher = new FileSystemWatcher(dirName, fileName)
+				var tcs = new TaskCompletionSource();
+				using var ctr = cancellationToken
+					.Register(() => tcs.TrySetCanceled(cancellationToken));
+
+				// Create a timer that will complete after the specified delay
+				// if no more changes have occurred
+				using var timer = new Timer(
+					(_) => tcs.TrySetResult(),
+					null,
+					Timeout.Infinite,
+					Timeout.Infinite);
+
+				// Reset the timer anytime a file changes
+				void OnChanged(object sender, FileSystemEventArgs e)
 				{
-					NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size,
-					EnableRaisingEvents = true,
-				};
+					timer.Change(msDelay, Timeout.Infinite);
+					lock (changeReg)
+					{
+						if (!changeReg.Add(e.FullPath)) return;
 
-				watcher.Changed += OnChanged;
-				watchers.Add(watcher);
-			}
-
-			try
-			{
-				await tcs.Task.ConfigureAwait(false);
-				cancellationToken.ThrowIfCancellationRequested();
-			}
-			finally
-			{
-				timer.Change(Timeout.Infinite, Timeout.Infinite);
-				// Clean up the FileSystemWatchers and the timer
-				foreach (var watcher in watchers)
-				{
-					watcher.Changed -= OnChanged;
-					watcher.Dispose();
+						if (!changes.Writer.TryWrite(e.FullPath))
+						{
+							Debug.WriteLine($"{e.FullPath} added after complete was called.");
+						}
+					}
 				}
-			}
+
+				// Create a FileSystemWatcher for each file
+				var watchers = new List<FileSystemWatcher>();
+				foreach (var g in files.GroupBy(e => e.dirName))
+				{
+					var watcher = new FileSystemWatcher(g.Key)
+					{
+						NotifyFilter
+							= NotifyFilters.Attributes
+							| NotifyFilters.FileName
+							| NotifyFilters.LastWrite
+							| NotifyFilters.Size,
+						IncludeSubdirectories = false,
+						EnableRaisingEvents = true
+					};
+
+					foreach (var (_, fileName) in g)
+						watcher.Filters.Add(fileName);
+
+					watcher.Changed += OnChanged;
+					watchers.Add(watcher);
+				}
+
+				try
+				{
+					await tcs.Task.ConfigureAwait(false);
+					cancellationToken.ThrowIfCancellationRequested();
+				}
+				finally
+				{
+					timer.Change(Timeout.Infinite, Timeout.Infinite);
+					// Clean up the FileSystemWatchers and the timer
+					foreach (var watcher in watchers)
+					{
+						watcher.Changed -= OnChanged;
+						watcher.Dispose();
+					}
+				}
+			}, cancellationToken)
+			.ContinueWith(_ =>	changes.Writer.Complete());
+
+			return changes.Reader.ReadAllAsync(cancellationToken);
 		}
 	}
 
-	public static Task WatchAsync(
+	public static IAsyncEnumerable<string> WatchAsync(
 		IEnumerable<FileInfo> files,
 		int msDelay,
 		CancellationToken cancellationToken)
