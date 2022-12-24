@@ -81,18 +81,12 @@ public static partial class Extensions
 			var trimming = options?.Trim == true;
 			var trimLeading = trimming;
 			var lineNumber = 0;
-			var whiteSpace = new List<string>();
+			List<string>? whiteSpace = trimming ? new List<string>() : null;
 
 		more:
 			var line = await reader.ReadLineAsync().ConfigureAwait(false);
 			if (line is null)
 			{
-				if (!trimming)
-				{
-					foreach (var w in whiteSpace)
-						yield return w;
-				}
-
 				var pad = options?.Padding ?? 0;
 				for (var i = 0; i < pad; i++)
 					yield return string.Empty;
@@ -106,17 +100,17 @@ public static partial class Extensions
 			// Trimming enabled?  Track the whitespace.
 			if (trimming && string.IsNullOrWhiteSpace(line))
 			{
-				whiteSpace.Add(line);
+				whiteSpace!.Add(line);
 				goto more;
 			}
 
 			if (trimLeading)
 			{
 				trimLeading = false;
-				whiteSpace.Clear();
+				whiteSpace!.Clear();
 			}
 
-			if(whiteSpace.Count != 0)
+			if(trimming && whiteSpace!.Count != 0)
 			{
 				foreach (var w in whiteSpace)
 					yield return w;
