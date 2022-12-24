@@ -68,7 +68,7 @@ await Parser.Default
 				using var output = outputFile.Open(FileMode.Create, FileAccess.Write);
 				using var writer = new StreamWriter(output);
 
-				await foreach (var line in rootFile.MergeIncludesAsync(info =>
+				await foreach (var line in rootFile.MergeIncludesAsync(o, info =>
 				{
 					if (info.FullName == outputFile.FullName)
 						throw new InvalidOperationException("Attempting to include the output file.");

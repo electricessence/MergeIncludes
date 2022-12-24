@@ -3,7 +3,16 @@ using Throw;
 
 namespace MergeIncludes;
 
-class Options
+public class MergeOptions
+{
+	[Option('t', "trim", Default = true, Required = false, HelpText = "Trims leading and trailing empty lines.")]
+	public bool Trim { get; set; }
+
+	[Option('p', "pad", Default = 1, Required = false, HelpText = "Adds additional lines after the contents.")]
+	public int Padding { get; set; }
+}
+
+class Options : MergeOptions
 {
 	[Option('r', "root", Required = true, HelpText = "The root file path to start from.")]
 	public string? RootFilePath { get; set; }

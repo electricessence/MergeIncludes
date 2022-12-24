@@ -12,6 +12,7 @@ public static partial class Extensions
 
 	public static IAsyncEnumerable<string> MergeIncludesAsync(
 		this FileInfo root,
+		MergeOptions? options = null,
 		Action<FileInfo>? onFileAccessed = null)
 	{
 		root.ThrowIfNull();
@@ -19,7 +20,7 @@ public static partial class Extensions
 
 		Dictionary<string, FileInfo> registry = new();
 		Register(root.FullName, registry, onFileAccessed);
-		return MergeIncludesAsync(root.FullName, registry, onFileAccessed);
+		return MergeIncludesAsync(root.FullName, registry, options, onFileAccessed);
 	}
 
 	static FileInfo Register(
@@ -46,6 +47,7 @@ public static partial class Extensions
 	static IAsyncEnumerable<string> MergeIncludesAsync(
 		string rootFileName,
 		Dictionary<string, FileInfo> registry,
+		MergeOptions? options = null,
 		Action<FileInfo>? onFileAccessed = null,
 		HashSet<string>? active = null)
 	{
@@ -59,11 +61,12 @@ public static partial class Extensions
 		if (active.Contains(root.FullName))
 			throw new InvalidOperationException($"Detected recursive reference to {root.FullName}.");
 
-		return MergeIncludesAsyncCore(root, registry, active, onFileAccessed);
+		return MergeIncludesAsyncCore(root, registry, options, active, onFileAccessed);
 
 		static async IAsyncEnumerable<string> MergeIncludesAsyncCore(
 			FileInfo root,
 			Dictionary<string, FileInfo> registry,
+			MergeOptions? options,
 			HashSet<string> active,
 			Action<FileInfo>? onFileAccessed)
 		{
@@ -75,17 +78,51 @@ public static partial class Extensions
 			using var file = root.OpenRead();
 			using var reader = new StreamReader(file);
 			Lazy<string> path = new(() => root.Directory?.FullName.ThrowIfNull()!);
+			var trimming = options?.Trim == true;
+			var trimLeading = trimming;
 			var lineNumber = 0;
+			var whiteSpace = new List<string>();
 
 		more:
 			var line = await reader.ReadLineAsync().ConfigureAwait(false);
 			if (line is null)
 			{
+				if (!trimming)
+				{
+					foreach (var w in whiteSpace)
+						yield return w;
+				}
+
+				var pad = options?.Padding ?? 0;
+				for (var i = 0; i < pad; i++)
+					yield return string.Empty;
+
 				active.Remove(rootFileName);
 				yield break;
 			}
 
 			lineNumber++;
+
+			// Trimming enabled?  Track the whitespace.
+			if (trimming && string.IsNullOrWhiteSpace(line))
+			{
+				whiteSpace.Add(line);
+				goto more;
+			}
+
+			if (trimLeading)
+			{
+				trimLeading = false;
+				whiteSpace.Clear();
+			}
+
+			if(whiteSpace.Count != 0)
+			{
+				foreach (var w in whiteSpace)
+					yield return w;
+
+				whiteSpace.Clear();
+			}
 
 			var include = includePattern.Match(line);
 			if (!include.Success)
@@ -98,7 +135,7 @@ public static partial class Extensions
 			IAsyncEnumerable<string> included;
 			try
 			{
-				included = MergeIncludesAsync(includePath, registry, onFileAccessed);
+				included = MergeIncludesAsync(includePath, registry, options, onFileAccessed, active);
 			}
 			catch (FileNotFoundException ex)
 			{
@@ -109,6 +146,8 @@ public static partial class Extensions
 			{
 				yield return n;
 			}
+
+			trimLeading = trimming;
 
 			goto more;
 		}
