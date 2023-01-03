@@ -1,96 +1,27 @@
-﻿using CommandLine;
-using MergeIncludes;
+﻿using MergeIncludes;
 using Spectre.Console;
-using Spectre.Console.Extensions;
-using Throw;
+using Spectre.Console.Cli;
 
-await Parser.Default
-	.ParseArguments<Options>(args)
-	.WithParsedAsync(async o =>
+var app = new CommandApp<CombineCommand>();
+#if DEBUG
+app.Configure(config =>
+{
+	config.ValidateExamples();
+	config.SetExceptionHandler(ex =>
 	{
-		o.ThrowIfNull().OnlyInDebug();
-		var rootFile = o.GetRootFile();
-
-		if (!rootFile.Exists)
+		switch (ex)
 		{
-			AnsiConsole.MarkupLine("[red]Root file not found:[/]");
-			var path = new TextPath(rootFile.FullName);
-			AnsiConsole.Write(path);
-			return;
-		}
+			case CommandRuntimeException cex:
+				AnsiConsole.Write(new Markup("[red]Error: [/]"));
+				AnsiConsole.WriteLine(cex.Message);
+				return 1;
 
-		var outputFile = o.GetOutputFile(rootFile);
-
-		var files = await Merge();
-
-		if (!o.Watch) return;
-
-		using var cancelSource = new CancellationTokenSource();
-		var token = cancelSource.Token;
-		_ = Task.Run(async () =>
-			await AnsiConsole.Status()
-				.StartAsync("[turquoise2]Watching files for changes. (Press any key to stop watching.)[/]",
-				async _ =>
-				{
-					while (!token.IsCancellationRequested)
-					{
-						try
-						{
-							int count = 0;
-							await foreach (var file in FileWatcher.WatchAsync(files, 1000, token))
-							{
-								if (count++ == 0)
-									AnsiConsole.MarkupLine("[yellow]Changes detected: [/]");
-								AnsiConsole.Write(new TextPath(file));
-							}
-							AnsiConsole.WriteLine();
-
-							if (token.IsCancellationRequested)
-								return;
-
-							files = await Merge();
-						}
-						catch (OperationCanceledException)
-						{
-							return;
-						}
-					}
-				}));
-
-		Console.ReadKey();
-		cancelSource.Cancel();
-
-		async ValueTask<List<FileInfo>> Merge()
-		{
-			var list = new List<FileInfo>();
-			{
-				var panel = new PanelBuilder("[white]Files read from:[/]");
-				using var output = outputFile.Open(FileMode.Create, FileAccess.Write);
-				using var writer = new StreamWriter(output);
-
-				await foreach (var line in rootFile.MergeIncludesAsync(o, info =>
-				{
-					if (info.FullName == outputFile.FullName)
-						throw new InvalidOperationException("Attempting to include the output file.");
-
-					panel.Add(new TextPath(info.FullName));
-					list.Add(info);
-				}))
-				{
-					await writer.WriteLineAsync(line);
-				}
-
-				await writer.FlushAsync();
-				AnsiConsole.Write(panel);
-			}
-
-			{
-				var mergePath = new TextPath(outputFile.FullName);
-				AnsiConsole.Write(new Panel(mergePath)
-				{
-					Header = new PanelHeader("[springgreen1]Successfully merged include references to:[/]")
-				});
-			}
-			return list;
+			default:
+				AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
+				return -99;
 		}
 	});
+});
+#endif
+
+await app.RunAsync(args);

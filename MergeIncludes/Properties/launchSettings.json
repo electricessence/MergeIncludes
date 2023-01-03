@@ -2,7 +2,7 @@
   "profiles": {
     "MergeIncludes": {
       "commandName": "Project",
-      "commandLineArgs": "-r sample.txt -w",
+      "commandLineArgs": "sample.txt -w",
       "workingDirectory": "../MergeIncludes.Tests"
     }
   }

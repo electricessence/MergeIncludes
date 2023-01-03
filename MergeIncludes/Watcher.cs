@@ -6,6 +6,7 @@ namespace MergeIncludes;
 
 static class FileWatcher
 {
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2016:Forward the 'CancellationToken' parameter to methods", Justification = "Done as desired.")]
 	public static IAsyncEnumerable<string> WatchAsync(
 		IEnumerable<string> files,
 		int msDelay,

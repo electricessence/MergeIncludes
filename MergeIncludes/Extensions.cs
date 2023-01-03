@@ -6,8 +6,16 @@ using Throw;
 namespace MergeIncludes;
 public static partial class Extensions
 {
+	const string INCLUDE = "include";
+	const string REQUIRE = "require";
+	const string METHOD = "method";
 	const string FILE = "file";
-	[GeneratedRegex(@$"^(//\s*)?#include\s+(?<{FILE}>.+)", RegexOptions.Compiled)]
+	const string IncludePatternText = @$"#(?<{METHOD}>{INCLUDE}|{REQUIRE})\s+(?<{FILE}>.+)";
+
+	[GeneratedRegex(
+		@$"^(//\s*)?{IncludePatternText}|^(<!--\s*){IncludePatternText}(\s*-->)",
+		RegexOptions.Compiled
+		| RegexOptions.IgnoreCase)]
 	private static partial Regex GetIncludePattern();
 
 	public static IAsyncEnumerable<string> MergeIncludesAsync(
@@ -58,8 +66,6 @@ public static partial class Extensions
 		var root = Register(rootFileName, registry, onFileAccessed);
 
 		active ??= new();
-		if (active.Contains(root.FullName))
-			throw new InvalidOperationException($"Detected recursive reference to {root.FullName}.");
 
 		return MergeIncludesAsyncCore(root, registry, options, active, onFileAccessed);
 
@@ -126,6 +132,14 @@ public static partial class Extensions
 			}
 
 			var includePath = Path.Combine(path.Value, include.Groups[FILE].Value);
+			if (active.Contains(includePath))
+				throw new InvalidOperationException($"Detected recursive reference to {includePath}.");
+
+			var require = include.Groups[METHOD].ValueSpan.Equals(REQUIRE, StringComparison.OrdinalIgnoreCase);
+			// Require means to only include it once.
+			if (require && registry.ContainsKey(includePath))
+				goto more;
+
 			IAsyncEnumerable<string> included;
 			try
 			{
