@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<Version>1.2.0</Version>
+		<Version>2.0.0</Version>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net7.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -19,15 +19,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Spectre.Console.Extensions\Spectre.Console.Extensions.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Update="sample01.txt">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="sample02-01.txt">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
 	</ItemGroup>
 
 </Project>
