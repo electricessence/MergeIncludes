@@ -48,7 +48,11 @@ internal sealed class CombineCommand : AsyncCommand<Settings>
 							await foreach (var file in FileWatcher.WatchAsync(files, 1000, token))
 							{
 								if (count++ == 0)
-									AnsiConsole.MarkupLine("[yellow]Changes detected: [/]");
+								{
+									var now = DateTimeOffset.Now;
+									AnsiConsole.MarkupLine($"[yellow]Changes detected:[/] ({now:d} {now:T})");
+
+								}
 								AnsiConsole.Write(new TextPath(file));
 							}
 							AnsiConsole.WriteLine();
@@ -61,6 +65,14 @@ internal sealed class CombineCommand : AsyncCommand<Settings>
 						catch (OperationCanceledException)
 						{
 							return;
+						}
+						catch (FileNotFoundException ex)
+						{
+							var panel = new PanelBuilder("[red]Error:[/]");
+							panel.Add(new Text(ex.Message));
+							if(!string.IsNullOrWhiteSpace(ex.FileName))
+								panel.Add(new Text(ex.FileName, new Style(Color.Yellow)));
+							AnsiConsole.Write(panel);
 						}
 						catch (Exception ex)
 						{
@@ -78,6 +90,8 @@ internal sealed class CombineCommand : AsyncCommand<Settings>
 
 		async ValueTask<List<FileInfo>> Merge()
 		{
+			outputFile.Attributes &= ~FileAttributes.ReadOnly;
+
 			var list = new List<FileInfo>();
 			{
 				var panel = new PanelBuilder("[white]Files read from:[/]");
@@ -99,6 +113,9 @@ internal sealed class CombineCommand : AsyncCommand<Settings>
 				await writer.FlushAsync();
 				AnsiConsole.Write(panel);
 			}
+
+			// Helps prevent accidental editing by user.
+			outputFile.Attributes |= FileAttributes.ReadOnly;
 
 			{
 				var mergePath = new TextPath(outputFile.FullName);
