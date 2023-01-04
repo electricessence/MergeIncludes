@@ -62,6 +62,12 @@ internal sealed class CombineCommand : AsyncCommand<Settings>
 						{
 							return;
 						}
+						catch (Exception ex)
+						{
+							var panel = new PanelBuilder("[red]Error:[/]");
+							panel.Add(new Text(ex.Message));
+							AnsiConsole.Write(panel);
+						}
 					}
 				}));
 

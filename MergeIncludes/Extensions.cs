@@ -131,7 +131,7 @@ public static partial class Extensions
 				goto more;
 			}
 
-			var includePath = Path.Combine(path.Value, include.Groups[FILE].Value);
+			var includePath = Path.GetFullPath(Path.Combine(path.Value, include.Groups[FILE].Value));
 			if (active.Contains(includePath))
 				throw new InvalidOperationException($"Detected recursive reference to {includePath}.");
 

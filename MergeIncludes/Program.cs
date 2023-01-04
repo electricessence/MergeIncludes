@@ -3,7 +3,7 @@ using Spectre.Console;
 using Spectre.Console.Cli;
 
 var app = new CommandApp<CombineCommand>();
-#if DEBUG
+
 app.Configure(config =>
 {
 	config.ValidateExamples();
@@ -22,6 +22,5 @@ app.Configure(config =>
 		}
 	});
 });
-#endif
 
 await app.RunAsync(args);

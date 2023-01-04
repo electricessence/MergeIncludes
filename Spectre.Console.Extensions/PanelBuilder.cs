@@ -7,12 +7,13 @@ public class PanelBuilder : IRenderable
 	readonly List<IRenderable> _contents;
 	readonly Lazy<IRenderable> _panel;
 
-	public PanelBuilder(string headerText) {
+	public PanelBuilder(string headerText, bool expand = true) {
 		_contents = new();
 		_panel = new Lazy<IRenderable>(
 			() => new Panel(new Rows(_contents))
 			{
-				Header = new PanelHeader(headerText)
+				Header = new PanelHeader(headerText),
+				Expand = expand
 			});
 	}
 
