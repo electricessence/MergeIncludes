@@ -8,9 +8,10 @@ public static partial class Extensions
 {
 	const string INCLUDE = "include";
 	const string REQUIRE = "require";
-	const string METHOD = "method";
+    const string EXACT = "exact";
+    const string METHOD = "method";
 	const string FILE = "file";
-	const string IncludePatternText = @$"#(?<{METHOD}>{INCLUDE}|{REQUIRE})\s+(?<{FILE}>.+)";
+	const string IncludePatternText = @$"#(?<{METHOD}>{INCLUDE}|{REQUIRE})(?<{EXACT}>-{EXACT})?\s+(?<{FILE}>.+)";
 
 	[GeneratedRegex(
 		@$"^(//\s*)?{IncludePatternText}|^(<!--\s*){IncludePatternText}(\s*-->)",
@@ -140,10 +141,12 @@ public static partial class Extensions
 			if (require && registry.ContainsKey(includePath))
 				goto more;
 
-			IAsyncEnumerable<string> included;
+			var exact = include.Groups[EXACT].Success;
+
+            IAsyncEnumerable<string> included;
 			try
 			{
-				included = MergeIncludesAsync(includePath, registry, options, onFileAccessed, active);
+				included = MergeIncludesAsync(includePath, registry, exact ? null : options, onFileAccessed, active);
 			}
 			catch (FileNotFoundException ex)
 			{
