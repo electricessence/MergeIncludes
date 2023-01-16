@@ -16,7 +16,12 @@ app.Configure(config =>
 				AnsiConsole.WriteLine(cex.Message);
 				return 1;
 
-			default:
+			case FileNotFoundException fnfex:
+                AnsiConsole.Write(new Markup("[red]File Not Found: [/]"));
+                AnsiConsole.WriteLine(fnfex.Message);
+				return 1;
+
+            default:
 				AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
 				return -99;
 		}

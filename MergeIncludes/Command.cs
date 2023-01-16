@@ -90,7 +90,8 @@ internal sealed class CombineCommand : AsyncCommand<Settings>
 
 		async ValueTask<List<FileInfo>> Merge()
 		{
-			outputFile.Attributes &= ~FileAttributes.ReadOnly;
+			if(outputFile.Exists)
+				outputFile.Attributes &= ~FileAttributes.ReadOnly;
 
 			var list = new List<FileInfo>();
 			{
