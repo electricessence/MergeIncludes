@@ -150,7 +150,7 @@ public static partial class Extensions
 			}
 			catch (FileNotFoundException ex)
 			{
-				throw new FileNotFoundException($"Could not find include file on line {lineNumber} in {root.FullName}", includePath, ex);
+				throw new FileNotFoundException($"Could not find include file on line {lineNumber} in {root.FullName}:{lineNumber}", includePath, ex);
 			}
 
 			await foreach (var n in included)
