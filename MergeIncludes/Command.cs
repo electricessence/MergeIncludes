@@ -90,10 +90,12 @@ internal sealed class CombineCommand : AsyncCommand<Settings>
 
 		async ValueTask<List<FileInfo>> Merge()
 		{
-			if(outputFile.Exists)
+			var existed = outputFile.Exists;
+            if (existed)
 				outputFile.Attributes &= ~FileAttributes.ReadOnly;
 
-			var list = new List<FileInfo>();
+
+            var list = new List<FileInfo>();
 			{
 				var panel = new PanelBuilder("[white]Files read from:[/]");
 				using var output = outputFile.Open(FileMode.Create, FileAccess.Write);
@@ -116,9 +118,13 @@ internal sealed class CombineCommand : AsyncCommand<Settings>
 			}
 
 			// Helps prevent accidental editing by user.
-			outputFile.Attributes |= FileAttributes.ReadOnly;
+			if(existed)
+				outputFile.Attributes |= FileAttributes.ReadOnly;
+			else
+                outputFile.Attributes = FileAttributes.ReadOnly;
 
-			{
+
+            {
 				var mergePath = new TextPath(outputFile.FullName);
 				AnsiConsole.Write(new Panel(mergePath)
 				{
