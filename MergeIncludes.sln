@@ -7,7 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MergeIncludes", "MergeInclu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MergeIncludes.Tests", "MergeIncludes.Tests\MergeIncludes.Tests.csproj", "{0071106E-85FF-46CC-B371-305B664AED38}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spectre.Console.Extensions", "Spectre.Console.Extensions\Spectre.Console.Extensions.csproj", "{DE9A5D1F-4580-4835-89D8-1BF71EB97685}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spectre.Console.Extensions", "Spectre.Console.Extensions\Spectre.Console.Extensions.csproj", "{DE9A5D1F-4580-4835-89D8-1BF71EB97685}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{51338115-E012-47A0-A177-C159F2C4F8BC}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

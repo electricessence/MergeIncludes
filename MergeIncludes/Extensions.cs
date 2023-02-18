@@ -11,15 +11,20 @@ public static partial class Extensions
     const string EXACT = "exact";
     const string METHOD = "method";
 	const string FILE = "file";
+	const string CommentPatternText = "##.+";
 	const string IncludePatternText = @$"#(?<{METHOD}>{INCLUDE}|{REQUIRE})(?<{EXACT}>-{EXACT})?\s+(?<{FILE}>.+)";
 
 	[GeneratedRegex(
 		@$"^(//\s*)?{IncludePatternText}|^(<!--\s*){IncludePatternText}(\s*-->)",
-		RegexOptions.Compiled
-		| RegexOptions.IgnoreCase)]
+		RegexOptions.Compiled | RegexOptions.IgnoreCase)]
 	private static partial Regex GetIncludePattern();
 
-	public static IAsyncEnumerable<string> MergeIncludesAsync(
+    [GeneratedRegex(
+        @$"^(//\s*)?{CommentPatternText}|^(<!--\s*){CommentPatternText}(\s*-->)",
+        RegexOptions.Compiled)]
+    private static partial Regex GetCommentPattern();
+
+    public static IAsyncEnumerable<string> MergeIncludesAsync(
 		this FileInfo root,
 		MergeOptions? options = null,
 		Action<FileInfo>? onFileAccessed = null)
@@ -81,7 +86,8 @@ public static partial class Extensions
 			if (!active.Add(rootFileName))
 				throw new UnreachableException();
 
-			var includePattern = GetIncludePattern();
+			var commentPattern = GetCommentPattern();
+            var includePattern = GetIncludePattern();
 			using var file = root.OpenRead();
 			using var reader = new StreamReader(file);
 			Lazy<string> path = new(() => root.Directory?.FullName.ThrowIfNull()!);
@@ -124,6 +130,11 @@ public static partial class Extensions
 
 				whiteSpace.Clear();
 			}
+
+			if(commentPattern.IsMatch(line))
+			{
+                goto more;
+            }
 
 			var include = includePattern.Match(line);
 			if (!include.Success)

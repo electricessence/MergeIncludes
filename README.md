@@ -20,17 +20,22 @@ MergeIncludes.exe ./MyFile.txt
 
 The `#include` directive will insert the contents at that location and `#require` will only insert contents when it's first referenced.
 
+Any line beginning `##` (double pound) will be considered a comment and will simply not be included in the output.
+
 ### Markdown & HTML
 ```md
+<!-- ## Comment -->
 <!-- #include ./filepath.md -->
 ```
 
 ### Script
 ```js
+// ## Comment
 // #include ./filepath.md
 ```
 
 ### Text
 ```
+## Comment
 #include ./filepath.md
 ```
