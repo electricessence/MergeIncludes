@@ -1,0 +1,2 @@
+#require ./sample0?.txt
+#require ./sample01.txt
