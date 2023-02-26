@@ -39,3 +39,26 @@ Any line beginning `##` (double pound) will be considered a comment and will sim
 ## Comment
 #include ./filepath.md
 ```
+
+## Wild-Cards
+
+File names (not directories) can contain wild-cards. Order should be alphabetical, but not guaranteed.
+
+The rules for each directive still apply:
+* When using `#require`, if any one of the files has already been included it will be skipped.
+* When using `#include`, all entries will be listed.
+
+
+### Examples
+
+```
+#require ./sample-*.txt
+```
+
+```
+#require ./sample-??.txt
+```
+
+```
+#require ./*.txt
+```

@@ -397,4 +397,4 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /MergeIncludes.Tests/sample.merged.txt
-launchSettings.json
+/MergeIncludes/Properties/launchSettings.json
