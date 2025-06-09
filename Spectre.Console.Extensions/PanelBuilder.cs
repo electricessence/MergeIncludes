@@ -29,10 +29,9 @@ public class PanelBuilder : IRenderable
         if (_panel.IsValueCreated) throw new InvalidOperationException("Panel was already consumed.");
         _contents.AddRange(renderable);
     }
+    public Measurement Measure(RenderOptions options, int maxWidth)
+        => _panel.Value.Measure(options, maxWidth);
 
-    public Measurement Measure(RenderContext context, int maxWidth)
-        => _panel.Value.Measure(context, maxWidth);
-
-    public IEnumerable<Segment> Render(RenderContext context, int maxWidth)
-        => _panel.Value.Render(context, maxWidth);
+    public IEnumerable<Segment> Render(RenderOptions options, int maxWidth)
+        => _panel.Value.Render(options, maxWidth);
 }
