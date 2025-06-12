@@ -28,4 +28,6 @@ app.Configure(config =>
     });
 });
 
-await app.RunAsync(args);
+// Capture the exit code and propagate it to the host
+int exitCode = await app.RunAsync(args);
+return exitCode;
