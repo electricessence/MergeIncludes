@@ -52,8 +52,10 @@ internal sealed class CombineCommand : AsyncCommand<Settings>
                                     var now = DateTimeOffset.Now;
                                     AnsiConsole.MarkupLine($"[yellow]Changes detected:[/] ({now:d} {now:T})");
                                 }
+
                                 AnsiConsole.Write(new TextPath(file));
                             }
+
                             AnsiConsole.WriteLine();
 
                             if (token.IsCancellationRequested)
@@ -94,11 +96,15 @@ internal sealed class CombineCommand : AsyncCommand<Settings>
                 outputFile.Attributes &= ~FileAttributes.ReadOnly;
 
             var list = new List<FileInfo>();
-            {
-                var panel = new PanelBuilder("[white]Files read from:[/]");
-                using var output = outputFile.Open(FileMode.Create, FileAccess.Write);
-                using var writer = new StreamWriter(output);
+            var panel = new PanelBuilder("[white]Files read from:[/]");
 
+            // Use a MemoryStream to buffer the output instead of writing directly to the file
+            using var memoryStream = new MemoryStream();
+            using var writer = new StreamWriter(memoryStream);
+
+            try
+            {
+                // Process the files and write to the memory buffer
                 await foreach (var line in rootFile.MergeIncludesAsync(o, info =>
                 {
                     if (info.FullName == outputFile.FullName)
@@ -112,23 +118,34 @@ internal sealed class CombineCommand : AsyncCommand<Settings>
                 }
 
                 await writer.FlushAsync();
+
+                // If we got here, everything was successful, so now write to the actual file
+                using var output = outputFile.Open(FileMode.Create, FileAccess.Write);
+                memoryStream.Position = 0;
+                await memoryStream.CopyToAsync(output);
+
                 AnsiConsole.Write(panel);
-            }
 
-            // Helps prevent accidental editing by user.
-            if (existed)
-                outputFile.Attributes |= FileAttributes.ReadOnly;
-            else
-                outputFile.Attributes = FileAttributes.ReadOnly;
+                // Helps prevent accidental editing by user.
+                if (existed)
+                    outputFile.Attributes |= FileAttributes.ReadOnly;
+                else
+                    outputFile.Attributes = FileAttributes.ReadOnly;
 
-            {
                 var mergePath = new TextPath(outputFile.FullName);
                 AnsiConsole.Write(new Panel(mergePath)
                 {
                     Header = new PanelHeader("[springgreen1]Successfully merged include references to:[/]")
                 });
+
+                return list;
             }
-            return list;
+            catch
+            {
+                // If there was an error, we don't modify the output file
+                // since we only wrote to the memory stream
+                throw;
+            }
         }
     }
 }
