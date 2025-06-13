@@ -1,0 +1,3 @@
+# Common Utilities
+This is a common file that will be included by multiple other files.
+It demonstrates the detection of repeated dependencies.

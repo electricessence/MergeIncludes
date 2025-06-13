@@ -1,0 +1,11 @@
+# Component 1
+This file is in SubFolder1.
+
+## Including another file from SubFolder1
+#include ./subcomponent1.txt
+
+## Including a file from parent directory
+#include ../local.txt
+
+## Including a file from sibling directory
+#include ../SubFolder2/common.txt

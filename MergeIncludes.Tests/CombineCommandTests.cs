@@ -84,6 +84,25 @@ public class CombineCommandTests
             .UseFileName("BothTreeDisplay");
     }
 
+    [Fact]
+    public async Task TreeDisplayWithRepeatedDependencies_ShowsRepeatMarkings()
+    {
+        // Arrange
+        var console = new TestConsole();
+        var command = new CombineCommand(console);
+        var rootFile = new FileInfo(Path.GetFullPath(@".\sample.txt"));
+        var fileRelationships = CreateTestFileRelationshipsWithRepeats(rootFile);
+
+        // Act
+        InvokeDisplayFileTrees(command, rootFile, fileRelationships, TreeDisplayMode.Simple);
+
+        // Assert - Verify console output
+        var output = console.Output;
+        await Verify(output)
+            .UseDirectory("Snapshots")
+            .UseFileName("RepeatedDependenciesTreeDisplay");
+    }
+
     // Helper method to create a test file relationship dictionary
     private Dictionary<string, List<string>> CreateTestFileRelationships(FileInfo rootFile)
     {
@@ -101,6 +120,35 @@ public class CombineCommandTests
         fileRelationships[sample02Path] = new List<string>
         {
             Path.GetFullPath(@".\sample02-01.txt")
+        };
+
+        return fileRelationships;
+    }
+
+    // Helper method to create a test file relationship dictionary with repeated dependencies
+    private Dictionary<string, List<string>> CreateTestFileRelationshipsWithRepeats(FileInfo rootFile)
+    {
+        var fileRelationships = new Dictionary<string, List<string>>();
+        
+        // Add sample01.txt and sample02.txt as children of sample.txt for testing
+        fileRelationships[rootFile.FullName] = new List<string>
+        {
+            Path.GetFullPath(@".\sample01.txt"),
+            Path.GetFullPath(@".\sample02.txt")
+        };
+
+        // Add sample02-01.txt as a child of sample02.txt for testing
+        var sample02Path = Path.GetFullPath(@".\sample02.txt");
+        fileRelationships[sample02Path] = new List<string>
+        {
+            Path.GetFullPath(@".\sample02-01.txt")
+        };
+
+        // Add sample01.txt again as a child of sample02-01.txt for testing repeated dependencies
+        var sample0201Path = Path.GetFullPath(@".\sample02-01.txt");
+        fileRelationships[sample0201Path] = new List<string>
+        {
+            Path.GetFullPath(@".\sample01.txt")  // This is a repeat of the file included by the root
         };
 
         return fileRelationships;

@@ -1,12 +1,12 @@
 ﻿╭─Files included in merge:─────────────────────────────────────────────────────╮
-│ sample.txt                                                                   │
-│ ├── sample01.txt                                                             │
-│ └── sample02.txt                                                             │
-│     └── sample02-01.txt                                                      │
+│ sample.txt [0]                                                               │
+│ ├── sample01.txt [1]                                                         │
+│ └── sample02.txt [2]                                                         │
+│     └── sample02-01.txt [3]                                                  │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ╭─Files included in merge with folder structure:───────────────────────────────╮
-│ sample.txt (in net9.0)                                                       │
-│ ├── sample01.txt (in net9.0)                                                 │
-│ └── sample02.txt (in net9.0)                                                 │
-│     └── sample02-01.txt (in net9.0)                                          │
+│ sample.txt [0] (in bin/Debug)                                                │
+│ ├── sample01.txt [1] (in bin/Debug)                                          │
+│ └── sample02.txt [2] (in bin/Debug)                                          │
+│     └── sample02-01.txt [3] (in bin/Debug)                                   │
 ╰──────────────────────────────────────────────────────────────────────────────╯

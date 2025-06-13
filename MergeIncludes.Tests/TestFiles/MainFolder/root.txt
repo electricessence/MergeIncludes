@@ -1,0 +1,16 @@
+# Main Root File
+This is the root file located in the MainFolder.
+
+## Including file from same directory
+#include ./local.txt
+
+## Including file from SubFolder1
+#include ./SubFolder1/component1.txt
+
+## Including file from SubFolder2
+#include ./SubFolder2/component2.txt
+
+## Including file from a different folder tree (relative path)
+#include ../AnotherFolder/external.txt
+
+## End of root file

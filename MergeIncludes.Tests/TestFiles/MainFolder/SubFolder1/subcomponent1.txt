@@ -1,0 +1,4 @@
+# Subcomponent 1
+This is a file inside SubFolder1, included by component1.txt.
+
+It doesn't include any other files.

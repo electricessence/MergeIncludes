@@ -1,0 +1,6 @@
+# External File
+This file is in a completely different folder hierarchy.
+It also includes the common file to demonstrate repeat detection across folder boundaries.
+
+## Including common utilities from a different folder tree
+#include ../MainFolder/SubFolder2/common.txt

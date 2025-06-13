@@ -6,7 +6,10 @@ using Throw;
 
 namespace MergeIncludes;
 
-public sealed class CombineCommand : AsyncCommand<Settings>
+/// <summary>
+/// Command to merge files with included references
+/// </summary>
+public sealed partial class CombineCommand : AsyncCommand<Settings>
 {
 	private readonly IAnsiConsole _console;
 
@@ -184,6 +187,9 @@ public sealed class CombineCommand : AsyncCommand<Settings>
 		}
 	}
 
+	/// <summary>
+	/// Entry point for displaying file trees according to the selected mode
+	/// </summary>
 	private void DisplayFileTrees(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships, TreeDisplayMode mode)
 	{
 		// Display trees based on the selected mode
@@ -205,300 +211,14 @@ public sealed class CombineCommand : AsyncCommand<Settings>
 				DisplaySimpleFileTree(rootFile, fileRelationships);
 				DisplayFolderStructureTree(rootFile, fileRelationships);
 				break;
+            
+            case TreeDisplayMode.RepeatsOnly:
+                DisplayRepeatsOnlyFileTree(rootFile, fileRelationships);
+                break;
 			
 			default:
-				DisplaySimpleFileTree(rootFile, fileRelationships);
+				DisplayRepeatsOnlyFileTree(rootFile, fileRelationships);
 				break;
-		}
-	}
-
-	private void DisplaySimpleFileTree(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
-	{
-		// Create a tree with the root file as the root node
-		var rootName = Path.GetFileName(rootFile.FullName);
-		var tree = new Tree(new Text(rootName, Color.LightSkyBlue1));
-		tree.Guide = TreeGuide.Line;
-
-		// Recursively build the tree
-		if (fileRelationships.TryGetValue(rootFile.FullName, out var children))
-		{
-			foreach (var childPath in children)
-			{
-				var fileName = Path.GetFileName(childPath);
-				var childNode = tree.AddNode(new Text(fileName, Color.PaleTurquoise1));
-				AddChildrenToSimpleTree(childNode, childPath, fileRelationships);
-			}
-		}
-
-		// Write the tree to the console
-		_console.Write(new Panel(tree)
-		{
-			Header = new PanelHeader("[white]Files included in merge:[/]"),
-			Expand = true,
-			Border = BoxBorder.Rounded
-		});
-	}
-
-	private void DisplayFolderStructureTree(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
-	{
-		// Get the base directory of the root file to calculate relative paths
-		var baseDirectory = rootFile.Directory ?? throw new InvalidOperationException("Root file directory cannot be null");
-		
-		// Create a tree with the root file as the root node - safely display without markup
-		var rootName = rootFile.Name;
-		var folderPath = GetRelativeFolderPath(rootFile.Directory);
-		
-		// Create a styled text node for the root
-		var rootText = new Text($"{rootName} (in {folderPath})", Color.LightSkyBlue1);
-		var tree = new Tree(rootText);
-		tree.Guide = TreeGuide.Line;
-
-		// Recursively build the tree
-		if (fileRelationships.TryGetValue(rootFile.FullName, out var children))
-		{
-			foreach (var childPath in children)
-			{
-				var fileInfo = new FileInfo(childPath);
-				var folderName = GetRelativeFolderPath(fileInfo.Directory, baseDirectory);
-				
-				// Create styled text for the child
-				var nodeText = new Text($"{fileInfo.Name} (in {folderName})", Color.PaleTurquoise1);
-				var childNode = tree.AddNode(nodeText);
-				AddChildrenToFolderTreeWithText(childNode, childPath, fileRelationships, baseDirectory);
-			}
-		}
-
-		// Write the tree to the console
-		_console.Write(new Panel(tree)
-		{
-			Header = new PanelHeader("[white]Files included in merge with folder structure:[/]"),
-			Expand = true,
-			Border = BoxBorder.Rounded
-		});
-	}
-
-	private void DisplayFullPathsTree(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
-	{
-		// Get the base directory of the root file to calculate relative paths
-		var baseDirectory = rootFile.Directory ?? throw new InvalidOperationException("Root file directory cannot be null");
-		
-		// Create a tree with the root file as the root node - using just the name for the root
-		var tree = new Tree(new Text(rootFile.Name, Color.LightSkyBlue1));
-		tree.Guide = TreeGuide.Line;
-
-		// Recursively build the tree
-		if (fileRelationships.TryGetValue(rootFile.FullName, out var children))
-		{
-			foreach (var childPath in children)
-			{
-				var childFile = new FileInfo(childPath);
-				// Get a path relative to the root file directory
-				var relativePath = GetRelativeFilePath(childFile.FullName, baseDirectory.FullName);
-				
-				// Handle the special case with location info by creating a styled text
-				if (relativePath.Contains(" (in "))
-				{
-					var parts = relativePath.Split(new[] { " (in " }, 2, StringSplitOptions.None);
-					var fileName = parts[0];
-					var locationInfo = parts.Length > 1 ? " (in " + parts[1] : "";
-					
-					var text = new Text(fileName + locationInfo, Color.PaleTurquoise1);
-					var childNode = tree.AddNode(text);
-					AddChildrenToRelativePathTreeWithText(childNode, childPath, fileRelationships, baseDirectory.FullName);
-				}
-				else
-				{
-					var text = new Text(relativePath, Color.PaleTurquoise1);
-					var childNode = tree.AddNode(text);
-					AddChildrenToRelativePathTreeWithText(childNode, childPath, fileRelationships, baseDirectory.FullName);
-				}
-			}
-		}
-
-		// Write the tree to the console
-		_console.Write(new Panel(tree)
-		{
-			Header = new PanelHeader("[white]Files included in merge with paths:[/]"),
-			Expand = true,
-			Border = BoxBorder.Rounded
-		});
-	}
-
-	private void AddChildrenToSimpleTree(TreeNode parentNode, string parentPath, Dictionary<string, List<string>> fileRelationships)
-	{
-		if (!fileRelationships.TryGetValue(parentPath, out var children))
-		{
-			return;
-		}
-
-		foreach (var childPath in children)
-		{
-			var fileName = Path.GetFileName(childPath);
-			var childNode = parentNode.AddNode(new Text(fileName, Color.PaleTurquoise1));
-			AddChildrenToSimpleTree(childNode, childPath, fileRelationships);
-		}
-	}
-
-	private void AddChildrenToFolderTreeWithText(TreeNode parentNode, string parentPath, Dictionary<string, List<string>> fileRelationships, DirectoryInfo baseDirectory)
-	{
-		if (!fileRelationships.TryGetValue(parentPath, out var children))
-		{
-			return;
-		}
-
-		foreach (var childPath in children)
-		{
-			var fileInfo = new FileInfo(childPath);
-			var folderName = GetRelativeFolderPath(fileInfo.Directory, baseDirectory);
-			
-			var nodeText = new Text($"{fileInfo.Name} (in {folderName})", Color.PaleTurquoise1);
-			var childNode = parentNode.AddNode(nodeText);
-			AddChildrenToFolderTreeWithText(childNode, childPath, fileRelationships, baseDirectory);
-		}
-	}
-	
-	private void AddChildrenToRelativePathTreeWithText(TreeNode parentNode, string parentPath, Dictionary<string, List<string>> fileRelationships, string baseDirectoryPath)
-	{
-		if (!fileRelationships.TryGetValue(parentPath, out var children))
-		{
-			return;
-		}
-
-		foreach (var childPath in children)
-		{
-			// Get a path relative to the root file directory
-			var relativePath = GetRelativeFilePath(childPath, baseDirectoryPath);
-			
-			// Handle the special case with location info
-			if (relativePath.Contains(" (in "))
-			{
-				var parts = relativePath.Split(new[] { " (in " }, 2, StringSplitOptions.None);
-				var fileName = parts[0];
-				var locationInfo = parts.Length > 1 ? " (in " + parts[1] : "";
-				
-				var text = new Text(fileName + locationInfo, Color.PaleTurquoise1);
-				var childNode = parentNode.AddNode(text);
-				AddChildrenToRelativePathTreeWithText(childNode, childPath, fileRelationships, baseDirectoryPath);
-			}
-			else
-			{
-				var text = new Text(relativePath, Color.PaleTurquoise1);
-				var childNode = parentNode.AddNode(text);
-				AddChildrenToRelativePathTreeWithText(childNode, childPath, fileRelationships, baseDirectoryPath);
-			}
-		}
-	}
-	
-	/// <summary>
-	/// Gets a user-friendly representation of the folder path
-	/// </summary>
-	private static string GetRelativeFolderPath(DirectoryInfo? directory, DirectoryInfo? baseDirectory = null)
-	{
-		if (directory == null)
-			return "unknown location";
-		
-		if (baseDirectory == null)
-			return directory.Name;
-		
-		// Try to get a relative path
-		try
-		{
-			string relativePath = Path.GetRelativePath(baseDirectory.FullName, directory.FullName);
-			// If the path starts with "..", we've gone above the base directory
-			if (relativePath.StartsWith(".."))
-			{
-				// Just use the directory name
-				return directory.Name;
-			}
-			
-			if (relativePath == ".")
-				return baseDirectory.Name;
-				
-			return relativePath;
-		}
-		catch
-		{
-			return directory.Name;
-		}
-	}
-	
-	/// <summary>
-	/// Gets a user-friendly representation of a file path relative to a base directory
-	/// </summary>
-	/// <param name="filePath">The full path of the file</param>
-	/// <param name="baseDirectoryPath">The base directory to make the path relative to</param>
-	/// <returns>A user-friendly relative path</returns>
-	private static string GetRelativeFilePath(string filePath, string baseDirectoryPath)
-	{
-		try
-		{
-			var relativePath = Path.GetRelativePath(baseDirectoryPath, filePath);
-			
-			// If the path starts with "..", it means the file is outside the base directory
-			if (relativePath.StartsWith(".."))
-			{
-				// Try to find a common ancestor by going up in the directory hierarchy
-				var fileDir = Path.GetDirectoryName(filePath);
-				var baseDir = baseDirectoryPath;
-				var filePathComponents = fileDir?.Split(Path.DirectorySeparatorChar) ?? Array.Empty<string>();
-				var baseDirComponents = baseDir.Split(Path.DirectorySeparatorChar);
-				
-				// Find the common prefix
-				int commonPrefixLength = 0;
-				int minLength = Math.Min(filePathComponents.Length, baseDirComponents.Length);
-				
-				for (int i = 0; i < minLength; i++)
-				{
-					if (string.Equals(filePathComponents[i], baseDirComponents[i], StringComparison.OrdinalIgnoreCase))
-						commonPrefixLength++;
-					else
-						break;
-				}
-				
-				if (commonPrefixLength > 0)
-				{
-					// Build a path showing how to get from common ancestor to file
-					var commonAncestor = string.Join(Path.DirectorySeparatorChar.ToString(), 
-						filePathComponents.Take(commonPrefixLength));
-					
-					// Calculate path segments from common ancestor to file
-					var relativeSegments = new List<string>();
-					
-					// Add ".." for each segment from base dir to common ancestor
-					int baseDirToCommonAncestorSteps = baseDirComponents.Length - commonPrefixLength;
-					for (int i = 0; i < baseDirToCommonAncestorSteps; i++)
-					{
-						relativeSegments.Add("..");
-					}
-					
-					// Add segments from common ancestor to file
-					for (int i = commonPrefixLength; i < filePathComponents.Length; i++)
-					{
-						relativeSegments.Add(filePathComponents[i]);
-					}
-					
-					// Add the filename
-					relativeSegments.Add(Path.GetFileName(filePath));
-					
-					return string.Join(Path.DirectorySeparatorChar.ToString(), relativeSegments);
-				}
-				
-				// If no common ancestor (different drives), use just the filename with a hint
-				if (Path.GetPathRoot(filePath) != Path.GetPathRoot(baseDirectoryPath))
-					return $"{Path.GetFileName(filePath)} (in different drive)";
-				
-				// If we can't compute a relative path, just return the filename with its immediate parent
-				var parentDir = Path.GetFileName(Path.GetDirectoryName(filePath) ?? "");
-				return $"{Path.GetFileName(filePath)} (in {parentDir})";
-			}
-			
-			// Normal case - file is within base directory hierarchy
-			return relativePath;
-		}
-		catch
-		{
-			// If any exception occurs, just return the file name as a fallback
-			return Path.GetFileName(filePath);
 		}
 	}
 }

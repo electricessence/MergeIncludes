@@ -1,0 +1,8 @@
+# Component 2
+This file is in SubFolder2.
+
+## Including the common utility file
+#include ./common.txt
+
+## Including a file from SubFolder1 (to demonstrate cross-folder includes)
+#include ../SubFolder1/subcomponent1.txt

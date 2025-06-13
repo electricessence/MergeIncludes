@@ -1,0 +1,26 @@
+﻿╭─Files included in merge:─────────────────────────────────────────────────────╮
+│ root.txt [0]                                                                 │
+│ ├── local.txt [1]                                                            │
+│ ├── component1.txt [2]                                                       │
+│ │   ├── subcomponent1.txt [3]                                                │
+│ │   ├── local.txt [1]                                                        │
+│ │   └── common.txt [4]                                                       │
+│ ├── component2.txt [5]                                                       │
+│ │   ├── common.txt [4]                                                       │
+│ │   └── subcomponent1.txt [3]                                                │
+│ └── external.txt [6]                                                         │
+│     └── common.txt [4]                                                       │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─Files included in merge with folder structure:───────────────────────────────╮
+│ root.txt [0] (in bin/Debug)                                                  │
+│ ├── local.txt [1] (in bin/Debug)                                             │
+│ ├── component1.txt [2] (in bin/Debug)                                        │
+│ │   ├── subcomponent1.txt [3] (in bin/Debug)                                 │
+│ │   ├── local.txt [1] (in bin/Debug)                                         │
+│ │   └── common.txt [4] (in bin/Debug)                                        │
+│ ├── component2.txt [5] (in bin/Debug)                                        │
+│ │   ├── common.txt [4] (in bin/Debug)                                        │
+│ │   └── subcomponent1.txt [3] (in bin/Debug)                                 │
+│ └── external.txt [6] (in bin/Debug)                                          │
+│     └── common.txt [4] (in bin/Debug)                                        │
+╰──────────────────────────────────────────────────────────────────────────────╯

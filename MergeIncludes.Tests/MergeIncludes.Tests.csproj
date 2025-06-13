@@ -48,10 +48,14 @@
         <None Update="sample02.txt">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <None Update="TestFiles\**\*.txt">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <ItemGroup>
         <Folder Include="Snapshots\" />
+        <Folder Include="TestFiles\" />
     </ItemGroup>
 
 </Project>
