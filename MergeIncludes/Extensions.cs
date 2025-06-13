@@ -213,6 +213,7 @@ public static partial class Extensions
 	/// Creates a formatted Spectre.Console Panel from a FileNotFoundException.
 	/// </summary>
 	/// <param name="exception">The FileNotFoundException to format.</param>
+	/// <param name="heading">Optional custom heading for the panel.</param>
 	/// <returns>A Panel containing the formatted error message and file name.</returns>
 	public static PanelBuilder ToPanel(this FileNotFoundException exception, string heading = "Error")
 	{
@@ -226,9 +227,9 @@ public static partial class Extensions
 	/// <summary>
 	/// Creates a formatted Spectre.Console Panel from an Exception.
 	/// </summary>
-	/// <param name="exception"></param>
-	/// <param name="heading"></param>
-	/// <returns></returns>
+	/// <param name="exception">The exception to format.</param>
+	/// <param name="heading">Optional custom heading for the panel.</param>
+	/// <returns>A Panel containing the formatted error message.</returns>
 	public static PanelBuilder ToPanel(this Exception exception, string heading = "Error")
 	{
 		var panel = new PanelBuilder($"[red]{heading}:[/]");
@@ -240,13 +241,17 @@ public static partial class Extensions
 	/// Writes the FileNotFoundException as a formatted panel to the console.
 	/// </summary>
 	/// <param name="exception">The FileNotFoundException to write.</param>
-	public static void WriteToConsole(this FileNotFoundException exception, string heading = "Error")
-		=> AnsiConsole.Write(exception.ToPanel(heading));
+	/// <param name="heading">Optional custom heading for the panel.</param>
+	/// <param name="console">The console to write to. Defaults to AnsiConsole.Console if not provided.</param>
+	public static void WriteToConsole(this FileNotFoundException exception, string heading = "Error", IAnsiConsole? console = null)
+		=> (console ?? AnsiConsole.Console).Write(exception.ToPanel(heading));
 
 	/// <summary>
-	/// Writes the FileNotFoundException as a formatted panel to the console.
+	/// Writes any Exception as a formatted panel to the console.
 	/// </summary>
-	/// <param name="exception">The FileNotFoundException to write.</param>
-	public static void WriteToConsole(this Exception exception, string heading = "Error")
-		=> AnsiConsole.Write(exception.ToPanel(heading));
+	/// <param name="exception">The exception to write.</param>
+	/// <param name="heading">Optional custom heading for the panel.</param>
+	/// <param name="console">The console to write to. Defaults to AnsiConsole.Console if not provided.</param>
+	public static void WriteToConsole(this Exception exception, string heading = "Error", IAnsiConsole? console = null)
+		=> (console ?? AnsiConsole.Console).Write(exception.ToPanel(heading));
 }

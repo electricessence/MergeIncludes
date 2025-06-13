@@ -1,0 +1,6 @@
+﻿╭─Files included in merge with folder structure:───────────────────────────────╮
+│ sample.txt (in net9.0)                                                       │
+│ ├── sample01.txt (in net9.0)                                                 │
+│ └── sample02.txt (in net9.0)                                                 │
+│     └── sample02-01.txt (in net9.0)                                          │
+╰──────────────────────────────────────────────────────────────────────────────╯

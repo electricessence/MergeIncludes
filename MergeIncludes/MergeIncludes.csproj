@@ -7,6 +7,7 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="Spectre.Console" Version="0.50.0" />
         <PackageReference Include="Spectre.Console.Analyzer" Version="1.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

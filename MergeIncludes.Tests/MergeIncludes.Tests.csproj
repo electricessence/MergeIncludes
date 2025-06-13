@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -9,6 +9,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.1" />
+        <PackageReference Include="Spectre.Console.Testing" Version="0.50.0" />
         <PackageReference Include="Verify.Xunit" Version="19.5.0" />
         <PackageReference Include="xunit" Version="2.4.2" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
@@ -47,6 +48,10 @@
         <None Update="sample02.txt">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Snapshots\" />
     </ItemGroup>
 
 </Project>

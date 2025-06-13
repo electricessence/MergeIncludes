@@ -4,6 +4,32 @@ using Throw;
 
 namespace MergeIncludes;
 
+/// <summary>
+/// Defines the display mode for the file inclusion tree
+/// </summary>
+public enum TreeDisplayMode
+{
+	/// <summary>
+	/// Simple tree showing only file names
+	/// </summary>
+	Simple = 0,
+	
+	/// <summary>
+	/// Tree showing file names with their folder structures
+	/// </summary>
+	WithFolders = 1,
+	
+	/// <summary>
+	/// Tree showing file names with full paths
+	/// </summary>
+	FullPaths = 2,
+	
+	/// <summary>
+	/// Show both a simple tree and a detailed tree with folder structure
+	/// </summary>
+	Both = 3
+}
+
 public class MergeOptions : CommandSettings
 {
 	[Description("Trims leading and trailing empty lines. Default is true.")]
@@ -13,9 +39,13 @@ public class MergeOptions : CommandSettings
 	[Description("Adds additional lines after the contents. Default is 1.")]
 	[CommandOption("-p|--pad <LINE_PADDING>")]
 	public int Padding { get; set; } = 1;
+	
+	[Description("Tree display mode: Simple (default), WithFolders, FullPaths, or Both")]
+	[CommandOption("-d|--display <DISPLAY_MODE>")]
+	public TreeDisplayMode DisplayMode { get; set; } = TreeDisplayMode.Simple;
 }
 
-class Settings : MergeOptions
+public class Settings : MergeOptions
 {
 	[Description("The root file path to start from.")]
 	[CommandArgument(0, "<ROOT_FILEPATH>")]

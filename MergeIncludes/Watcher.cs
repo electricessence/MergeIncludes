@@ -4,8 +4,18 @@ using System.Threading.Channels;
 
 namespace MergeIncludes;
 
-static class FileWatcher
+/// <summary>
+/// Provides file watching functionality for the application
+/// </summary>
+public static class FileWatcher
 {
+	/// <summary>
+	/// Watches a collection of files for changes and returns an async enumerable of changed file paths
+	/// </summary>
+	/// <param name="files">Collection of file paths to watch</param>
+	/// <param name="msDelay">Millisecond delay before reporting changes</param>
+	/// <param name="cancellationToken">Cancellation token to stop watching</param>
+	/// <returns>An async enumerable of file paths that have changed</returns>
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2016:Forward the 'CancellationToken' parameter to methods", Justification = "Done as desired.")]
 	public static IAsyncEnumerable<string> WatchAsync(
 		IEnumerable<string> files,
@@ -117,6 +127,13 @@ static class FileWatcher
 		}
 	}
 
+	/// <summary>
+	/// Watches a collection of FileInfo objects for changes and returns an async enumerable of changed file paths
+	/// </summary>
+	/// <param name="files">Collection of FileInfo objects to watch</param>
+	/// <param name="msDelay">Millisecond delay before reporting changes</param>
+	/// <param name="cancellationToken">Cancellation token to stop watching</param>
+	/// <returns>An async enumerable of file paths that have changed</returns>
 	public static IAsyncEnumerable<string> WatchAsync(
 		IEnumerable<FileInfo> files,
 		int msDelay,
