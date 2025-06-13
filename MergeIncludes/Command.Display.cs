@@ -81,11 +81,22 @@ public sealed partial class CombineCommand
         
         // Create file ID map - only assign IDs to files that are repeated
         var fileIds = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        var nextId = 0;
         
-        // Assign IDs to repeated files first
+        // If root is repeated, assign it ID 0
+        if (repeatedFiles.Contains(rootFile.FullName))
+        {
+            fileIds[rootFile.FullName] = 0;
+        }
+        
+        // Start assigning IDs for other repeated files at 1
+        var nextId = 1;
+        
+        // Assign IDs to repeated files, skipping the root file which was already handled
         foreach (var repeatedFile in repeatedFiles)
         {
+            if (string.Equals(repeatedFile, rootFile.FullName, StringComparison.OrdinalIgnoreCase))
+                continue; // Skip root file as we already assigned it ID 0
+                
             fileIds[repeatedFile] = nextId++;
         }
         
@@ -128,6 +139,148 @@ public sealed partial class CombineCommand
         }
 
         // Write the tree to the console - match the exact padding from the test files
+        var panel = new Panel(tree)
+        {
+            Header = new PanelHeader("[white]Files included in merge:[/]"),
+            Expand = true,
+            Border = BoxBorder.Rounded,
+            Padding = new Padding(1, 0, 1, 0)
+        };
+        _console.Write(panel);
+    }
+
+    /// <summary>
+    /// Displays a tree with files showing folder labels using the folder emoji format
+    /// </summary>
+    private void DisplayFolderGroupedTree(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
+    {
+        // Get the base directory of the root file to calculate relative paths
+        var baseDirectory = rootFile.Directory ?? throw new InvalidOperationException("Root file directory cannot be null");
+        
+        // Get the workspace root directory
+        var workspaceRoot = GetWorkspaceRoot(baseDirectory);
+        
+        // First pass: identify all repeated files
+        var repeatedFiles = FindRepeatedFiles(rootFile, fileRelationships);
+        
+        // Create file ID map - only assign IDs for repeated files 
+        var fileIds = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        
+        // If root is repeated, always assign it ID 0
+        if (repeatedFiles.Contains(rootFile.FullName))
+        {
+            fileIds[rootFile.FullName] = 0;
+        }
+        
+        // Start assigning IDs at 1 for other repeated files
+        var nextId = 1;
+        
+        // Assign IDs to repeated files, skipping the root file
+        foreach (var repeatedFile in repeatedFiles)
+        {
+            if (string.Equals(repeatedFile, rootFile.FullName, StringComparison.OrdinalIgnoreCase))
+                continue; // Skip root file already handled
+                
+            fileIds[repeatedFile] = nextId++;
+        }
+        
+        // Format ID with the appropriate number of digits
+        string idFormat = GetIdFormat(Math.Max(repeatedFiles.Count, 1));
+        
+        // Root node display
+        var rootName = Path.GetFileName(rootFile.FullName);
+        string rootDisplay = repeatedFiles.Contains(rootFile.FullName) ?
+            $"{rootName} {string.Format(idFormat, 0)}" : rootName;
+            
+        var rootText = new Text(rootDisplay, Color.LightSkyBlue1);
+        var tree = new Tree(rootText);
+        tree.Guide = TreeGuide.Line;
+        
+        // Process children
+        if (fileRelationships.TryGetValue(rootFile.FullName, out var children))
+        {
+            // Group files by directory for easier folder header organization
+            var filesByDirectory = new Dictionary<string, List<FileInfo>>();
+            var directoryNodesMap = new Dictionary<string, TreeNode>();
+            
+            // First pass - identify all unique directories
+            foreach (var childPath in children)
+            {
+                var fileInfo = new FileInfo(childPath);
+                var dirPath = fileInfo.DirectoryName ?? string.Empty;
+                
+                if (!filesByDirectory.ContainsKey(dirPath))
+                {
+                    filesByDirectory[dirPath] = new List<FileInfo>();
+                }
+                
+                filesByDirectory[dirPath].Add(fileInfo);
+            }
+            
+            // Group files by directory
+            foreach (var dirEntry in filesByDirectory)
+            {
+                var dirPath = dirEntry.Key;
+                var dirFiles = dirEntry.Value;
+                
+                // Skip root directory as we don't need a folder header for it
+                if (string.Equals(dirPath, rootFile.DirectoryName, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Files in the same directory as root - just add them directly
+                    foreach (var fileInfo in dirFiles)
+                    {
+                        var fileName = fileInfo.Name;
+                        bool isRepeated = repeatedFiles.Contains(fileInfo.FullName);
+                        
+                        string displayText = isRepeated && fileIds.TryGetValue(fileInfo.FullName, out int fileId) ?
+                            $"{fileName} {string.Format(idFormat, fileId)}" : fileName;
+                            
+                        var style = isRepeated ? new Style(Color.Yellow) : new Style(Color.PaleTurquoise1);
+                        var fileNode = tree.AddNode(new Text(displayText, style));
+                        
+                        // Add children recursively
+                        if (fileRelationships.ContainsKey(fileInfo.FullName))
+                        {
+                            AddChildrenToFolderGroupedTree(fileNode, fileInfo.FullName, fileRelationships, 
+                                workspaceRoot, fileIds, repeatedFiles, directoryNodesMap, idFormat);
+                        }
+                    }
+                }
+                else
+                {
+                    // Create a folder header for this directory
+                    var dirInfo = new DirectoryInfo(dirPath);
+                    var folderName = GetProjectRelativePath(dirInfo, workspaceRoot);
+                    
+                    // Use "DIR" icon instead of emoji for better console compatibility
+                    var folderText = new Text($"[DIR] {folderName}", new Style(Color.Yellow3));
+                    var folderNode = tree.AddNode(folderText);
+                    directoryNodesMap[dirPath] = folderNode;
+                    
+                    // Add files under the folder header
+                    foreach (var fileInfo in dirFiles)
+                    {
+                        var fileName = fileInfo.Name;
+                        bool isRepeated = repeatedFiles.Contains(fileInfo.FullName);
+                        
+                        string displayText = isRepeated && fileIds.TryGetValue(fileInfo.FullName, out int fileId) ?
+                            $"{fileName} {string.Format(idFormat, fileId)}" : fileName;
+                            
+                        var style = isRepeated ? new Style(Color.Yellow) : new Style(Color.PaleTurquoise1);
+                        var fileNode = folderNode.AddNode(new Text(displayText, style));
+                        
+                        // Add children recursively
+                        if (fileRelationships.ContainsKey(fileInfo.FullName))
+                        {
+                            AddChildrenToFolderGroupedTree(fileNode, fileInfo.FullName, fileRelationships, 
+                                workspaceRoot, fileIds, repeatedFiles, directoryNodesMap, idFormat);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Write the tree to the console
         var panel = new Panel(tree)
         {
             Header = new PanelHeader("[white]Files included in merge:[/]"),

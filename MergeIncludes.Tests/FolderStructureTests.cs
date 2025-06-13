@@ -45,6 +45,25 @@ public class FolderStructureTests
             .UseFileName("ComplexFolderStructureWithRepeats");
     }
 
+    [Fact]
+    public async Task ComplexFolderStructure_FolderGroupedDisplayMode()
+    {
+        // Arrange
+        var console = new TestConsole();
+        var command = new CombineCommand(console);
+        var rootFile = new FileInfo(Path.GetFullPath(@".\TestFiles\MainFolder\root.txt"));
+        var fileRelationships = BuildComplexFileRelationships();
+
+        // Act - Display with folder groups
+        InvokeDisplayFileTrees(command, rootFile, fileRelationships, TreeDisplayMode.FolderGrouped);
+
+        // Assert - Verify console output
+        var output = console.Output;
+        await Verify(output)
+            .UseDirectory("Snapshots")
+            .UseFileName("ComplexFolderStructureFolderGrouped");
+    }
+
     private Dictionary<string, List<string>> BuildComplexFileRelationships()
     {
         var rootPath = Path.GetFullPath(@".\TestFiles\MainFolder\root.txt");

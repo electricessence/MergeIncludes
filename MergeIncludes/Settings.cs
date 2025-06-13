@@ -32,7 +32,12 @@ public enum TreeDisplayMode
 	/// <summary>
 	/// Only show IDs for files that are repeated, and only increment IDs for unique files
 	/// </summary>
-	RepeatsOnly = 4
+	RepeatsOnly = 4,
+	
+	/// <summary>
+	/// Show folder headers with files grouped under them
+	/// </summary>
+	FolderGrouped = 5
 }
 
 public class MergeOptions : CommandSettings
@@ -45,7 +50,7 @@ public class MergeOptions : CommandSettings
 	[CommandOption("-p|--pad <LINE_PADDING>")]
 	public int Padding { get; set; } = 1;
 	
-	[Description("Tree display mode: Simple, WithFolders, FullPaths, Both, or RepeatsOnly (default)")]
+	[Description("Tree display mode: Simple, WithFolders, FullPaths, Both, RepeatsOnly (default), or FolderGrouped")]
 	[CommandOption("-d|--display <DISPLAY_MODE>")]
 	public TreeDisplayMode DisplayMode { get; set; } = TreeDisplayMode.RepeatsOnly;
 }

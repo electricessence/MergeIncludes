@@ -5,6 +5,114 @@ namespace MergeIncludes;
 public sealed partial class CombineCommand
 {
     /// <summary>
+    /// Helper method to add children to a folder grouped tree
+    /// </summary>
+    private void AddChildrenToFolderGroupedTree(
+        TreeNode parentNode,
+        string parentPath,
+        Dictionary<string, List<string>> fileRelationships,
+        DirectoryInfo workspaceRoot,
+        Dictionary<string, int> fileIds,
+        HashSet<string> repeatedFiles,
+        Dictionary<string, TreeNode> directoryNodesMap,
+        string idFormat)
+    {
+        if (!fileRelationships.TryGetValue(parentPath, out var children))
+        {
+            return;
+        }
+
+        // Group files by directory for folder headers
+        var filesByDirectory = new Dictionary<string, List<FileInfo>>();
+        
+        foreach (var childPath in children)
+        {
+            var fileInfo = new FileInfo(childPath);
+            var dirPath = fileInfo.DirectoryName ?? string.Empty;
+            
+            if (!filesByDirectory.ContainsKey(dirPath))
+            {
+                filesByDirectory[dirPath] = new List<FileInfo>();
+            }
+            
+            filesByDirectory[dirPath].Add(fileInfo);
+        }
+        
+        // Process each directory group
+        foreach (var dirEntry in filesByDirectory)
+        {
+            var dirPath = dirEntry.Key;
+            var dirFiles = dirEntry.Value;
+            
+            // Skip parent directory as we don't need folder headers for it
+            if (string.Equals(dirPath, Path.GetDirectoryName(parentPath), StringComparison.OrdinalIgnoreCase))
+            {
+                // Files in the same directory as parent - just add them directly
+                foreach (var fileInfo in dirFiles)
+                {
+                    var fileName = fileInfo.Name;
+                    bool isRepeated = repeatedFiles.Contains(fileInfo.FullName);
+                    
+                    string displayText = isRepeated && fileIds.TryGetValue(fileInfo.FullName, out int fileId) ?
+                        $"{fileName} {string.Format(idFormat, fileId)}" : fileName;
+                        
+                    var style = isRepeated ? new Style(Color.Yellow) : new Style(Color.PaleTurquoise1);
+                    var fileNode = parentNode.AddNode(new Text(displayText, style));
+                    
+                    // Recursively add children
+                    if (fileRelationships.ContainsKey(fileInfo.FullName))
+                    {
+                        AddChildrenToFolderGroupedTree(fileNode, fileInfo.FullName, fileRelationships,
+                            workspaceRoot, fileIds, repeatedFiles, directoryNodesMap, idFormat);
+                    }
+                }
+            }
+            else
+            {
+                // Create or reuse a folder header for this directory
+                TreeNode folderNode;
+                
+                if (directoryNodesMap.TryGetValue(dirPath, out var existingNode))
+                {
+                    // Use existing folder node
+                    folderNode = existingNode;
+                }
+                else
+                {
+                    // Create a new folder header
+                    var dirInfo = new DirectoryInfo(dirPath);
+                    var folderName = GetProjectRelativePath(dirInfo, workspaceRoot);
+                    
+                    // Use [DIR] instead of emoji for better console compatibility
+                    var folderText = new Text($"[DIR] {folderName}", new Style(Color.Yellow3));
+                    folderNode = parentNode.AddNode(folderText);
+                    directoryNodesMap[dirPath] = folderNode;
+                }
+                
+                // Add files under the folder header
+                foreach (var fileInfo in dirFiles)
+                {
+                    var fileName = fileInfo.Name;
+                    bool isRepeated = repeatedFiles.Contains(fileInfo.FullName);
+                    
+                    string displayText = isRepeated && fileIds.TryGetValue(fileInfo.FullName, out int fileId) ?
+                        $"{fileName} {string.Format(idFormat, fileId)}" : fileName;
+                        
+                    var style = isRepeated ? new Style(Color.Yellow) : new Style(Color.PaleTurquoise1);
+                    var fileNode = folderNode.AddNode(new Text(displayText, style));
+                    
+                    // Recursively add children
+                    if (fileRelationships.ContainsKey(fileInfo.FullName))
+                    {
+                        AddChildrenToFolderGroupedTree(fileNode, fileInfo.FullName, fileRelationships,
+                            workspaceRoot, fileIds, repeatedFiles, directoryNodesMap, idFormat);
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
     /// Adds children to a simple tree node format (just names and IDs)
     /// </summary>
     private void AddChildrenToRepeatsOnlyTree(

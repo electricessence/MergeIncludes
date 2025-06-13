@@ -215,6 +215,10 @@ public sealed partial class CombineCommand : AsyncCommand<Settings>
             case TreeDisplayMode.RepeatsOnly:
                 DisplayRepeatsOnlyFileTree(rootFile, fileRelationships);
                 break;
+            
+            case TreeDisplayMode.FolderGrouped:
+                DisplayFolderGroupedTree(rootFile, fileRelationships);
+                break;
 			
 			default:
 				DisplayRepeatsOnlyFileTree(rootFile, fileRelationships);

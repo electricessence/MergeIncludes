@@ -103,6 +103,25 @@ public class CombineCommandTests
             .UseFileName("RepeatedDependenciesTreeDisplay");
     }
 
+    [Fact]
+    public async Task RepeatsOnlyTreeDisplayMode_ShowsIdsOnlyForRepeatedFiles()
+    {
+        // Arrange
+        var console = new TestConsole();
+        var command = new CombineCommand(console);
+        var rootFile = new FileInfo(Path.GetFullPath(@".\sample.txt"));
+        var fileRelationships = CreateTestFileRelationshipsWithRepeats(rootFile);
+
+        // Act
+        InvokeDisplayFileTrees(command, rootFile, fileRelationships, TreeDisplayMode.RepeatsOnly);
+
+        // Assert - Verify console output
+        var output = console.Output;
+        await Verify(output)
+            .UseDirectory("Snapshots")
+            .UseFileName("RepeatsOnlyTreeDisplay");
+    }
+
     // Helper method to create a test file relationship dictionary
     private Dictionary<string, List<string>> CreateTestFileRelationships(FileInfo rootFile)
     {
