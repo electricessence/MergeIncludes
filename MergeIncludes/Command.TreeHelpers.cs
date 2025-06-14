@@ -606,14 +606,84 @@ public sealed partial class CombineCommand
         try
         {
             // Use GetFullPath to normalize separators and resolve any relative segments
-            return Path.GetFullPath(path)
-                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            return Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
                 .ToLowerInvariant();
         }
         catch
         {
             // If there's an error (like invalid path), return the original path
             return path.ToLowerInvariant();
+        }
+    }    /// <summary>
+         /// Adds children to a default tree recursively with folder context
+         /// </summary>
+    private void AddChildrenToDefaultTreeRecursive(
+        TreeNode parentNode,
+        string parentPath,
+        Dictionary<string, List<string>> fileRelationships,
+        string rootDirectory,
+        HashSet<string> visitedPaths)
+    {
+        if (visitedPaths.Contains(parentPath))
+            return;
+
+        visitedPaths.Add(parentPath);
+
+        if (!fileRelationships.ContainsKey(parentPath))
+            return; foreach (var childPath in fileRelationships[parentPath])
+        {
+            try
+            {
+                var childFile = new FileInfo(childPath);
+                var childFileName = childFile.Name;
+
+                // Check if this file is in a different directory than the root
+                var childDirectory = childFile.Directory?.FullName ?? "";
+                var isInDifferentFolder = !string.Equals(
+                    GetCanonicalPath(childDirectory),
+                    GetCanonicalPath(rootDirectory),
+                    StringComparison.OrdinalIgnoreCase);
+
+                // Create the tree node with folder annotation if needed
+                string displayText;
+                if (isInDifferentFolder)
+                {
+                    var relativePath = GetRelativePath(rootDirectory, childDirectory);
+                    displayText = $"{childFileName} [dim]📁 {relativePath}[/]";
+                }
+                else
+                {
+                    displayText = childFileName;
+                }
+
+                var childNode = parentNode.AddNode(displayText);
+
+                // Recursively add children
+                AddChildrenToDefaultTreeRecursive(childNode, childPath, fileRelationships, rootDirectory, visitedPaths);
+            }
+            catch (Exception ex)
+            {
+                // Log error but continue processing other files
+                _console.MarkupLine($"[yellow]Warning: Error processing child path {childPath}: {ex.Message}[/]");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets relative path from root to target directory
+    /// </summary>
+    private string GetRelativePath(string rootPath, string targetPath)
+    {
+        try
+        {
+            var rootUri = new Uri(rootPath + Path.DirectorySeparatorChar);
+            var targetUri = new Uri(targetPath + Path.DirectorySeparatorChar);
+            var relativeUri = rootUri.MakeRelativeUri(targetUri);
+            return Uri.UnescapeDataString(relativeUri.ToString()).Replace('/', Path.DirectorySeparatorChar);
+        }
+        catch
+        {
+            return targetPath; // Fallback to full path if relative calculation fails
         }
     }
 }

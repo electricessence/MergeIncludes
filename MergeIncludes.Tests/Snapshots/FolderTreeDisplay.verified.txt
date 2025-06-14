@@ -1,6 +1,0 @@
-﻿╭─Files included in merge with folder structure:───────────────────────────────╮
-│ sample.txt [0] (in bin/Debug)                                                │
-│ ├── sample01.txt [1] (in bin/Debug)                                          │
-│ └── sample02.txt [2] (in bin/Debug)                                          │
-│     └── sample02-01.txt [3] (in bin/Debug)                                   │
-╰──────────────────────────────────────────────────────────────────────────────╯
