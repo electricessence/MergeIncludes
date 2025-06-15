@@ -14,8 +14,7 @@ partial class CombineCommand
     /// </summary>
     private void DisplayDefaultTree(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
     {
-        Console.OutputEncoding = System.Text.Encoding.UTF8;
-        try
+        Console.OutputEncoding = System.Text.Encoding.UTF8;        try
         {
             // Get the base directory of the root file
             var baseDirectory = rootFile.Directory ?? throw new InvalidOperationException("Root file directory cannot be null");
@@ -27,34 +26,17 @@ partial class CombineCommand
                 .StemStyle(Color.DarkGreen)
                 .LeafStyle(Color.Yellow);
 
-            // Build side-by-side trees using the service
-            var treeBuilder = new DefaultTreeBuilder();
-            var (folderLines, referenceLines) = treeBuilder.BuildSideBySideTrees(rootFile, fileRelationships);
+            // Create the structure and reference view (content below the HR)
+            var structureAndReferenceView = new Renderables.StructureAndReferenceView(rootFile, fileRelationships);
 
-            // Create a table to align the trees side by side
-            var table = new Table()
-                .Border(TableBorder.None)
-                .HideHeaders()
-                .AddColumn(new TableColumn(""))
-                .AddColumn(new TableColumn(""));
-
-            // Add the tree lines as table rows
-            for (int i = 0; i < Math.Max(folderLines.Count, referenceLines.Count); i++)
-            {
-                var folderLine = i < folderLines.Count ? folderLines[i] : "";
-                var referenceLine = i < referenceLines.Count ? referenceLines[i] : "";
-
-                table.AddRow(folderLine, referenceLine);
-            }
-
-            // Create content with header, separator, and aligned trees
+            // Create content with header, separator, and the structure/reference view
             var content = new Rows(
                 rootPath,
                 new Rule() { Style = Color.Grey },
-                table
+                structureAndReferenceView
             );
 
-            // Create content with just the table (no extra spacing)
+            // Create panel with the content
             var panel = new Panel(content)
             {
                 Border = BoxBorder.Rounded,

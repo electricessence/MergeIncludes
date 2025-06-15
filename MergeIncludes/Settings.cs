@@ -22,13 +22,17 @@ public class MergeOptions : CommandSettings
 {
     [Description("Trims leading and trailing empty lines. Default is true.")]
     [CommandOption("-t|--trim <TRIM_ENABLED>")]
-    public bool? Trim { get; set; }
-
-    [Description("Adds additional lines after the contents. Default is 1.")]
+    public bool? Trim { get; set; }    [Description("Adds additional lines after the contents. Default is 1.")]
     [CommandOption("-p|--pad <LINE_PADDING>")]
-    public int Padding { get; set; } = 1; [Description("Tree display mode: Default (side-by-side trees), FullPath (file paths list), or Experimental (testing new renderables)")]
+    public int Padding { get; set; } = 1;
+
+    [Description("Tree display mode: Default (side-by-side trees), FullPath (file paths list)")]
     [CommandOption("-d|--display <DISPLAY_MODE>")]
     public TreeDisplayMode DisplayMode { get; set; } = TreeDisplayMode.Default;
+
+    [Description("Hide the full source path in tree display. Useful for deterministic output in tests.")]
+    [CommandOption("--hide-path")]
+    public bool HideFullPath { get; set; } = false;
 }
 
 public class Settings : MergeOptions

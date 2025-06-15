@@ -1,13 +1,9 @@
-﻿╭─Files included in merge with paths:──────────────────────────────────────────╮
-│ root.txt [0]                                                                 │
-│ ├── local.txt [1]                                                            │
-│ ├── SubFolder1\component1.txt [2]                                            │
-│ │   ├── SubFolder1\subcomponent1.txt [3]                                     │
-│ │   ├── local.txt [1]                                                        │
-│ │   └── SubFolder2\common.txt [4]                                            │
-│ ├── SubFolder2\component2.txt [5]                                            │
-│ │   ├── SubFolder2\common.txt [4]                                            │
-│ │   └── SubFolder1\subcomponent1.txt [3]                                     │
-│ └── ..\AnotherFolder\external.txt [6]                                        │
-│     └── SubFolder2\common.txt [4]                                            │
-╰──────────────────────────────────────────────────────────────────────────────╯
+﻿╭─Files included in merge:─────────────────────────────────────────────────╮
+│ D:/…/MergeIncludes.Tests/bin/Debug/net9.0/TestFiles/MainFolder/root.txt  │
+│ D:/…/MergeIncludes.Tests/bin/Debug/net9.0/TestFiles/MainFolder/local.txt │
+│ D:/…/bin/Debug/net9.0/TestFiles/MainFolder/SubFolder1/component1.txt     │
+│ D:/…/bin/Debug/net9.0/TestFiles/MainFolder/SubFolder1/subcomponent1.txt  │
+│ D:/…/bin/Debug/net9.0/TestFiles/MainFolder/SubFolder2/common.txt         │
+│ D:/…/bin/Debug/net9.0/TestFiles/MainFolder/SubFolder2/component2.txt     │
+│ D:/…/bin/Debug/net9.0/TestFiles/AnotherFolder/external.txt               │
+╰──────────────────────────────────────────────────────────────────────────╯
