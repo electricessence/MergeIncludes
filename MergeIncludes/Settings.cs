@@ -12,17 +12,10 @@ public enum TreeDisplayMode
     /// <summary>
     /// Default tree view with side-by-side folder structure and reference trees
     /// </summary>
-    Default = 0,
-
-    /// <summary>
-    /// Tree showing file names with full paths
-    /// </summary>
-    FullPath = 1,
-
-    /// <summary>
-    /// Experimental mode for testing new renderables
-    /// </summary>
-    Experimental = 2
+    Default = 0,    /// <summary>
+                    /// Tree showing file names with full paths
+                    /// </summary>
+    FullPath = 1
 }
 
 public class MergeOptions : CommandSettings
