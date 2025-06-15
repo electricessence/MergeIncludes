@@ -1,0 +1,4 @@
+﻿{
+  WithLink: C:/Some/Test/Path/file.txt,
+  WithoutLink: C:/Some/Test/Path/file.txt
+}

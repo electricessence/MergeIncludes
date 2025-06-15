@@ -1,0 +1,4 @@
+﻿{
+  WithoutWindowsTerminal: Document.txt,
+  WithWindowsTerminal: Document.txt
+}

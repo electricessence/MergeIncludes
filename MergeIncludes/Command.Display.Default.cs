@@ -1,5 +1,6 @@
 using MergeIncludes.Renderables;
 using Spectre.Console;
+using Spectre.Console.Extensions;
 
 namespace MergeIncludes;
 
@@ -17,8 +18,8 @@ partial class CombineCommand
 		var baseDirectory = rootFile.Directory
 			?? throw new InvalidOperationException("Root file directory cannot be null");
 
-		// Create the root path display using TextPath
-		var rootPath = new TextPath(baseDirectory.FullName)
+		// Create the root path display using LinkableTextPath instead of TextPath
+		var rootPath = new LinkableTextPath(baseDirectory.FullName, baseDirectory.FullName)
 			.RootStyle(Color.Blue)
 			.SeparatorStyle(Color.Grey)
 			.StemStyle(Color.DarkGreen)

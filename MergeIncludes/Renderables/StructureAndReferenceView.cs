@@ -1,4 +1,5 @@
 using Spectre.Console;
+using Spectre.Console.Extensions;
 using Spectre.Console.Rendering;
 
 namespace MergeIncludes.Renderables;

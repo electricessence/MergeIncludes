@@ -1,4 +1,5 @@
 using Spectre.Console;
+using Spectre.Console.Extensions;
 
 namespace MergeIncludes;
 
@@ -26,8 +27,9 @@ public sealed partial class CombineCommand
 			// Recursively collect all included files
 			CollectAllFilesInOrder(rootFile.FullName, fileRelationships, allFiles, visitedFiles);
 
-			// Display files in a panel with consistent path formatting (forward slashes like success panel)
-			var fileLines = allFiles.Select(filePath => new TextPath(filePath)).ToArray();
+			// Display files in a panel with consistent path formatting and clickable links
+			// Use PathLink.Smart for smart color-coding based on file extensions
+			var fileLines = allFiles.Select(filePath => PathLink.Smart(filePath)).ToArray();
 			var panel = new Panel(new Rows(fileLines))
 			{
 				Header = new PanelHeader("[white]Files included in merge:[/]"),

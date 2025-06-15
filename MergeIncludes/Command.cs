@@ -2,6 +2,7 @@
 using Spectre.Console.Cli;
 using System.Diagnostics.CodeAnalysis;
 using Throw;
+using Spectre.Console.Extensions;
 
 namespace MergeIncludes;
 
@@ -62,7 +63,8 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 									_console.MarkupLine($"[yellow]Changes detected:[/] ({now:d} {now:T})");
 								}
 
-								_console.Write(new TextPath(file));
+								// Use LinkableTextPath instead of TextPath to make the path clickable
+								_console.Write(new LinkableTextPath(file, true));
 							}
 
 							_console.WriteLine();
@@ -166,7 +168,8 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 				else
 					outputFile.Attributes = FileAttributes.ReadOnly;
 
-				var mergePath = new TextPath(outputFile.FullName);
+				// Use LinkableTextPath instead of TextPath for the output file path
+				var mergePath = new LinkableTextPath(outputFile.FullName, true);
 				_console.Write(new Panel(mergePath)
 				{
 					Header = new PanelHeader("[springgreen1]Successfully merged include references to:[/]"),
