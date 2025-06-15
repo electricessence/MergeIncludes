@@ -1,5 +1,4 @@
 using Spectre.Console.Testing;
-using System.Reflection;
 
 namespace MergeIncludes.Tests;
 
@@ -26,7 +25,7 @@ public class CombineCommandTests
 	}
 
 	// Helper method to create a test file relationship dictionary
-	private Dictionary<string, List<string>> CreateTestFileRelationships(FileInfo rootFile)
+	private static Dictionary<string, List<string>> CreateTestFileRelationships(FileInfo rootFile)
 	{
 		var fileRelationships = new Dictionary<string, List<string>>
 		{
@@ -46,24 +45,5 @@ public class CombineCommandTests
 		];
 
 		return fileRelationships;
-	}
-
-	// Helper method to invoke the private DisplayFileTrees method using reflection
-	private void InvokeDisplayFileTrees(
-		CombineCommand command,
-		FileInfo rootFile,
-		Dictionary<string, List<string>> fileRelationships,
-		TreeDisplayMode mode)
-	{
-		var methodInfo = typeof(CombineCommand).GetMethod(
-			"DisplayFileTrees",
-			BindingFlags.NonPublic | BindingFlags.Instance);
-
-		if (methodInfo == null)
-		{
-			throw new InvalidOperationException("Could not find the DisplayFileTrees method");
-		}
-
-		methodInfo.Invoke(command, new object[] { rootFile, fileRelationships, mode });
 	}
 }

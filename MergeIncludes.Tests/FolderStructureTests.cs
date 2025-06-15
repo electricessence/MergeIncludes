@@ -44,7 +44,7 @@ public class FolderStructureTests
 			.UseFileName("ComplexFolderStructureWithRepeats");
 	}
 
-	private Dictionary<string, List<string>> BuildComplexFileRelationships()
+	private static Dictionary<string, List<string>> BuildComplexFileRelationships()
 	{
 		var rootPath = Path.GetFullPath(@".\TestFiles\MainFolder\root.txt");
 		var basePath = Path.GetFullPath(@".\TestFiles");
@@ -99,7 +99,7 @@ public class FolderStructureTests
 	}
 
 	// Helper method to invoke the private DisplayFileTrees method using reflection
-	private void InvokeDisplayFileTrees(
+	private static void InvokeDisplayFileTrees(
 		CombineCommand command,
 		FileInfo rootFile,
 		Dictionary<string, List<string>> fileRelationships,
@@ -107,13 +107,8 @@ public class FolderStructureTests
 	{
 		var methodInfo = typeof(CombineCommand).GetMethod(
 			"DisplayFileTrees",
-			BindingFlags.NonPublic | BindingFlags.Instance);
+			BindingFlags.NonPublic | BindingFlags.Instance) ?? throw new InvalidOperationException("Could not find the DisplayFileTrees method");
 
-		if (methodInfo == null)
-		{
-			throw new InvalidOperationException("Could not find the DisplayFileTrees method");
-		}
-
-		methodInfo.Invoke(command, new object[] { rootFile, fileRelationships, mode });
+		methodInfo.Invoke(command, [rootFile, fileRelationships, mode]);
 	}
 }

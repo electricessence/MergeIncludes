@@ -124,12 +124,13 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 					var parentFile = includeStack.Peek();
 
 					// Record the parent-child relationship
-					if (!fileRelationships.ContainsKey(parentFile))
+					if (!fileRelationships.TryGetValue(parentFile, out List<string>? value))
 					{
-						fileRelationships[parentFile] = [];
+						value = [];
+						fileRelationships[parentFile] = value;
 					}
 
-					fileRelationships[parentFile].Add(info.FullName);
+					value.Add(info.FullName);
 
 					// Push this file onto the stack as it might include other files
 					includeStack.Push(info.FullName);

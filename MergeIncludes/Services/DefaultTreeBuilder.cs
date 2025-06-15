@@ -10,7 +10,7 @@ public class DefaultTreeBuilder
 	/// <summary>
 	/// Builds side-by-side trees with aligned rows for folder structure and reference relationships
 	/// </summary>
-	public (List<string> folderLines, List<string> referenceLines) BuildSideBySideTrees(
+	public static (List<string> folderLines, List<string> referenceLines) BuildSideBySideTrees(
 		FileInfo rootFile,
 		Dictionary<string, List<string>> fileRelationships)
 	{
@@ -26,7 +26,7 @@ public class DefaultTreeBuilder
 	/// <summary>
 	/// Collects all files in the order they appear in the dependency tree
 	/// </summary>
-	private List<FileInfo> CollectAllFilesInOrder(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
+	private static List<FileInfo> CollectAllFilesInOrder(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
 	{
 		var allFiles = new List<FileInfo>();
 		var visitedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -38,7 +38,7 @@ public class DefaultTreeBuilder
 	/// <summary>
 	/// Recursively collects files in dependency order
 	/// </summary>
-	private void CollectFilesRecursive(string filePath, Dictionary<string, List<string>> fileRelationships,
+	private static void CollectFilesRecursive(string filePath, Dictionary<string, List<string>> fileRelationships,
 		List<FileInfo> allFiles, HashSet<string> visitedPaths)
 	{
 		if (visitedPaths.Contains(filePath))
@@ -62,7 +62,7 @@ public class DefaultTreeBuilder
 	/// <summary>
 	/// Builds aligned folder lines that correspond to each reference line
 	/// </summary>
-	private List<string> BuildAlignedFolderLines(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships, List<string> referenceLines)
+	private static List<string> BuildAlignedFolderLines(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships, List<string> referenceLines)
 	{
 		var lines = new List<string>();
 
@@ -108,7 +108,7 @@ public class DefaultTreeBuilder
 				{
 					// Root file - show folder icon with folder name
 					var folderName = file.Directory.Name;
-					var hasChildItems = hasRootFiles || uniqueFolders.Any();
+					var hasChildItems = hasRootFiles || uniqueFolders.Count != 0;
 					lines.Add($" 📁 {folderName} /");
 				}
 				else if (string.IsNullOrEmpty(relativePath) || relativePath == ".")
@@ -151,7 +151,7 @@ public class DefaultTreeBuilder
 	/// <summary>
 	/// Builds a hierarchy of folders to determine tree structure
 	/// </summary>
-	private Dictionary<string, FolderNode> BuildFolderHierarchy(List<FileInfo> allFiles, DirectoryInfo baseDirectory)
+	private static Dictionary<string, FolderNode> BuildFolderHierarchy(List<FileInfo> allFiles, DirectoryInfo baseDirectory)
 	{
 		var nodes = new Dictionary<string, FolderNode>(StringComparer.OrdinalIgnoreCase);
 		var root = new FolderNode { Path = baseDirectory.FullName, Name = "", IsRoot = true };
@@ -165,7 +165,7 @@ public class DefaultTreeBuilder
 			if (!nodes.ContainsKey(dirPath))
 			{
 				var relativePath = GetRelativePath(baseDirectory.FullName, dirPath);
-				var pathParts = relativePath.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+				var pathParts = relativePath.Split([Path.DirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries);
 
 				var currentPath = baseDirectory.FullName;
 				FolderNode parentNode = root;
@@ -174,7 +174,7 @@ public class DefaultTreeBuilder
 				{
 					currentPath = Path.Combine(currentPath, part);
 
-					if (!nodes.ContainsKey(currentPath))
+					if (!nodes.TryGetValue(currentPath, out FolderNode? value))
 					{
 						var node = new FolderNode
 						{
@@ -182,11 +182,12 @@ public class DefaultTreeBuilder
 							Name = part,
 							Parent = parentNode
 						};
-						nodes[currentPath] = node;
+						value = node;
+						nodes[currentPath] = value;
 						parentNode.Children.Add(node);
 					}
 
-					parentNode = nodes[currentPath];
+					parentNode = value;
 				}
 			}
 		}
@@ -197,7 +198,7 @@ public class DefaultTreeBuilder
 	/// <summary>
 	/// Gets the folder tree line for a specific file
 	/// </summary>
-	private string GetFolderTreeLine(FileInfo file, Dictionary<string, FolderNode> folderHierarchy, bool isRootFile)
+	private static string GetFolderTreeLine(FileInfo file, Dictionary<string, FolderNode> folderHierarchy, bool isRootFile)
 	{
 		if (isRootFile)
 		{
@@ -257,7 +258,7 @@ public class DefaultTreeBuilder
 	/// <summary>
 	/// Extracts the file name from a reference tree line by removing tree formatting
 	/// </summary>
-	private string ExtractFileNameFromReferenceLine(string referenceLine)
+	private static string ExtractFileNameFromReferenceLine(string referenceLine)
 	{
 		// Remove tree characters and trim
 		var cleaned = referenceLine.Replace("├── ", "").Replace("└── ", "").Replace("│   ", "").Replace("    ", "").Trim();
@@ -267,7 +268,7 @@ public class DefaultTreeBuilder
 	/// <summary>
 	/// Builds folder structure lines showing directory hierarchy
 	/// </summary>
-	private List<string> BuildFolderStructureLines(List<FileInfo> allFiles, DirectoryInfo baseDirectory)
+	private static List<string> BuildFolderStructureLines(List<FileInfo> allFiles, DirectoryInfo baseDirectory)
 	{
 		var lines = new List<string>();
 
@@ -307,7 +308,7 @@ public class DefaultTreeBuilder
 	/// <summary>
 	/// Builds reference tree lines showing include relationships
 	/// </summary>
-	private List<string> BuildReferenceTreeLines(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
+	private static List<string> BuildReferenceTreeLines(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
 	{
 		var lines = new List<string>();
 		var visitedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { rootFile.FullName };
@@ -329,7 +330,7 @@ public class DefaultTreeBuilder
 	/// <summary>
 	/// Recursively builds reference tree lines with proper tree formatting
 	/// </summary>
-	private void BuildReferenceTreeLinesRecursive(List<string> childPaths,
+	private static void BuildReferenceTreeLinesRecursive(List<string> childPaths,
 		Dictionary<string, List<string>> fileRelationships,
 		List<string> lines,
 		HashSet<string> visitedPaths,
@@ -356,7 +357,7 @@ public class DefaultTreeBuilder
 					!string.IsNullOrEmpty(path) &&
 					!string.Equals(path, childPath, StringComparison.OrdinalIgnoreCase)).ToList();
 
-				if (validGrandChildren.Any())
+				if (validGrandChildren.Count != 0)
 				{
 					var newIndent = indent + (isLast ? "    " : "│   ");
 					BuildReferenceTreeLinesRecursive(validGrandChildren, fileRelationships, lines, visitedPaths, newIndent);
@@ -368,7 +369,7 @@ public class DefaultTreeBuilder
 	/// <summary>
 	/// Gets relative path from root to target directory, always using forward slashes
 	/// </summary>
-	private string GetRelativePath(string rootPath, string targetPath)
+	private static string GetRelativePath(string rootPath, string targetPath)
 	{
 		try
 		{
