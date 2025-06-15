@@ -10,8 +10,8 @@ namespace MergeIncludes.TreeBuilders;
 /// </summary>
 public static class ReferenceTreeBuilder
 {    /// <summary>
-    /// Create a reference tree with clickable file links using Style.link
-    /// </summary>
+     /// Create a reference tree with clickable file links using Style.link
+     /// </summary>
     public static Tree Create(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
     {
         // Create root file as clickable link using Style.link
@@ -25,8 +25,8 @@ public static class ReferenceTreeBuilder
 
         return tree;
     }    /// <summary>
-    /// Recursively builds the reference tree by adding child nodes
-    /// </summary>
+         /// Recursively builds the reference tree by adding child nodes
+         /// </summary>
     private static void BuildTreeRecursive(Tree tree, string filePath,
         Dictionary<string, List<string>> fileRelationships, HashSet<string> processedFiles, int depth)
     {
@@ -50,8 +50,8 @@ public static class ReferenceTreeBuilder
             }
         }
     }    /// <summary>
-    /// Recursively builds child nodes in the reference tree
-    /// </summary>
+         /// Recursively builds child nodes in the reference tree
+         /// </summary>
     private static void BuildTreeNodeRecursive(TreeNode parentNode, string filePath,
         Dictionary<string, List<string>> fileRelationships, HashSet<string> processedFiles, int depth)
     {

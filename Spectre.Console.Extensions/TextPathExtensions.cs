@@ -9,13 +9,13 @@ namespace Spectre.Console.Extensions;
 /// </summary>
 public static class TextPathExtensions
 {    /// <summary>
-    /// Creates a LinkableTextPath from a TextPath with the specified link URL.
-    /// Note: This method cannot extract the path from an existing TextPath,
-    /// so it's recommended to use CreateLinkableTextPath methods instead.
-    /// </summary>
-    /// <param name="textPath">The text path (used for reference only).</param>
-    /// <param name="linkUrl">The URL to link to.</param>
-    /// <returns>A LinkableTextPath instance or the original TextPath if path cannot be extracted.</returns>
+     /// Creates a LinkableTextPath from a TextPath with the specified link URL.
+     /// Note: This method cannot extract the path from an existing TextPath,
+     /// so it's recommended to use CreateLinkableTextPath methods instead.
+     /// </summary>
+     /// <param name="textPath">The text path (used for reference only).</param>
+     /// <param name="linkUrl">The URL to link to.</param>
+     /// <returns>A LinkableTextPath instance or the original TextPath if path cannot be extracted.</returns>
     public static IRenderable ToLink(this TextPath textPath, string linkUrl)
     {
         if (textPath == null)
@@ -31,7 +31,7 @@ public static class TextPathExtensions
         // Use CreateLinkableTextPath methods for new linked paths instead.
         return textPath;
     }
-    
+
     /// <summary>
     /// Creates a linkable version of a TextPath. Since we can't extract the path easily,
     /// this returns the original TextPath. Use CreateLinkableTextPath methods instead for linked paths.
@@ -44,7 +44,7 @@ public static class TextPathExtensions
         {
             throw new ArgumentNullException(nameof(textPath));
         }
-        
+
         // Without access to the internal path, we can't create a link
         // Use CreateLinkableTextPath methods instead for new linked paths
         return textPath;

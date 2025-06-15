@@ -26,7 +26,8 @@ public static class FolderTreeBuilder
     /// </summary>
     public static Tree Create(DirectoryInfo baseDirectory, IEnumerable<FileInfo> files)
     {
-        return CreateFolderTree(baseDirectory, files);    }
+        return CreateFolderTree(baseDirectory, files);
+    }
 
     /// <summary>
     /// Create a folder tree for the given files
