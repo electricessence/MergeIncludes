@@ -26,18 +26,7 @@ public static class FolderTreeBuilder
     /// </summary>
     public static Tree Create(DirectoryInfo baseDirectory, IEnumerable<FileInfo> files)
     {
-        return CreateFolderTree(baseDirectory, files);
-    }
-
-    /// <summary>
-    /// Creates a properly encoded file URL for use in Markup links
-    /// </summary>
-    private static string CreateFileUrl(string filePath)
-    {
-        // Convert to forward slashes and encode spaces and other special characters
-        var encodedPath = Uri.EscapeDataString(filePath.Replace('\\', '/'));
-        return $"file:///{encodedPath}";
-    }
+        return CreateFolderTree(baseDirectory, files);    }
 
     /// <summary>
     /// Create a folder tree for the given files
@@ -45,11 +34,10 @@ public static class FolderTreeBuilder
     private static Tree CreateFolderTree(DirectoryInfo baseDirectory, IEnumerable<FileInfo> files)
     {
         // Create root folder as clickable link with folder icon
-        var rootFolderName = baseDirectory.Name;
-        var rootFolderUrl = CreateFileUrl(baseDirectory.FullName);
-        var rootMarkup = new Markup($"[blue bold link={rootFolderUrl}]📁 {rootFolderName.EscapeMarkup()}[/]");
+        var rootFolderName = $"📁 {baseDirectory.Name}";
+        var rootText = new Text(rootFolderName, new Style(foreground: Color.Blue, decoration: Decoration.Bold, link: baseDirectory.FullName));
 
-        var tree = new Tree(rootMarkup);
+        var tree = new Tree(rootText);
 
         // Group files by their directories
         var filesByDirectory = files.GroupBy(f => f.Directory!.FullName).ToList();
@@ -64,24 +52,21 @@ public static class FolderTreeBuilder
                 // Files in root directory - add directly
                 foreach (var file in directoryGroup.OrderBy(f => f.Name))
                 {
-                    var fileUrl = CreateFileUrl(file.FullName);
-                    var fileMarkup = new Markup($"[green link={fileUrl}]{file.Name.EscapeMarkup()}[/]");
-                    tree.AddNode(fileMarkup);
+                    var fileText = new Text(file.Name, new Style(foreground: Color.Green, link: file.FullName));
+                    tree.AddNode(fileText);
                 }
             }
             else
             {
                 // Files in subdirectory - add folder then files with folder icon
-                var folderName = directory.Name;
-                var folderUrl = CreateFileUrl(directory.FullName);
-                var folderMarkup = new Markup($"[cyan1 bold link={folderUrl}]📁 {folderName.EscapeMarkup()}[/]");
-                var folderNode = tree.AddNode(folderMarkup);
+                var folderName = $"📁 {directory.Name}";
+                var folderText = new Text(folderName, new Style(foreground: Color.Cyan1, decoration: Decoration.Bold, link: directory.FullName));
+                var folderNode = tree.AddNode(folderText);
 
                 foreach (var file in directoryGroup.OrderBy(f => f.Name))
                 {
-                    var fileUrl = CreateFileUrl(file.FullName);
-                    var fileMarkup = new Markup($"[green link={fileUrl}]{file.Name.EscapeMarkup()}[/]");
-                    folderNode.AddNode(fileMarkup);
+                    var fileText = new Text(file.Name, new Style(foreground: Color.Green, link: file.FullName));
+                    folderNode.AddNode(fileText);
                 }
             }
         }

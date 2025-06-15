@@ -3,52 +3,77 @@
 namespace Spectre.Console.Extensions;
 
 /// <summary>
-/// A renderable that creates clickable hyper-links for files and folders
+/// A renderable that creates clickable hyper-links for files and folders using Spectre.Console's native Style.link parameter
 /// </summary>
-/// <remarks>
-/// Creates a new hyper-link renderable
-/// </remarks>
-/// <param name="path">The file or folder path to link to</param>
-/// <param name="label">Custom label</param>
 public static class HyperLink
-{
-	private static readonly bool IsWindowsTerminal
-		= Environment.GetEnvironmentVariable("WT_SESSION") != null;
-
+{	/// <summary>
+	/// Creates a hyperlinked markup with custom markup content
+	/// </summary>
+	/// <param name="path">The file or folder path to link to</param>
+	/// <param name="markup">The markup content to display</param>
+	/// <param name="style">Optional additional style to apply</param>
+	/// <returns>A renderable with hyperlink</returns>
 	public static IRenderable Markup(string path, string markup, Style? style = null)
 	{
 		ArgumentNullException.ThrowIfNull(markup);
 		ArgumentException.ThrowIfNullOrEmpty(path);
-		if (!IsWindowsTerminal) return new Markup(markup, style);
 		
-		// Use the path directly with no modifications
-		return new Markup($"[link={Console.Markup.Escape(path)}]{markup}[/]", style);
+		// Create style with link, combining with existing style if provided
+		var linkStyle = style != null 
+			? new Style(style.Foreground, style.Background, style.Decoration, link: path)
+			: new Style(link: path);
+		return new Markup(markup, linkStyle);
 	}
 
+	/// <summary>
+	/// Creates a hyperlinked text renderable
+	/// </summary>
+	/// <param name="path">The file or folder path to link to</param>
+	/// <param name="text">The text to display</param>
+	/// <param name="style">Optional additional style to apply</param>
+	/// <returns>A renderable with hyperlink</returns>
 	public static IRenderable For(string path, string text, Style? style = null)
 	{
 		ArgumentNullException.ThrowIfNull(text);
 		ArgumentException.ThrowIfNullOrEmpty(path);
-		if (!IsWindowsTerminal) return new Text(text, style);
 		
-		// Use the path directly with no modifications
-		return new Markup($"[link={Console.Markup.Escape(path)}]{Console.Markup.Escape(text)}[/]", style);
+		// Create style with link, combining with existing style if provided
+		var linkStyle = style != null 
+			? new Style(style.Foreground, style.Background, style.Decoration, link: path)
+			: new Style(link: path);
+		return new Text(text, linkStyle);
 	}
 
+	/// <summary>
+	/// Creates a hyperlinked text renderable using the path as both link and text
+	/// </summary>
+	/// <param name="path">The file or folder path to link to and display</param>
+	/// <param name="style">Optional additional style to apply</param>
+	/// <returns>A renderable with hyperlink</returns>
 	public static IRenderable For(string path, Style? style = null)
 		=> For(path, path, style);
 
+	/// <summary>
+	/// Creates a hyperlinked text renderable for a file
+	/// </summary>
+	/// <param name="file">The file to link to</param>
+	/// <param name="style">Optional additional style to apply</param>
+	/// <returns>A renderable with hyperlink to the file</returns>
 	public static IRenderable For(FileInfo file, Style? style = null)
 	{
 		ArgumentNullException.ThrowIfNull(file);
-		// Use the full path directly with no modifications
 		return For(file.FullName, file.Name, style);
 	}
 
+	/// <summary>
+	/// Creates a hyperlinked text renderable for a directory
+	/// </summary>
+	/// <param name="directory">The directory to link to</param>
+	/// <param name="style">Optional additional style to apply</param>
+	/// <returns>A renderable with hyperlink to the directory</returns>
 	public static IRenderable For(DirectoryInfo directory, Style? style = null)
 	{
 		ArgumentNullException.ThrowIfNull(directory);
-		// Use the full path directly with no modifications
 		return For(directory.FullName, directory.Name, style);
 	}
 }
