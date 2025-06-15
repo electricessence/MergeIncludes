@@ -10,31 +10,40 @@ namespace MergeIncludes.Renderables;
 /// Creates a new hyper-link renderable
 /// </remarks>
 /// <param name="path">The file or folder path to link to</param>
-/// <param name="label">Optional custom label (defaults to filename/foldername)</param>
-/// <param name="style">Optional style for the link</param>
-public class HyperLink(string path, string? label = null, Style? style = null) : RenderableBase
+/// <param name="label">Custom label</param>
+public static class HyperLink
 {
-	private readonly IRenderable _text = new Text(label ?? path, style);
+	private static readonly bool IsWindowsTerminal
+		= Environment.GetEnvironmentVariable("WT_SESSION") != null;
 
-	private static readonly bool IsWindowsTerminal = Environment.GetEnvironmentVariable("WT_SESSION") != null;
-
-	public override Measurement Measure(RenderOptions options, int maxWidth)
-		=> _text.Measure(options, maxWidth);  // ← works fine via interface
-
-	public override IEnumerable<Segment> Render(RenderOptions options, int maxWidth)
+	public static IRenderable Markup(string path, string markup, Style? style = null)
 	{
-		yield return new Segment($"\u001b]8;;{path}\u0007");
-		foreach (var segment in _text.Render(options, maxWidth))
-			yield return segment;
-		yield return new Segment("\u001b]8;;\u0007");
+		ArgumentNullException.ThrowIfNull(markup);
+		ArgumentException.ThrowIfNullOrEmpty(path);
+		if (!IsWindowsTerminal) return new Markup(markup, style);
+		return new Markup($"[link={Spectre.Console.Markup.Escape(path)}]{markup}[/]", style);
 	}
 
-	public static IRenderable CreateMarkup(string path, string? label = null, Style? style = null)
+	public static IRenderable For(string path, string text, Style? style = null)
 	{
-		ArgumentNullException.ThrowIfNull(path);
-		ArgumentException.ThrowIfNullOrWhiteSpace(label);
-		return IsWindowsTerminal
-			? new Markup($"[link={Markup.Escape(path)}]{Markup.Escape(label ?? path)}[/]", style)
-			: new Text(label ?? path, style);
+		ArgumentNullException.ThrowIfNull(text);
+		ArgumentException.ThrowIfNullOrEmpty(path);
+		if (!IsWindowsTerminal) return new Text(text, style);
+		return new Markup($"[link={Spectre.Console.Markup.Escape(path)}]{Spectre.Console.Markup.Escape(text)}[/]", style);
+	}
+
+	public static IRenderable For(string path, Style? style = null)
+		=> For(path, path, style);
+
+	public static IRenderable For(FileInfo file, Style? style = null)
+	{
+		ArgumentNullException.ThrowIfNull(file);
+		return For(file.FullName, file.Name, style);
+	}
+
+	public static IRenderable For(DirectoryInfo directory, Style? style = null)
+	{
+		ArgumentNullException.ThrowIfNull(directory);
+		return For(directory.FullName, directory.Name, style);
 	}
 }

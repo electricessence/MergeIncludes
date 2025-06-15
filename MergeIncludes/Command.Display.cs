@@ -15,7 +15,7 @@ partial class CombineCommand
 		FileInfo rootFile,
 		Dictionary<string, List<string>> fileRelationships)
 	{
-		var rootMarkup = HyperLink.CreateMarkup(rootFile.FullName, rootFile.Name);
+		var rootMarkup = HyperLink.For(rootFile);
 		var tree = new Tree(rootMarkup);
 		var processedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -41,7 +41,7 @@ partial class CombineCommand
 			if (File.Exists(dependency) && !processedFiles.Contains(dependency))
 			{
 				var dependencyName = Path.GetFileName(dependency);
-				var dependencyMarkup = HyperLink.CreateMarkup(dependency, dependencyName);
+				var dependencyMarkup = HyperLink.For(dependency, dependencyName);
 				var childNode = tree.AddNode(dependencyMarkup);
 
 				// Recursively build dependencies of this dependency
@@ -67,7 +67,7 @@ partial class CombineCommand
 			if (File.Exists(dependency) && !processedFiles.Contains(dependency))
 			{
 				var dependencyName = Path.GetFileName(dependency);
-				var dependencyMarkup = HyperLink.CreateMarkup(dependency, dependencyName);
+				var dependencyMarkup = HyperLink.For(dependency, dependencyName);
 				var childNode = tree.AddNode(dependencyMarkup);
 
 				// Recursively build dependencies of this dependency
@@ -92,7 +92,7 @@ partial class CombineCommand
 			if (File.Exists(dependency) && !processedFiles.Contains(dependency))
 			{
 				var dependencyName = Path.GetFileName(dependency);
-				var dependencyMarkup = new HyperLink(dependency, dependencyName);
+				var dependencyMarkup = HyperLink.For(dependency, dependencyName);
 				var childNode = parentNode.AddNode(dependencyMarkup);
 
 				// Continue recursively
