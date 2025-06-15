@@ -17,7 +17,12 @@ public enum TreeDisplayMode
     /// <summary>
     /// Tree showing file names with full paths
     /// </summary>
-    FullPath = 1
+    FullPath = 1,
+
+    /// <summary>
+    /// Experimental mode for testing new renderables
+    /// </summary>
+    Experimental = 2
 }
 
 public class MergeOptions : CommandSettings
@@ -28,7 +33,7 @@ public class MergeOptions : CommandSettings
 
     [Description("Adds additional lines after the contents. Default is 1.")]
     [CommandOption("-p|--pad <LINE_PADDING>")]
-    public int Padding { get; set; } = 1; [Description("Tree display mode: Default (side-by-side trees) or FullPath (file paths list)")]
+    public int Padding { get; set; } = 1; [Description("Tree display mode: Default (side-by-side trees), FullPath (file paths list), or Experimental (testing new renderables)")]
     [CommandOption("-d|--display <DISPLAY_MODE>")]
     public TreeDisplayMode DisplayMode { get; set; } = TreeDisplayMode.Default;
 }

@@ -184,9 +184,11 @@ public sealed partial class CombineCommand : AsyncCommand<Settings>
                 throw;
             }
         }
-    }    /// <summary>
-         /// Entry point for displaying file trees according to the selected mode
-         /// </summary>
+    }
+
+    /// <summary>
+    /// Entry point for displaying file trees according to the selected mode
+    /// </summary>
     private void DisplayFileTrees(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships, TreeDisplayMode mode)
     {
         // Display trees based on the selected mode
@@ -197,6 +199,9 @@ public sealed partial class CombineCommand : AsyncCommand<Settings>
                 break;
             case TreeDisplayMode.FullPath:
                 DisplayFullPathTree(rootFile, fileRelationships);
+                break;
+            case TreeDisplayMode.Experimental:
+                DisplayExperimentalTree(rootFile, fileRelationships);
                 break;
             default:
                 DisplayDefaultTree(rootFile, fileRelationships);
