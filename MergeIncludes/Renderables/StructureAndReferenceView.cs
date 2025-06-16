@@ -9,7 +9,7 @@ namespace MergeIncludes.Renderables;
 /// </summary>
 public sealed class StructureAndReferenceView : IRenderable
 {
-	private readonly Table _table;
+	private readonly IRenderable _content;
 
 	/// <summary>
 	/// Initializes a new instance of the StructureAndReferenceView class
@@ -21,69 +21,65 @@ public sealed class StructureAndReferenceView : IRenderable
 		if (rootFile == null) throw new ArgumentNullException(nameof(rootFile));
 		if (fileRelationships == null) throw new ArgumentNullException(nameof(fileRelationships));
 
-		_table = CreateTwoColumnTreeTable(rootFile, fileRelationships);
-	}
+		_content = CreateTwoColumnTreeTable(rootFile, fileRelationships);	}
 
 	/// <inheritdoc/>
 	public Measurement Measure(RenderOptions options, int maxWidth)
 	{
-		// Delegate to the internal table for measurement
-		return ((IRenderable)_table).Measure(options, maxWidth);
+		// Delegate to the internal content for measurement
+		return _content.Measure(options, maxWidth);
 	}
 
 	/// <inheritdoc/>
 	public IEnumerable<Segment> Render(RenderOptions options, int maxWidth)
 	{
-		// Delegate to the internal table for rendering
-		return ((IRenderable)_table).Render(options, maxWidth);
-	}
-
-	private static Table CreateTwoColumnTreeTable(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
+		// Delegate to the internal content for rendering
+		return _content.Render(options, maxWidth);
+	}	private static IRenderable CreateTwoColumnTreeTable(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
 	{
 		// Create the left column: folder structure tree
 		var folderTree = CreateFolderStructureTree(rootFile);
 
-		// Create the right column: reference tree (similar to CreateBasicReferenceTree)
+		// Create the middle separator column with just "/"
+		var separator = new Text("/", new Style(Color.Grey));
+
+		// Create the right column: reference tree
 		var referenceTree = CreateReferenceTree(rootFile, fileRelationships);
 
-		// Create a table with two columns for side-by-side display, using minimum width
+		// Create a table with three columns for side-by-side display
 		var table = new Table()
 			.Border(TableBorder.None)
 			.HideHeaders()
 			.Collapse()  // Makes table take up minimal width
-			.AddColumn(new TableColumn("Folder"))  // Auto-size to content
-			.AddColumn(new TableColumn("References"));  // Auto-size to content
+			.AddColumn(new TableColumn("Folder") { NoWrap = true, Padding = new Padding(0, 0, 1, 0) })  // Small right padding
+			.AddColumn(new TableColumn("Separator") { NoWrap = true, Padding = new Padding(0, 0, 1, 0) })  // Small padding on both sides
+			.AddColumn(new TableColumn("References") { NoWrap = true, Padding = new Padding(0, 0, 0, 0) });
 
-		// Add a single row with both trees
-		table.AddRow(folderTree, referenceTree);
+		// Add the trees with separator
+		table.AddRow(folderTree, separator, referenceTree);
 
 		return table;
-	}
-
-	private static Tree CreateFolderStructureTree(FileInfo rootFile)
+	}private static IRenderable CreateFolderStructureTree(FileInfo rootFile)
 	{
 		// Create a simple folder tree showing the file location
 		return TreeBuilders.FolderTreeBuilder.Create(rootFile.Directory!, [rootFile]);
-	}
-
-	private static Tree CreateReferenceTree(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
+	}	private static IRenderable CreateReferenceTree(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
 	{
 		// Create root node with yellow color (not bold)
 		// HyperLink.For handles Windows Terminal detection internally
 		var rootText = HyperLink.For(rootFile, new Style(Color.Yellow));
-		var tree = new Tree(rootText);
+		var tree = new TreeMinimalWidth(rootText);
 		var processedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
 		BuildReferenceTreeRecursive(tree, rootFile.FullName, fileRelationships, processedFiles);
 
 		return tree;
 	}
-
 	/// <summary>
 	/// Recursively builds the reference tree hierarchy
 	/// </summary>
 	private static void BuildReferenceTreeRecursive(
-		Tree tree, string filePath,
+		IHasTreeNodes tree, string filePath,
 		Dictionary<string, List<string>> fileRelationships,
 		HashSet<string> processedFiles)
 	{

@@ -1,5 +1,6 @@
 using Spectre.Console;
 using Spectre.Console.Extensions;
+using Spectre.Console.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,12 +16,10 @@ public static class FolderTreeBuilder
     /// <summary>
     /// Gets a value indicating whether we're running in Windows Terminal.
     /// </summary>
-    private static bool IsWindowsTerminal => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WT_SESSION"));
-
-    /// <summary>
+    private static bool IsWindowsTerminal => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WT_SESSION"));    /// <summary>
     /// Create a folder tree from a root file and its dependencies
     /// </summary>
-    public static Tree FromDependencies(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
+    public static IRenderable FromDependencies(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
     {
         var allFiles = new List<FileInfo> { rootFile };
         CollectAllFilesRecursive(rootFile.FullName, fileRelationships, allFiles);
@@ -30,24 +29,21 @@ public static class FolderTreeBuilder
     /// <summary>
     /// Create a folder tree for the given files
     /// </summary>
-    public static Tree Create(DirectoryInfo baseDirectory, IEnumerable<FileInfo> files)
+    public static IRenderable Create(DirectoryInfo baseDirectory, IEnumerable<FileInfo> files)
     {
         return CreateFolderTree(baseDirectory, files);
-    }
-
-    /// <summary>
+    }    /// <summary>
     /// Create a folder tree for the given files
     /// </summary>
-    private static Tree CreateFolderTree(DirectoryInfo baseDirectory, IEnumerable<FileInfo> files)
+    private static IRenderable CreateFolderTree(DirectoryInfo baseDirectory, IEnumerable<FileInfo> files)
     {
         // Create root folder, only add link in Windows Terminal
         var rootFolderName = $"📁 {baseDirectory.Name}";
         var rootStyle = IsWindowsTerminal 
             ? new Style(foreground: Color.Blue, decoration: Decoration.Bold, link: baseDirectory.FullName)
             : new Style(foreground: Color.Blue, decoration: Decoration.Bold);
-            
-        var rootText = new Text(rootFolderName, rootStyle);
-        var tree = new Tree(rootText);
+              var rootText = new Text(rootFolderName, rootStyle);
+        var tree = new TreeMinimalWidth(rootText);
 
         // Group files by their directories
         var filesByDirectory = files.GroupBy(f => f.Directory!.FullName).ToList();
