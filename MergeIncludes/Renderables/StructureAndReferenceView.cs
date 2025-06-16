@@ -61,10 +61,9 @@ public sealed class StructureAndReferenceView : IRenderable
 		return table;
 	}	private static IRenderable CreateFolderStructureTree(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
 	{
-		// Use FolderOnlyTreeBuilder to show just folder structure (no files)
-		// This provides a cleaner view that correlates better with the reference tree
-		// Pass all file relationships so we see folders for all referenced files
-		return TreeBuilders.FolderOnlyTreeBuilder.FromDependencies(rootFile, fileRelationships);
+		// Use AlignedFolderTreeBuilder to create folder structure that aligns line-by-line with reference tree
+		// This ensures each folder reference on the left aligns with corresponding files on the right
+		return TreeBuilders.AlignedFolderTreeBuilder.FromDependencies(rootFile, fileRelationships);
 	}private static IRenderable CreateReferenceTree(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
 	{
 		// Create root node with yellow color (not bold)

@@ -41,6 +41,7 @@ public static class HyperLink
 			: new Style(link: path);
 		return new Markup(markup, linkStyle);
 	}
+
 	/// <summary>
 	/// Creates a hyperlinked text renderable
 	/// </summary>
