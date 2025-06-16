@@ -37,8 +37,8 @@ public sealed class StructureAndReferenceView : IRenderable
 		return _content.Render(options, maxWidth);
 	}	private static IRenderable CreateTwoColumnTreeTable(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
 	{
-		// Create the left column: folder structure tree
-		var folderTree = CreateFolderStructureTree(rootFile);
+		// Create the left column: folder structure tree (folders only, based on all referenced files)
+		var folderTree = CreateFolderStructureTree(rootFile, fileRelationships);
 
 		// Create the middle separator column with just "/"
 		var separator = new Text("/", new Style(Color.Grey));
@@ -59,11 +59,13 @@ public sealed class StructureAndReferenceView : IRenderable
 		table.AddRow(folderTree, separator, referenceTree);
 
 		return table;
-	}private static IRenderable CreateFolderStructureTree(FileInfo rootFile)
+	}	private static IRenderable CreateFolderStructureTree(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
 	{
-		// Create a simple folder tree showing the file location
-		return TreeBuilders.FolderTreeBuilder.Create(rootFile.Directory!, [rootFile]);
-	}	private static IRenderable CreateReferenceTree(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
+		// Use FolderOnlyTreeBuilder to show just folder structure (no files)
+		// This provides a cleaner view that correlates better with the reference tree
+		// Pass all file relationships so we see folders for all referenced files
+		return TreeBuilders.FolderOnlyTreeBuilder.FromDependencies(rootFile, fileRelationships);
+	}private static IRenderable CreateReferenceTree(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
 	{
 		// Create root node with yellow color (not bold)
 		// HyperLink.For handles Windows Terminal detection internally
