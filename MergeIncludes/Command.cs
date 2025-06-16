@@ -13,6 +13,11 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 	: AsyncCommand<Settings>
 {
 	private readonly IAnsiConsole _console = console ?? throw new ArgumentNullException(nameof(console));
+	
+	/// <summary>
+	/// Gets a value indicating whether we're running in Windows Terminal.
+	/// </summary>
+	private static bool IsWindowsTerminal => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WT_SESSION"));
 
 	public CombineCommand() : this(AnsiConsole.Console)
 	{
@@ -63,8 +68,8 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 									_console.MarkupLine($"[yellow]Changes detected:[/] ({now:d} {now:T})");
 								}
 
-								// Use LinkableTextPath instead of TextPath to make the path clickable
-								_console.Write(new LinkableTextPath(file, true));
+								// Use LinkableTextPath without forcing link creation, let it respect Windows Terminal detection
+								_console.Write(PathLink.File(file));
 							}
 
 							_console.WriteLine();
@@ -168,8 +173,8 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 				else
 					outputFile.Attributes = FileAttributes.ReadOnly;
 
-				// Use LinkableTextPath instead of TextPath for the output file path
-				var mergePath = new LinkableTextPath(outputFile.FullName, true);
+				// Use PathLink.File for the output file path which respects Windows Terminal detection
+				var mergePath = PathLink.File(outputFile.FullName);
 				_console.Write(new Panel(mergePath)
 				{
 					Header = new PanelHeader("[springgreen1]Successfully merged include references to:[/]"),

@@ -8,19 +8,29 @@ namespace Spectre.Console.Extensions;
 public static class PathLink
 {
 	/// <summary>
+	/// Gets a value indicating whether we're running in Windows Terminal.
+	/// </summary>
+	private static bool IsWindowsTerminal => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WT_SESSION"));
+
+	/// <summary>
 	/// Creates a linked text path for a file.
 	/// </summary>
 	/// <param name="filePath">The file path.</param>
 	/// <param name="style">Optional style to apply.</param>
+	/// <param name="forceLinkCreation">If true, creates a link even if not in Windows Terminal. 
+	/// If false (default), only creates a link when in Windows Terminal.</param>
 	/// <returns>A renderable path with a link to the file.</returns>
-	public static IRenderable File(string filePath, Style? style = null)
+	public static IRenderable File(string filePath, Style? style = null, bool forceLinkCreation = false)
 	{
 		if (string.IsNullOrEmpty(filePath))
 		{
 			throw new ArgumentNullException(nameof(filePath));
 		}
 
-		var linkPath = new LinkableTextPath(filePath, true);
+		// Only create a link when in Windows Terminal or if explicitly forced
+		bool createLink = forceLinkCreation || IsWindowsTerminal;
+		var linkPath = new LinkableTextPath(filePath, createLink);
+		
 		if (style != null)
 		{
 			return linkPath.LeafStyle(style);
@@ -37,20 +47,26 @@ public static class PathLink
 	/// <param name="separatorColor">Color for path separators.</param>
 	/// <param name="stemColor">Color for middle segments.</param>
 	/// <param name="leafColor">Color for the leaf segment.</param>
+	/// <param name="forceLinkCreation">If true, creates a link even if not in Windows Terminal.
+	/// If false (default), only creates a link when in Windows Terminal.</param>
 	/// <returns>A renderable path with a link to the file.</returns>
 	public static IRenderable File(
 		string filePath,
 		Color rootColor,
 		Color separatorColor,
 		Color stemColor,
-		Color leafColor)
+		Color leafColor,
+		bool forceLinkCreation = false)
 	{
 		if (string.IsNullOrEmpty(filePath))
 		{
 			throw new ArgumentNullException(nameof(filePath));
 		}
 
-		return new LinkableTextPath(filePath, true)
+		// Only create a link when in Windows Terminal or if explicitly forced
+		bool createLink = forceLinkCreation || IsWindowsTerminal;
+
+		return new LinkableTextPath(filePath, createLink)
 			.RootStyle(rootColor)
 			.SeparatorStyle(separatorColor)
 			.StemStyle(stemColor)
@@ -62,15 +78,20 @@ public static class PathLink
 	/// </summary>
 	/// <param name="directoryPath">The directory path.</param>
 	/// <param name="style">Optional style to apply.</param>
+	/// <param name="forceLinkCreation">If true, creates a link even if not in Windows Terminal.
+	/// If false (default), only creates a link when in Windows Terminal.</param>
 	/// <returns>A renderable path with a link to the directory.</returns>
-	public static IRenderable Directory(string directoryPath, Style? style = null)
+	public static IRenderable Directory(string directoryPath, Style? style = null, bool forceLinkCreation = false)
 	{
 		if (string.IsNullOrEmpty(directoryPath))
 		{
 			throw new ArgumentNullException(nameof(directoryPath));
 		}
 
-		var linkPath = new LinkableTextPath(directoryPath, true);
+		// Only create a link when in Windows Terminal or if explicitly forced
+		bool createLink = forceLinkCreation || IsWindowsTerminal;
+		var linkPath = new LinkableTextPath(directoryPath, createLink);
+		
 		if (style != null)
 		{
 			return linkPath.LeafStyle(style);
@@ -84,15 +105,17 @@ public static class PathLink
 	/// </summary>
 	/// <param name="fileInfo">The FileInfo object.</param>
 	/// <param name="style">Optional style to apply.</param>
+	/// <param name="forceLinkCreation">If true, creates a link even if not in Windows Terminal.
+	/// If false (default), only creates a link when in Windows Terminal.</param>
 	/// <returns>A renderable path with a link to the file.</returns>
-	public static IRenderable ForFile(FileInfo fileInfo, Style? style = null)
+	public static IRenderable ForFile(FileInfo fileInfo, Style? style = null, bool forceLinkCreation = false)
 	{
 		if (fileInfo == null)
 		{
 			throw new ArgumentNullException(nameof(fileInfo));
 		}
 
-		return File(fileInfo.FullName, style);
+		return File(fileInfo.FullName, style, forceLinkCreation);
 	}
 
 	/// <summary>
@@ -100,15 +123,17 @@ public static class PathLink
 	/// </summary>
 	/// <param name="directoryInfo">The DirectoryInfo object.</param>
 	/// <param name="style">Optional style to apply.</param>
+	/// <param name="forceLinkCreation">If true, creates a link even if not in Windows Terminal.
+	/// If false (default), only creates a link when in Windows Terminal.</param>
 	/// <returns>A renderable path with a link to the directory.</returns>
-	public static IRenderable ForDirectory(DirectoryInfo directoryInfo, Style? style = null)
+	public static IRenderable ForDirectory(DirectoryInfo directoryInfo, Style? style = null, bool forceLinkCreation = false)
 	{
 		if (directoryInfo == null)
 		{
 			throw new ArgumentNullException(nameof(directoryInfo));
 		}
 
-		return Directory(directoryInfo.FullName, style);
+		return Directory(directoryInfo.FullName, style, forceLinkCreation);
 	}
 
 	/// <summary>
@@ -117,8 +142,10 @@ public static class PathLink
 	/// <param name="path">The path text to display.</param>
 	/// <param name="url">The URL to link to.</param>
 	/// <param name="style">Optional style to apply.</param>
+	/// <param name="forceLinkCreation">If true, creates a link even if not in Windows Terminal.
+	/// If false (default), only creates a link when in Windows Terminal.</param>
 	/// <returns>A renderable path with a custom link.</returns>
-	public static IRenderable Custom(string path, string url, Style? style = null)
+	public static IRenderable Custom(string path, string url, Style? style = null, bool forceLinkCreation = false)
 	{
 		if (string.IsNullOrEmpty(path))
 		{
@@ -130,7 +157,11 @@ public static class PathLink
 			throw new ArgumentNullException(nameof(url));
 		}
 
-		var linkPath = new LinkableTextPath(path, url);
+		// Only create a link when in Windows Terminal or if explicitly forced
+		bool shouldCreateLink = forceLinkCreation || IsWindowsTerminal;
+		var linkUrl = shouldCreateLink ? url : null;
+		
+		var linkPath = new LinkableTextPath(path, linkUrl);
 		if (style != null)
 		{
 			return linkPath.LeafStyle(style);
@@ -177,8 +208,10 @@ public static class PathLink
 	/// Creates a linked text path with file type coloring based on extension.
 	/// </summary>
 	/// <param name="filePath">The file path.</param>
+	/// <param name="forceLinkCreation">If true, creates a link even if not in Windows Terminal.
+	/// If false (default), only creates a link when in Windows Terminal.</param>
 	/// <returns>A renderable path with a link to the file and appropriate coloring.</returns>
-	public static IRenderable Smart(string filePath)
+	public static IRenderable Smart(string filePath, bool forceLinkCreation = false)
 	{
 		if (string.IsNullOrEmpty(filePath))
 		{
@@ -188,7 +221,10 @@ public static class PathLink
 		string extension = Path.GetExtension(filePath);
 		Style fileStyle = GetFileTypeStyle(extension);
 
-		return new LinkableTextPath(filePath, true)
+		// Only create a link when in Windows Terminal or if explicitly forced
+		bool createLink = forceLinkCreation || IsWindowsTerminal;
+
+		return new LinkableTextPath(filePath, createLink)
 			.RootStyle(Color.Blue)
 			.SeparatorStyle(Color.Grey)
 			.StemStyle(Color.DarkGreen)

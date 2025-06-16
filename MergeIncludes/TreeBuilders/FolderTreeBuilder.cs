@@ -1,4 +1,5 @@
 using Spectre.Console;
+using Spectre.Console.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,6 +12,11 @@ namespace MergeIncludes.TreeBuilders;
 /// </summary>
 public static class FolderTreeBuilder
 {
+    /// <summary>
+    /// Gets a value indicating whether we're running in Windows Terminal.
+    /// </summary>
+    private static bool IsWindowsTerminal => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WT_SESSION"));
+
     /// <summary>
     /// Create a folder tree from a root file and its dependencies
     /// </summary>
@@ -34,10 +40,13 @@ public static class FolderTreeBuilder
     /// </summary>
     private static Tree CreateFolderTree(DirectoryInfo baseDirectory, IEnumerable<FileInfo> files)
     {
-        // Create root folder as clickable link with folder icon
+        // Create root folder, only add link in Windows Terminal
         var rootFolderName = $"📁 {baseDirectory.Name}";
-        var rootText = new Text(rootFolderName, new Style(foreground: Color.Blue, decoration: Decoration.Bold, link: baseDirectory.FullName));
-
+        var rootStyle = IsWindowsTerminal 
+            ? new Style(foreground: Color.Blue, decoration: Decoration.Bold, link: baseDirectory.FullName)
+            : new Style(foreground: Color.Blue, decoration: Decoration.Bold);
+            
+        var rootText = new Text(rootFolderName, rootStyle);
         var tree = new Tree(rootText);
 
         // Group files by their directories
@@ -53,7 +62,12 @@ public static class FolderTreeBuilder
                 // Files in root directory - add directly
                 foreach (var file in directoryGroup.OrderBy(f => f.Name))
                 {
-                    var fileText = new Text(file.Name, new Style(foreground: Color.Green, link: file.FullName));
+                    // Only add link in Windows Terminal
+                    var fileStyle = IsWindowsTerminal
+                        ? new Style(foreground: Color.Green, link: file.FullName)
+                        : new Style(foreground: Color.Green);
+                        
+                    var fileText = new Text(file.Name, fileStyle);
                     tree.AddNode(fileText);
                 }
             }
@@ -61,12 +75,23 @@ public static class FolderTreeBuilder
             {
                 // Files in subdirectory - add folder then files with folder icon
                 var folderName = $"📁 {directory.Name}";
-                var folderText = new Text(folderName, new Style(foreground: Color.Cyan1, decoration: Decoration.Bold, link: directory.FullName));
+                
+                // Only add link in Windows Terminal
+                var folderStyle = IsWindowsTerminal
+                    ? new Style(foreground: Color.Cyan1, decoration: Decoration.Bold, link: directory.FullName)
+                    : new Style(foreground: Color.Cyan1, decoration: Decoration.Bold);
+                    
+                var folderText = new Text(folderName, folderStyle);
                 var folderNode = tree.AddNode(folderText);
 
                 foreach (var file in directoryGroup.OrderBy(f => f.Name))
                 {
-                    var fileText = new Text(file.Name, new Style(foreground: Color.Green, link: file.FullName));
+                    // Only add link in Windows Terminal
+                    var fileStyle = IsWindowsTerminal
+                        ? new Style(foreground: Color.Green, link: file.FullName)
+                        : new Style(foreground: Color.Green);
+                        
+                    var fileText = new Text(file.Name, fileStyle);
                     folderNode.AddNode(fileText);
                 }
             }

@@ -44,7 +44,9 @@ public sealed class StructureAndReferenceView : IRenderable
 		var folderTree = CreateFolderStructureTree(rootFile);
 
 		// Create the right column: reference tree (similar to CreateBasicReferenceTree)
-		var referenceTree = CreateReferenceTree(rootFile, fileRelationships);        // Create a table with two columns for side-by-side display, using minimum width
+		var referenceTree = CreateReferenceTree(rootFile, fileRelationships);
+
+		// Create a table with two columns for side-by-side display, using minimum width
 		var table = new Table()
 			.Border(TableBorder.None)
 			.HideHeaders()
@@ -63,9 +65,11 @@ public sealed class StructureAndReferenceView : IRenderable
 		// Create a simple folder tree showing the file location
 		return TreeBuilders.FolderTreeBuilder.Create(rootFile.Directory!, [rootFile]);
 	}
+
 	private static Tree CreateReferenceTree(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
 	{
 		// Create root node with yellow color (not bold)
+		// HyperLink.For handles Windows Terminal detection internally
 		var rootText = HyperLink.For(rootFile, new Style(Color.Yellow));
 		var tree = new Tree(rootText);
 		var processedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -86,13 +90,15 @@ public sealed class StructureAndReferenceView : IRenderable
 		if (processedFiles.Contains(filePath) || !fileRelationships.TryGetValue(filePath, out var dependencies))
 			return;
 
-		processedFiles.Add(filePath); foreach (var dependency in dependencies)
+		processedFiles.Add(filePath);
+
+		foreach (var dependency in dependencies)
 		{
 			if (File.Exists(dependency) && !processedFiles.Contains(dependency))
 			{
-				var dependencyName = Path.GetFileName(dependency);
-				// Add cyan color for dependency nodes
-				var dependencyText = HyperLink.For(dependency, dependencyName, new Style(Color.Cyan1));
+				var dependencyFile = new FileInfo(dependency);
+				// HyperLink.For handles Windows Terminal detection internally
+				var dependencyText = HyperLink.For(dependencyFile, new Style(Color.Cyan1));
 				var childNode = tree.AddNode(dependencyText);
 
 				// Recursively build dependencies of this dependency
@@ -111,13 +117,15 @@ public sealed class StructureAndReferenceView : IRenderable
 		if (processedFiles.Contains(filePath) || !fileRelationships.TryGetValue(filePath, out var dependencies))
 			return;
 
-		processedFiles.Add(filePath); foreach (var dependency in dependencies)
+		processedFiles.Add(filePath);
+
+		foreach (var dependency in dependencies)
 		{
 			if (File.Exists(dependency) && !processedFiles.Contains(dependency))
 			{
-				var dependencyName = Path.GetFileName(dependency);
-				// Add cyan color for dependency nodes
-				var dependencyText = HyperLink.For(dependency, dependencyName, new Style(Color.Cyan1));
+				var dependencyFile = new FileInfo(dependency);
+				// HyperLink.For handles Windows Terminal detection internally
+				var dependencyText = HyperLink.For(dependencyFile, new Style(Color.Cyan1));
 				var childNode = parentNode.AddNode(dependencyText);
 
 				// Continue recursively

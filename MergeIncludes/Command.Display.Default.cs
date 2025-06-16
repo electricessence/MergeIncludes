@@ -18,8 +18,10 @@ partial class CombineCommand
 		var baseDirectory = rootFile.Directory
 			?? throw new InvalidOperationException("Root file directory cannot be null");
 
-		// Create the root path display using LinkableTextPath instead of TextPath
-		var rootPath = new LinkableTextPath(baseDirectory.FullName, baseDirectory.FullName)
+		// Create the root path display using LinkableTextPath
+		// The path is used as both display and link target
+		// Windows Terminal detection is handled internally in the LinkableTextPath.Render method
+		var rootPath = new LinkableTextPath(baseDirectory.FullName, true)
 			.RootStyle(Color.Blue)
 			.SeparatorStyle(Color.Grey)
 			.StemStyle(Color.DarkGreen)

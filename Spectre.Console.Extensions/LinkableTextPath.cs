@@ -187,8 +187,11 @@ public sealed class LinkableTextPath : IRenderable
         if (_separatorStyle != null) textPath.SeparatorStyle(_separatorStyle);
         if (_stemStyle != null) textPath.StemStyle(_stemStyle);
         if (_leafStyle != null) textPath.LeafStyle(_leafStyle);
+        
         return textPath.Measure(options, maxWidth);
-    }    /// <inheritdoc/>
+    }
+    
+    /// <inheritdoc/>
     public IEnumerable<Segment> Render(RenderOptions options, int maxWidth)
     {
         // Create a TextPath and apply our styles
@@ -199,53 +202,37 @@ public sealed class LinkableTextPath : IRenderable
         if (_stemStyle != null) textPath.StemStyle(_stemStyle);
         if (_leafStyle != null) textPath.LeafStyle(_leafStyle);
 
-        // If no link URL is specified or not in Windows Terminal, just render the text path
+        // If no link URL is specified or not in Windows Terminal, just render the text path without links
         if (string.IsNullOrEmpty(_linkUrl) || !IsWindowsTerminal)
         {
             return textPath.Render(options, maxWidth);
         }
 
-        // Get the segments from the text path
+        // We are in Windows Terminal and have a link URL, so add links to the segments
         var segments = textPath.Render(options, maxWidth).ToList();
-
-        // Apply individual links to each folder segment
-        return ApplySegmentSpecificLinks(segments);
+        return CreateLinkedSegments(segments);
     }
 
     /// <summary>
-    /// Applies individual clickable links to each path segment, making each folder segment
-    /// clickable to its respective path location.
+    /// Creates linked segments for a path, with each folder component linking to its corresponding path
     /// </summary>
-    /// <param name="segments">The original segments from TextPath.</param>
-    /// <returns>Segments with individual links applied to each folder component.</returns>
-    private IEnumerable<Segment> ApplySegmentSpecificLinks(List<Segment> segments)
+    private IEnumerable<Segment> CreateLinkedSegments(List<Segment> segments)
     {
-        // Build up the cumulative path as we process each segment
         var pathBuilder = new List<string>();
         var isFirstSegment = true;
 
         foreach (var segment in segments)
         {
-            if (segment.IsControlCode)
+            // Pass through control codes unchanged
+            if (segment.IsControlCode || string.IsNullOrEmpty(segment.Text))
             {
                 yield return segment;
                 continue;
             }
 
-            // Skip empty segments
-            if (string.IsNullOrEmpty(segment.Text))
-            {
-                yield return segment;
-                continue;
-            }
-
-            // Determine the link URL for this segment
-            string? segmentLinkUrl = null;
-
-            // Check if this segment is a path separator
+            // Path separators don't get links
             if (IsPathSeparator(segment.Text))
             {
-                // Separators don't get individual links, just preserve styling
                 yield return segment;
                 continue;
             }
@@ -253,11 +240,13 @@ public sealed class LinkableTextPath : IRenderable
             // This is a path component (folder or file name)
             pathBuilder.Add(segment.Text);
 
-            // Build the cumulative path for this segment
+            // Determine the link URL for this segment
+            string segmentLinkUrl;
+            
+            // Special handling for the first segment of absolute paths
             if (isFirstSegment && Path.IsPathRooted(_path))
             {
-                // For absolute paths, the first segment should link to the root
-                if (segment.Text.EndsWith(":")) // Windows drive (e.g., "C:")
+                if (segment.Text.EndsWith(":")) // Windows drive (C:)
                 {
                     segmentLinkUrl = segment.Text + Path.DirectorySeparatorChar;
                 }
@@ -265,47 +254,39 @@ public sealed class LinkableTextPath : IRenderable
                 {
                     segmentLinkUrl = Path.DirectorySeparatorChar + segment.Text;
                 }
-
+                
                 isFirstSegment = false;
             }
             else
             {
-                // Build cumulative path
-                var cumulativePath = isFirstSegment
+                // Build cumulative path for this segment
+                segmentLinkUrl = isFirstSegment
                     ? segment.Text
                     : string.Join(Path.DirectorySeparatorChar.ToString(), pathBuilder);
-
-                segmentLinkUrl = cumulativePath;
+                
                 isFirstSegment = false;
             }
+            
+            // Create a new style that includes the link
+            var style = segment.Style != Style.Plain
+                ? new Style(
+                    segment.Style.Foreground,
+                    segment.Style.Background,
+                    segment.Style.Decoration,
+                    link: segmentLinkUrl)
+                : new Style(link: segmentLinkUrl);
 
-            // Apply the link to this segment
-            if (!string.IsNullOrEmpty(segmentLinkUrl))
-            {
-                var style = segment.Style != Style.Plain
-                    ? new Style(
-                        segment.Style.Foreground,
-                        segment.Style.Background,
-                        segment.Style.Decoration,
-                        link: segmentLinkUrl)
-                    : new Style(link: segmentLinkUrl);
-
-                yield return new Segment(segment.Text, style);
-            }
-            else
-            {
-                yield return segment;
-            }
+            yield return new Segment(segment.Text, style);
         }
     }
 
     /// <summary>
     /// Checks if the given text is a path separator.
     /// </summary>
-    /// <param name="text">The text to check.</param>
-    /// <returns>True if the text is a path separator.</returns>
     private static bool IsPathSeparator(string text)
     {
-        return text == "/" || text == "\\" || text == Path.DirectorySeparatorChar.ToString() || text == Path.AltDirectorySeparatorChar.ToString();
+        return text == "/" || text == "\\" || 
+               text == Path.DirectorySeparatorChar.ToString() || 
+               text == Path.AltDirectorySeparatorChar.ToString();
     }
 }

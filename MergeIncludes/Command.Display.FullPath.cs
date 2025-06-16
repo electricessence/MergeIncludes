@@ -29,6 +29,7 @@ public sealed partial class CombineCommand
 
 			// Display files in a panel with consistent path formatting and clickable links
 			// Use PathLink.Smart for smart color-coding based on file extensions
+			// The Smart method now properly handles terminal detection
 			var fileLines = allFiles.Select(filePath => PathLink.Smart(filePath)).ToArray();
 			var panel = new Panel(new Rows(fileLines))
 			{
