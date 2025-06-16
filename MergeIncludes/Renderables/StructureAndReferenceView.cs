@@ -52,7 +52,7 @@ public sealed class StructureAndReferenceView : IRenderable
 			.HideHeaders()
 			.Collapse()  // Makes table take up minimal width
 			.AddColumn(new TableColumn("Folder") { NoWrap = true, Padding = new Padding(0, 0, 1, 0) })  // Small right padding
-			.AddColumn(new TableColumn("Separator") { NoWrap = true, Padding = new Padding(0, 0, 1, 0) })  // Small padding on both sides
+			.AddColumn(new TableColumn("Separator") { NoWrap = true, Width = 1, Padding = new Padding(0, 0, 1, 0) })  // Small padding on both sides
 			.AddColumn(new TableColumn("References") { NoWrap = true, Padding = new Padding(0, 0, 0, 0) });
 
 		// Add the trees with separator
