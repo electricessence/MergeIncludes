@@ -1,42 +1,130 @@
 # MergeIncludes
- Recursively reads any text based file and replaces #include and #require statements with the content of other files.
 
-## Usage
-Uses a standard CLI. 
+**MergeIncludes** is a powerful command-line tool that recursively processes text-based files, replacing `#include` and `#require` statements with the content of referenced files. Perfect for building composite documents, generating documentation, or preparing deployable files from modular components.
 
-### Get HelpMergeIncludes.exe --help
+[![Built for .NET 9](https://img.shields.io/badge/.NET-9.0-512BD4)](https://dotnet.microsoft.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+## Features
+
+- **Recursive Processing** - Process nested include directives to any depth
+- **Smart Include Logic** - Support for both `#include` and `#require` directives
+- **Wildcard Support** - Reference multiple files with a single directive
+- **Comment Stripping** - Remove development comments from output files 
+- **File Tree Visualization** - See the inclusion hierarchy with clickable file links
+- **Watch Mode** - Automatically rebuild when source files change
+- **Cross-Platform** - Works on Windows, macOS, and Linux
+
+## Installation
+
+### Prerequisites
+
+- [.NET 9 SDK](https://dotnet.microsoft.com/download) or later
+
+### Install via .NET Tool (recommended)
+dotnet tool install --global MergeIncludes
+### Build from Source
+git clone https://github.com/electricessence/MergeIncludes.git
+cd MergeIncludes
+dotnet build -c Release
+## Basic Usage
+
+### Getting Help
+MergeIncludes --help
 ### Merge a File
-The following will create a file called `MyFile.merged.txt`.MergeIncludes.exe ./MyFile.txt
-### Display Options
-You can control how the file inclusion tree is displayed using the `-d` or `--display` option:
-MergeIncludes.exe ./MyFile.txt -d Simple         # Shows simple file tree with IDs
-MergeIncludes.exe ./MyFile.txt -d WithFolders    # Shows files with folder information
-MergeIncludes.exe ./MyFile.txt -d FullPaths      # Shows files with relative paths
-MergeIncludes.exe ./MyFile.txt -d Both           # Shows both simple and folder trees
-MergeIncludes.exe ./MyFile.txt -d RepeatsOnly    # Default - Only shows IDs for files that repeat
-MergeIncludes.exe ./MyFile.txt -d FolderGrouped  # Shows folder headers with files grouped under them
-## Syntax
+MergeIncludes ./MyFile.txt
+This command creates a file called `MyFile.merged.txt` in the same directory as `MyFile.txt`.
 
-`MergeIncludes` reads line by line and include statements must start at the beginning of the line.
+### Specify Output File
+MergeIncludes ./MyFile.txt -o ./output/Combined.txt
+## Directive Syntax
 
-The `#include` directive will insert the contents at that location and `#require` will only insert contents when it's first referenced.
+MergeIncludes supports several include directive formats to work with different file types:
 
-Any line beginning `##` (double pound) will be considered a comment and will simply not be included in the output.
+### Plain Text Files
+#include ./relative/path/to/file.txt
+#require ./relative/path/to/file.txt
+## This is a comment that won't appear in the output
+### Markdown & HTML Files
+<!-- #include ./relative/path/to/file.md -->
+<!-- ## This is a comment that won't appear in the output -->
+### Script Files (JavaScript, Python, etc.)
+// #include ./relative/path/to/script.js
+// ## This is a comment that won't appear in the output
+### Directive Behavior
 
-### Markdown & HTML<!-- ## Comment -->
-<!-- #include ./filepath.md -->
-### Script// ## Comment
-// #include ./filepath.md
-### Text## Comment
-#include ./filepath.md
-## Wild-Cards
+- `#include` - Always inserts the contents of the referenced file, even if it has been included before
+- `#require` - Only inserts the contents when the file is first referenced (similar to C/C++ `#include` guards)
+- Lines beginning with `##` are treated as comments and removed from the output
 
-File names (not directories) can contain wild-cards. Order should be alphabetical, but not guaranteed.
+## Wildcard Support
 
-The rules for each directive still apply:
-* When using `#require`, if any one of the files has already been included it will be skipped.
-* When using `#include`, all entries will be listed.
+File paths (not directories) can contain wildcards to include multiple files:
+#require ./templates/*.html
+#require ./modules/mod-??.js
+Matching files are processed in alphabetical order. The rules for each directive still apply:
 
+- With `#require`, if any one of the matching files has already been included, it will be skipped
+- With `#include`, all matching files will be included
 
-### Examples
-#require ./sample-*.txt#require ./sample-??.txt#require ./*.txt
+## Display Options
+
+Control how the file inclusion tree is displayed using the `-d` or `--display` option:
+MergeIncludes ./MyFile.txt -d Default     # Side-by-side trees (folder structure and references)
+MergeIncludes ./MyFile.txt -d FullPath    # Simple list with full file paths
+When running in Windows Terminal, file paths in the output are clickable links for easy navigation.
+
+## Advanced Options
+
+### Watch Mode
+
+Monitor files for changes and automatically rebuild when they change:
+MergeIncludes ./MyFile.txt --watch
+Press any key to stop watching.
+
+### Whitespace Control
+MergeIncludes ./MyFile.txt --trim false   # Preserve all whitespace (default is to trim)
+MergeIncludes ./MyFile.txt --pad 2        # Add 2 blank lines at the end (default is 1)
+## Examples
+
+### Basic Document Assembly
+
+**main.md**:# My Document
+
+## Introduction
+<!-- #include ./intro.md -->
+
+## Main Content
+<!-- #include ./content/*.md -->
+
+## Conclusion
+<!-- #include ./conclusion.md -->
+### Script Assembly with Conditional Includes
+
+**build.js**:// Core library
+// #require ./lib/core.js
+
+// Feature modules - only included once even if required multiple times
+// #require ./features/feature-a.js
+// #require ./features/feature-b.js
+
+// Always include latest configuration
+// #include ./config.js
+
+// Development helpers (commented out in production)
+// ## #include ./debug-tools.js
+## Error Handling
+
+MergeIncludes provides clear error messages for common issues:
+
+- Missing include files
+- Recursive inclusion loops
+- Invalid file permissions
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
