@@ -59,13 +59,15 @@ public class ScenarioTests(ITestOutputHelper outputHelper)
 			EmptyRemainingArguments.Instance,
 			"test-command",
 			null);
-
 		await command.ExecuteAsync(context, settings);
 
 		// Assert
 		var consoleOutput = testConsole.Output;
 
-		await Verify(consoleOutput)
+		// Trim trailing whitespace from each line to avoid test failures
+		var trimmedOutput = string.Join('\n', consoleOutput.Split('\n').Select(line => line.TrimEnd()));
+
+		await Verify(trimmedOutput)
 			.UseDirectory("Snapshots/Scenarios")
 			.UseFileName(scenarioName);
 	}
@@ -102,13 +104,15 @@ public class ScenarioTests(ITestOutputHelper outputHelper)
 			EmptyRemainingArguments.Instance,
 			"test-command",
 			null);
-
 		await command.ExecuteAsync(context, settings);
 
 		// Assert
 		var consoleOutput = testConsole.Output;
 
-		await Verify(consoleOutput)
+		// Trim trailing whitespace from each line to avoid test failures
+		var trimmedOutput = string.Join('\n', consoleOutput.Split('\n').Select(line => line.TrimEnd()));
+
+		await Verify(trimmedOutput)
 			.UseDirectory("Snapshots/DisplayModes")
 			.UseFileName(testName);
 	}

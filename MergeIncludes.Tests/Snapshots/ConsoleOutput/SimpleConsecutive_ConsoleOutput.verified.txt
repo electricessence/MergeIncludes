@@ -1,4 +1,4 @@
-﻿📁 05_ConsecutiveIncludes / simple-consecutive.txt
-├── 📁 SubA                 ├── file1.txt [1]     
-├──                         ├── file2.txt [2]     
-└── 📁 SubB                 └── file3.txt [3]     
+📁 05_ConsecutiveIncludes / simple-consecutive.txt
+├── 📁 SubA                 ├── file1.txt
+│   └──                     └── file2.txt
+└── 📁 SubB                 └── file3.txt

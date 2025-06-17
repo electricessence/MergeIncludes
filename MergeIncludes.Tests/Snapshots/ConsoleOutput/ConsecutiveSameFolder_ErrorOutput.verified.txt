@@ -1,4 +1,4 @@
-﻿{
+{
   Success: false,
   ErrorMessage:
 Could not find include file on line 7 in:

@@ -131,11 +131,31 @@ public class DefaultTreeBuilder
 					}
 					else
 					{
-						// Subsequent files from same folder
-						// If the current folder was shown with └── (last folder), use spaces; otherwise use continuation (│)
-						var currentFolderIndex = folderShowOrder.IndexOf(relativePath) + 1; // +1 because it was added when first shown
-						var wasLastFolder = currentFolderIndex == totalFoldersAtRoot;
-						lines.Add(wasLastFolder ? "                " : " │");
+						// Subsequent files from same folder - show proper tree nesting
+						var currentFolderIndex = folderShowOrder.IndexOf(relativePath);
+						var isLastFolder = (currentFolderIndex + 1) == totalFoldersAtRoot;
+
+						// Determine if this is the last file in this folder by looking ahead
+						var isLastFileInFolder = true;
+						for (int j = i + 1; j < referenceLines.Count; j++)
+						{
+							var nextFileName = ExtractFileNameFromReferenceLine(referenceLines[j]);
+							var nextFile = allFiles.FirstOrDefault(f => f.Name.Equals(nextFileName, StringComparison.OrdinalIgnoreCase));
+							if (nextFile?.Directory != null)
+							{
+								var nextRelativePath = GetRelativePath(baseDirectory.FullName, nextFile.Directory.FullName);
+								if (relativePath.Equals(nextRelativePath, StringComparison.OrdinalIgnoreCase))
+								{
+									isLastFileInFolder = false;
+									break;
+								}
+							}
+						}
+
+						// Build the proper tree structure
+						var folderPrefix = isLastFolder ? "    " : " │  ";
+						var fileConnector = isLastFileInFolder ? "└── " : "├── ";
+						lines.Add($" {folderPrefix}{fileConnector}          ");
 					}
 				}
 			}
@@ -253,14 +273,19 @@ public class DefaultTreeBuilder
 		public FolderNode? Parent { get; set; }
 		public List<FolderNode> Children { get; set; } = [];
 	}
-
+	
 	/// <summary>
-	/// Extracts the file name from a reference tree line by removing tree formatting
+	/// Extracts the file name from a reference tree line by removing tree formatting and reference numbers
 	/// </summary>
 	private static string ExtractFileNameFromReferenceLine(string referenceLine)
 	{
 		// Remove tree characters and trim
 		var cleaned = referenceLine.Replace("├── ", "").Replace("└── ", "").Replace("│   ", "").Replace("    ", "").Trim();
+
+		// Remove reference numbers like [1], [2], etc. that are only used for duplicates in reference tree
+		// Use regex to match patterns like " [1]", " [02]", " [123]" at the end
+		cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, @"\s+\[\d+\]$", "").Trim();
+
 		return cleaned;
 	}
 

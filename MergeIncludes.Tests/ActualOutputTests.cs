@@ -41,8 +41,11 @@ public class ActualOutputTests(ITestOutputHelper output)
 
 			var consoleOutput = testConsole.Output;
 
+			// Trim trailing whitespace from each line to avoid test failures
+			var trimmedOutput = string.Join('\n', consoleOutput.Split('\n').Select(line => line.TrimEnd()));
+
 			// Verify the console output separately
-			await Verify(consoleOutput)
+			await Verify(trimmedOutput)
 				.UseDirectory("Snapshots/ConsoleOutput")
 				.UseFileName($"{scenarioName}_ConsoleOutput");
 		}

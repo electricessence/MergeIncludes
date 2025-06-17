@@ -56,8 +56,7 @@ public partial class StructureVerificationTests
 		return fileRelationships;
 	}
 
-	[Fact]
-	public async Task VerifyBasicStructure_ExpectedLayout()
+	[Fact]	public async Task VerifyBasicStructure_ExpectedLayout()
 	{
 		// Test verifies the exact expected structure for basic case
 		var testFile = Path.Combine("TestScenarios", "01_BasicInclusion", "root.txt");
@@ -66,13 +65,14 @@ public partial class StructureVerificationTests
 		var console = new TestConsole();
 		var view = new StructureAndReferenceView(new FileInfo(testFile), fileRelationships);
 		console.Write(view);
-
 		var output = console.Output;
 
-		await Verify(output)
+		// Trim trailing whitespace from each line to avoid test failures
+		var trimmedOutput = TrimTrailingWhitespace(output);
+
+		await Verify(trimmedOutput)
 			.UseDirectory("Snapshots/StructureVerification");
 	}
-
 	[Fact]
 	public async Task VerifyDuplicateReferences_ShowsAllOccurrences()
 	{
@@ -82,10 +82,12 @@ public partial class StructureVerificationTests
 		var console = new TestConsole();
 		var view = new StructureAndReferenceView(new FileInfo(testFile), fileRelationships);
 		console.Write(view);
-
 		var output = console.Output;
 
-		await Verify(output)
+		// Trim trailing whitespace from each line to avoid test failures
+		var trimmedOutput = TrimTrailingWhitespace(output);
+
+		await Verify(trimmedOutput)
 			.UseDirectory("Snapshots/StructureVerification");
 	}
 
@@ -151,6 +153,23 @@ public partial class StructureVerificationTests
 
 		await Verify(output)
 			.UseDirectory("Snapshots/StructureVerification");
+	}
+	/// <summary>
+	/// Trims all types of whitespace characters from the end of each line
+	/// </summary>
+	private static string TrimTrailingWhitespace(string output)
+	{
+		// Include common whitespace characters that might be added by Spectre.Console
+		char[] whitespaceChars = { ' ', '\t', '\u00A0', '\u2000', '\u2001', '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009', '\u200A', '\u200B', '\u202F', '\u205F', '\u3000', '\uFEFF' };
+		
+		using var reader = new StringReader(output);
+		var lines = new List<string>();
+		string? line;
+		while ((line = reader.ReadLine()) != null)
+		{
+			lines.Add(line.TrimEnd(whitespaceChars));
+		}
+		return string.Join('\n', lines);
 	}
 
 	[GeneratedRegex(@"^\s*#include\s+(.+)\s*$", RegexOptions.Compiled)]

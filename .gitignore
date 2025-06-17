@@ -399,6 +399,7 @@ FodyWeavers.xsd
 
 # Generated merge output files (artifacts)
 **/*.merged.txt
+**/*.merged.md
 
 /MergeIncludes/Properties/launchSettings.json
 

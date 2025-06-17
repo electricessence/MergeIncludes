@@ -1,1 +1,1 @@
-﻿📁 Shared / root-file.txt
+📁 Shared / root-file.txt

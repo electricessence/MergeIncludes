@@ -1,4 +1,4 @@
-﻿📁 08_CommentedIncludes       / root.txt                   
-├── 📁 ../07_WildcardIncludes   ├── sample01.txt [1]       
-│   └──                         └── sample02.txt [2]       
-└──                                 └── sample02-01.txt [3]
+﻿📁 08_CommentedIncludes       / root.txt               
+├── 📁 ../07_WildcardIncludes   ├── sample01.txt       
+│   └──                         └── sample02.txt       
+└──                                 └── sample02-01.txt
