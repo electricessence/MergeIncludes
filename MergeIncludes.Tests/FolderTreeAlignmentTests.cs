@@ -14,7 +14,7 @@ public class FolderTreeAlignmentTests(ITestOutputHelper output)
 	public async Task SimpleConsecutive_ShouldShowCorrectHierarchy()
 	{
 		// Arrange
-		var testFile = Path.Combine("TestCases", "SimpleConsecutive", "test.txt");
+		var testFile = Path.Combine("TestScenarios", "05_ConsecutiveIncludes", "consecutive-same-folder.txt");
 		var rootFile = new FileInfo(testFile);
 
 		if (!rootFile.Exists)
@@ -25,9 +25,9 @@ public class FolderTreeAlignmentTests(ITestOutputHelper output)
 			{
 				[rootFile.FullName] =
 				[
-					Path.Combine(rootFile.DirectoryName!, "SubA", "file1.txt"),
-					Path.Combine(rootFile.DirectoryName!, "SubA", "file2.txt"),
-					Path.Combine(rootFile.DirectoryName!, "SubB", "file3.txt")
+					Path.Combine(rootFile.DirectoryName!, "SubFolder1", "first.txt"),
+					Path.Combine(rootFile.DirectoryName!, "SubFolder1", "second.txt"),
+					Path.Combine(rootFile.DirectoryName!, "SubFolder2", "alpha.txt")
 				]
 			};
 

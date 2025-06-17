@@ -11,7 +11,6 @@ public class MergeToMemoryTests
 	public async Task MergeToMemoryAsync_BasicInclusion_ReturnsSuccessfulResult()
 	{
 		// Arrange
-		var command = new CombineCommand();
 		var testScenarioPath = Path.Combine(
 			Directory.GetCurrentDirectory(),
 			"TestScenarios",
@@ -34,12 +33,11 @@ public class MergeToMemoryTests
 		Assert.Null(result.ErrorMessage);
 		Assert.NotEmpty(result.ProcessedFiles);
 		Assert.NotEmpty(result.FileRelationships);
-
 		// Verify the content contains the expected merged text
 		Assert.Contains("This is a basic test with simple includes", result.MergedContent);
-		Assert.Contains("Content from file1", result.MergedContent);
-		Assert.Contains("Content from file2", result.MergedContent);
-		Assert.Contains("Content from file3", result.MergedContent);
+		Assert.Contains("This is file1 in SubFolder1", result.MergedContent);
+		Assert.Contains("This is file2 in SubFolder2", result.MergedContent);
+		Assert.Contains("This is file3 in SubFolder1", result.MergedContent);
 
 		// Verify that include statements are not in the merged content
 		Assert.DoesNotContain("#include", result.MergedContent);
@@ -49,7 +47,6 @@ public class MergeToMemoryTests
 	public async Task MergeToMemoryAsync_CircularReference_ReturnsFailureResult()
 	{
 		// Arrange
-		var command = new CombineCommand();
 		var testScenarioPath = Path.Combine(
 			Directory.GetCurrentDirectory(),
 			"TestScenarios",
@@ -85,7 +82,6 @@ public class MergeToMemoryTests
 	public async Task MergeToMemoryAsync_AllScenarios_ProducesExpectedResults(string scenario, bool shouldSucceed)
 	{
 		// Arrange
-		var command = new CombineCommand();
 		var testScenarioPath = Path.Combine(
 			Directory.GetCurrentDirectory(),
 			"TestScenarios",

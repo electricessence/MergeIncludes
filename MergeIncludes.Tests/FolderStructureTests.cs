@@ -41,14 +41,13 @@ public class FolderStructureTests
 			.UseDirectory("Snapshots")
 			.UseFileName("ComplexFolderStructureWithRepeats");
 	}
-
 	private static Dictionary<string, List<string>> BuildComplexFileRelationships()
 	{
-		// Use the updated paths in TestCases directory
-		var rootPath = Path.GetFullPath(@".\TestCases\ComplexCircular\complex-root.txt");
-		var basePath = Path.GetFullPath(@".\TestCases");
+		// Use the updated paths in TestScenarios directory
+		var rootPath = Path.GetFullPath(@".\TestScenarios\Shared\MainFolder\complex-root.txt");
+		var basePath = Path.GetFullPath(@".\TestScenarios");
 
-		var mainFolder = Path.Combine(basePath, "ComplexCircular");
+		var mainFolder = Path.Combine(basePath, "Shared", "MainFolder");
 		var subFolder1 = Path.Combine(mainFolder, "SubFolder1");
 		var subFolder2 = Path.Combine(mainFolder, "SubFolder2");
 		var anotherFolder = Path.Combine(basePath, "AnotherFolder");

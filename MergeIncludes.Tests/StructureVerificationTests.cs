@@ -56,43 +56,11 @@ public partial class StructureVerificationTests
 		return fileRelationships;
 	}
 
-	[Theory]
-	[InlineData("BasicStructure", "simple-root.txt")]
-	[InlineData("SimpleConsecutive", "consecutive-same-folder.txt")]
-	[InlineData("FolderJumping", "unique-names.txt")]
-	[InlineData("DuplicateReferences", "root-duplicates.txt")]
-	[InlineData("CircularReferences", "circular-root.txt")]
-	[InlineData("ComplexCircular", "complex-root.txt")]
-	public async Task VerifyStructureDisplay(string category, string fileName)
-	{
-		// Arrange
-		var testCaseDir = Path.Combine("TestCases", category);
-		var rootFilePath = Path.Combine(testCaseDir, fileName);
-
-		if (!File.Exists(rootFilePath))
-		{
-			throw new FileNotFoundException($"Test file not found: {rootFilePath}");
-		}
-
-		var fileRelationships = BuildFileRelationships(rootFilePath);
-		var console = new TestConsole();
-		var view = new StructureAndReferenceView(new FileInfo(rootFilePath), fileRelationships);
-
-		// Act
-		console.Write(view);
-		var output = console.Output;
-
-		// Assert
-		await Verify(output)
-			.UseParameters(category, Path.GetFileNameWithoutExtension(fileName))
-			.UseDirectory("Snapshots/StructureVerification");
-	}
-
 	[Fact]
 	public async Task VerifyBasicStructure_ExpectedLayout()
 	{
-		// This test verifies the exact expected structure for basic case
-		var testFile = Path.Combine("TestCases", "BasicStructure", "simple-root.txt");
+		// Test verifies the exact expected structure for basic case
+		var testFile = Path.Combine("TestScenarios", "01_BasicInclusion", "root.txt");
 		var fileRelationships = BuildFileRelationships(testFile);
 
 		var console = new TestConsole();
@@ -100,12 +68,6 @@ public partial class StructureVerificationTests
 		console.Write(view);
 
 		var output = console.Output;
-
-		// The expected structure should be:
-		// 📁 TestCases/BasicStructure  / simple-root.txt
-		// ├── 📁 SubFolder1             ├── file1.txt [1]
-		// ├──                           ├── file2.txt [2]  
-		// └── 📁 SubFolder2             └── file3.txt [3]
 
 		await Verify(output)
 			.UseDirectory("Snapshots/StructureVerification");
@@ -114,7 +76,7 @@ public partial class StructureVerificationTests
 	[Fact]
 	public async Task VerifyDuplicateReferences_ShowsAllOccurrences()
 	{
-		var testFile = Path.Combine("TestCases", "DuplicateReferences", "root-duplicates.txt");
+		var testFile = Path.Combine("TestScenarios", "02_DuplicateReferences", "root.txt");
 		var fileRelationships = BuildFileRelationships(testFile);
 
 		var console = new TestConsole();
@@ -122,11 +84,6 @@ public partial class StructureVerificationTests
 		console.Write(view);
 
 		var output = console.Output;
-
-		// Should show:
-		// - shared.txt [1] first occurrence in Cyan1
-		// - shared.txt [1] second occurrence in gray
-		// - All files have unique IDs
 
 		await Verify(output)
 			.UseDirectory("Snapshots/StructureVerification");
@@ -135,7 +92,7 @@ public partial class StructureVerificationTests
 	[Fact]
 	public async Task VerifyCircularReferences_ShowsWarningIcons()
 	{
-		var testFile = Path.Combine("TestCases", "CircularReferences", "circular-root.txt");
+		var testFile = Path.Combine("TestScenarios", "03_CircularReferences", "root.txt");
 		var fileRelationships = BuildFileRelationships(testFile);
 
 		var console = new TestConsole();
@@ -143,8 +100,6 @@ public partial class StructureVerificationTests
 		console.Write(view);
 
 		var output = console.Output;
-
-		// Should show warning icons (⚠) for circular references
 
 		await Verify(output)
 			.UseDirectory("Snapshots/StructureVerification");
@@ -153,7 +108,7 @@ public partial class StructureVerificationTests
 	[Fact]
 	public async Task VerifyFolderJumping_RelistsFolders()
 	{
-		var testFile = Path.Combine("TestCases", "FolderJumping", "unique-names.txt");
+		var testFile = Path.Combine("TestScenarios", "04_FolderNavigation", "root.txt");
 		var fileRelationships = BuildFileRelationships(testFile);
 
 		var console = new TestConsole();
@@ -161,8 +116,6 @@ public partial class StructureVerificationTests
 		console.Write(view);
 
 		var output = console.Output;
-
-		// Should show folders relisted when files jump between them
 
 		await Verify(output)
 			.UseDirectory("Snapshots/StructureVerification");
@@ -171,7 +124,7 @@ public partial class StructureVerificationTests
 	[Fact]
 	public async Task VerifyConsecutiveSameFolder_ShowsAsChildren()
 	{
-		var testFile = Path.Combine("TestCases", "SimpleConsecutive", "consecutive-same-folder.txt");
+		var testFile = Path.Combine("TestScenarios", "05_ConsecutiveIncludes", "consecutive-same-folder.txt");
 		var fileRelationships = BuildFileRelationships(testFile);
 
 		var console = new TestConsole();
@@ -179,8 +132,6 @@ public partial class StructureVerificationTests
 		console.Write(view);
 
 		var output = console.Output;
-
-		// Consecutive files in same folder should show as children of that folder
 
 		await Verify(output)
 			.UseDirectory("Snapshots/StructureVerification");
@@ -189,7 +140,7 @@ public partial class StructureVerificationTests
 	[Fact]
 	public async Task VerifyComplexStructure_AllFeaturesTogether()
 	{
-		var testFile = Path.Combine("TestCases", "ComplexCircular", "complex-root.txt");
+		var testFile = Path.Combine("TestScenarios", "Shared", "MainFolder", "complex-root.txt");
 		var fileRelationships = BuildFileRelationships(testFile);
 
 		var console = new TestConsole();
@@ -197,12 +148,6 @@ public partial class StructureVerificationTests
 		console.Write(view);
 
 		var output = console.Output;
-
-		// Should demonstrate:
-		// - Folder relisting
-		// - Duplicate references with proper coloring
-		// - Circular reference warnings
-		// - Proper alignment between folder and reference trees
 
 		await Verify(output)
 			.UseDirectory("Snapshots/StructureVerification");

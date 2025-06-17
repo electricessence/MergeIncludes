@@ -1,2 +1,10 @@
-﻿Could not find include file on line 5 in:
-{CurrentDirectory}TestScenarios\01_BasicInclusion\root.txt:5
+﻿# Simple Root File
+This is a basic test with simple includes.
+
+This is file1 in SubFolder1
+
+This is file2 in SubFolder2
+
+This is file3 in SubFolder1
+
+
