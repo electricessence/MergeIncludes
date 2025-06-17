@@ -1,9 +1,0 @@
-﻿╭─Files included in merge:─────────────────────────────────────────────────╮
-│ D:/…/MergeIncludes.Tests/bin/Debug/net9.0/TestFiles/MainFolder/root.txt  │
-│ D:/…/MergeIncludes.Tests/bin/Debug/net9.0/TestFiles/MainFolder/local.txt │
-│ D:/…/bin/Debug/net9.0/TestFiles/MainFolder/SubFolder1/component1.txt     │
-│ D:/…/bin/Debug/net9.0/TestFiles/MainFolder/SubFolder1/subcomponent1.txt  │
-│ D:/…/bin/Debug/net9.0/TestFiles/MainFolder/SubFolder2/common.txt         │
-│ D:/…/bin/Debug/net9.0/TestFiles/MainFolder/SubFolder2/component2.txt     │
-│ D:/…/bin/Debug/net9.0/TestFiles/AnotherFolder/external.txt               │
-╰──────────────────────────────────────────────────────────────────────────╯

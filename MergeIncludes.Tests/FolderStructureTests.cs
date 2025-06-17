@@ -5,13 +5,12 @@ namespace MergeIncludes.Tests;
 
 [UsesVerify]
 public class FolderStructureTests
-{
-	[Fact]
+{	[Fact]
 	public async Task ComplexFolderStructure_DisplaysCorrectly()
 	{
 		// Arrange
 		var console = new TestConsole();
-		var rootFile = new FileInfo(Path.GetFullPath(@".\TestCases\ComplexCircular\complex-root.txt"));
+		var rootFile = new FileInfo(Path.GetFullPath(@"TestScenarios\Shared\MainFolder\complex-root.txt"));
 		var fileRelationships = BuildComplexFileRelationships();
 
 		// Act - Use the StructureAndReferenceView directly
@@ -24,13 +23,12 @@ public class FolderStructureTests
 			.UseDirectory("Snapshots")
 			.UseFileName("ComplexFolderStructure");
 	}
-
 	[Fact]
 	public async Task ComplexFolderStructure_DetectsRepeatedDependencies()
 	{
 		// Arrange
 		var console = new TestConsole();
-		var rootFile = new FileInfo(Path.GetFullPath(@".\TestCases\ComplexCircular\complex-root.txt"));
+		var rootFile = new FileInfo(Path.GetFullPath(@"TestScenarios\Shared\MainFolder\complex-root.txt"));
 		var fileRelationships = BuildComplexFileRelationships();
 
 		// Act - Use the StructureAndReferenceView directly for repeated dependencies

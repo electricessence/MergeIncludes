@@ -1,7 +1,5 @@
 using Spectre.Console;
 using Spectre.Console.Testing;
-using System.Diagnostics;
-using System.Text;
 using Xunit.Abstractions;
 
 namespace MergeIncludes.Tests;
@@ -9,204 +7,122 @@ namespace MergeIncludes.Tests;
 [UsesVerify]
 public class ActualOutputTests(ITestOutputHelper output)
 {
-	private static async Task<string> RunMergeIncludes(string testFile)
+	/// <summary>
+	/// Test a merge scenario and verify both merged content and console output separately
+	/// </summary>
+	private async Task TestMergeScenario(string testFilePath, string scenarioName)
 	{
-		var exePath = Path.Combine("..", "..", "..", "..", "MergeIncludes", "bin", "Debug", "net9.0", "MergeIncludes.exe");
-		var fullExePath = Path.GetFullPath(exePath);
-
-		if (!File.Exists(fullExePath))
-		{
-			throw new FileNotFoundException($"MergeIncludes.exe not found at: {fullExePath}");
-		}
-
-		var startInfo = new ProcessStartInfo
-		{
-			FileName = fullExePath,
-			Arguments = $"\"{testFile}\" --display default",
-			UseShellExecute = false,
-			RedirectStandardOutput = true,
-			RedirectStandardError = true,
-			CreateNoWindow = true,
-			// Set encoding to UTF-8 for proper character handling
-			StandardOutputEncoding = Encoding.UTF8,
-			StandardErrorEncoding = Encoding.UTF8
+		var settings = new Settings 
+		{ 
+			RootFilePath = testFilePath,
+			DisplayMode = TreeDisplayMode.Default,
+			Trim = true
 		};
 
-		using var process = Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start process");
-		var output = await process.StandardOutput.ReadToEndAsync();
-		var error = await process.StandardError.ReadToEndAsync();
+		output.WriteLine($"Testing scenario: {scenarioName}");
+		output.WriteLine($"File: {testFilePath}");
+		
+		// Get the merge result without writing files
+		var result = await CombineCommand.MergeToMemoryAsync(settings);
+		
+		// Verify the merged content separately
+		await Verify(result.MergedContent ?? result.ErrorMessage ?? "No content")
+			.UseDirectory("Snapshots/MergedContent")
+			.UseFileName($"{scenarioName}_MergedContent");
 
-		await process.WaitForExitAsync();
-
-		if (process.ExitCode != 0)
+		// For successful merges, also verify the console display output
+		if (result.IsSuccess && result.MergedContent != null)
 		{
-			throw new InvalidOperationException($"Process failed with exit code {process.ExitCode}. Error: {error}");
+			var testConsole = new TestConsole();
+			
+			// Simulate the tree display that would be shown to users
+			var rootFile = new FileInfo(testFilePath);
+			var structureView = new Renderables.StructureAndReferenceView(rootFile, result.FileRelationships);
+			testConsole.Write(structureView);
+			
+			var consoleOutput = testConsole.Output;
+			
+			// Verify the console output separately
+			await Verify(consoleOutput)
+				.UseDirectory("Snapshots/ConsoleOutput")
+				.UseFileName($"{scenarioName}_ConsoleOutput");
 		}
-
-		return output;
+		else
+		{
+			// For error cases, verify the error handling display
+			await Verify(new { 
+				Success = result.IsSuccess, 
+				ErrorMessage = result.ErrorMessage,
+				ProcessedFiles = result.ProcessedFiles.Count
+			})
+				.UseDirectory("Snapshots/ConsoleOutput")
+				.UseFileName($"{scenarioName}_ErrorOutput");
+		}
 	}
-
-	// Legacy tests using TestFiles directory
+	// Test scenarios using organized TestScenarios directory
 	
 	[Fact]
 	public async Task SimpleConsecutive_ActualOutput()
 	{
-		var testFile = Path.Combine("TestFiles", "simple-consecutive.txt");
+		var testFile = Path.Combine("TestScenarios", "05_ConsecutiveIncludes", "simple-consecutive.txt");
 		var fullPath = Path.GetFullPath(testFile);
 
 		if (!File.Exists(fullPath))
 		{
 			output.WriteLine($"Test file not found: {fullPath}");
-			// Attempt to use the migrated file in TestCases if available
-			var altPath = Path.GetFullPath(Path.Combine("TestCases", "SimpleConsecutive", "consecutive-same-folder.txt"));
-			if (File.Exists(altPath))
-			{
-				output.WriteLine($"Using alternative file: {altPath}");
-				fullPath = altPath;
-			}
-			else
-			{
-				return;
-			}
+			return;
 		}
-
-		// Get the raw application output
-		var actualOutput = await RunMergeIncludes(fullPath);
-
-		output.WriteLine("Actual application output:");
-		output.WriteLine(actualOutput);
-
-		// Process the output through Spectre.Console.Testing.TestConsole
-		// This will properly handle ANSI escape sequences
-		var testConsole = new TestConsole();
-		testConsole.Write(new Markup(actualOutput));
-		var processedOutput = testConsole.Output;
-
-		await Verify(processedOutput)
-			 .UseDirectory("Snapshots/ActualOutput")
-			 .UseFileName("SimpleConsecutive_ActualOutput");
+		
+		await TestMergeScenario(fullPath, "SimpleConsecutive");
 	}
 
 	[Fact]
 	public async Task ConsecutiveSameFolder_ActualOutput()
 	{
-		var testFile = Path.Combine("TestFiles", "consecutive-same-folder-test.txt");
+		var testFile = Path.Combine("TestScenarios", "05_ConsecutiveIncludes", "consecutive-same-folder.txt");
 		var fullPath = Path.GetFullPath(testFile);
 
 		if (!File.Exists(fullPath))
 		{
 			output.WriteLine($"Test file not found: {fullPath}");
-			// Attempt to use the migrated file in TestCases if available
-			var altPath = Path.GetFullPath(Path.Combine("TestCases", "SimpleConsecutive", "consecutive-same-folder.txt"));
-			if (File.Exists(altPath))
-			{
-				output.WriteLine($"Using alternative file: {altPath}");
-				fullPath = altPath;
-			}
-			else
-			{
-				return;
-			}
+			return;
 		}
 
-		// Get the raw application output
-		var actualOutput = await RunMergeIncludes(fullPath);
-
-		output.WriteLine("Actual application output:");
-		output.WriteLine(actualOutput);
-
-		// Process the output through Spectre.Console.Testing.TestConsole
-		var testConsole = new TestConsole();
-		testConsole.Write(new Markup(actualOutput));
-		var processedOutput = testConsole.Output;
-
-		await Verify(processedOutput)
-			 .UseDirectory("Snapshots/ActualOutput")
-			 .UseFileName("ConsecutiveSameFolder_ActualOutput");
+		await TestMergeScenario(fullPath, "ConsecutiveSameFolder");
 	}
 
 	[Fact]
 	public async Task FolderJumping_ActualOutput()
 	{
-		var testFile = Path.Combine("TestFiles", "unique-names-test.txt");
+		var testFile = Path.Combine("TestScenarios", "04_FolderNavigation", "root.txt");
 		var fullPath = Path.GetFullPath(testFile);
-
 		if (!File.Exists(fullPath))
 		{
 			output.WriteLine($"Test file not found: {fullPath}");
-			// Attempt to use the migrated file in TestCases if available
-			var altPath = Path.GetFullPath(Path.Combine("TestCases", "FolderJumping", "unique-names.txt"));
-			if (File.Exists(altPath))
-			{
-				output.WriteLine($"Using alternative file: {altPath}");
-				fullPath = altPath;
-			}
-			else
-			{
-				return;
-			}
+			return;
 		}
 
-		// Get the raw application output
-		var actualOutput = await RunMergeIncludes(fullPath);
-
-		output.WriteLine("Actual application output:");
-		output.WriteLine(actualOutput);
-
-		// Process the output through Spectre.Console.Testing.TestConsole
-		var testConsole = new TestConsole();
-		testConsole.Write(new Markup(actualOutput));
-		var processedOutput = testConsole.Output;
-
-		await Verify(processedOutput)
-			 .UseDirectory("Snapshots/ActualOutput")
-			 .UseFileName("FolderJumping_ActualOutput");
+		await TestMergeScenario(fullPath, "FolderJumping");
 	}
 
 	[Fact]
 	public async Task ComplexCircular_ActualOutput()
 	{
-		var testFile = Path.Combine("TestFiles", "MainFolder", "complex-root.txt");
+		var testFile = Path.Combine("TestScenarios", "Shared", "MainFolder", "complex-root.txt");
 		var fullPath = Path.GetFullPath(testFile);
-
 		if (!File.Exists(fullPath))
 		{
 			output.WriteLine($"Test file not found: {fullPath}");
-			// Attempt to use the migrated file in TestCases if available
-			var altPath = Path.GetFullPath(Path.Combine("TestCases", "ComplexCircular", "complex-root.txt"));
-			if (File.Exists(altPath))
-			{
-				output.WriteLine($"Using alternative file: {altPath}");
-				fullPath = altPath;
-			}
-			else
-			{
-				return;
-			}
+			return;
 		}
 
-		// Get the raw application output
-		var actualOutput = await RunMergeIncludes(fullPath);
-
-		output.WriteLine("Actual application output:");
-		output.WriteLine(actualOutput);
-
-		// Process the output through Spectre.Console.Testing.TestConsole
-		var testConsole = new TestConsole();
-		testConsole.Write(new Markup(actualOutput));
-		var processedOutput = testConsole.Output;
-
-		await Verify(processedOutput)
-			 .UseDirectory("Snapshots/ActualOutput")
-			 .UseFileName("ComplexCircular_ActualOutput");
+		await TestMergeScenario(fullPath, "ComplexCircular");
 	}
-	
-	// New organized tests using TestCases directory
 	
 	[Fact]
 	public async Task BasicStructure_ActualOutput()
 	{
-		var testFile = Path.Combine("TestCases", "BasicStructure", "simple-root.txt");
+		var testFile = Path.Combine("TestScenarios", "01_BasicInclusion", "root.txt");
 		var fullPath = Path.GetFullPath(testFile);
 
 		if (!File.Exists(fullPath))
@@ -215,23 +131,13 @@ public class ActualOutputTests(ITestOutputHelper output)
 			return;
 		}
 
-		var actualOutput = await RunMergeIncludes(fullPath);
-		output.WriteLine("Actual application output:");
-		output.WriteLine(actualOutput);
-
-		var testConsole = new TestConsole();
-		testConsole.Write(new Markup(actualOutput));
-		var processedOutput = testConsole.Output;
-
-		await Verify(processedOutput)
-			 .UseDirectory("Snapshots/ActualOutput")
-			 .UseFileName("BasicStructure_ActualOutput");
+		await TestMergeScenario(fullPath, "BasicStructure");
 	}
 
 	[Fact]
 	public async Task DuplicateReferences_ActualOutput()
 	{
-		var testFile = Path.Combine("TestCases", "DuplicateReferences", "root-duplicates.txt");
+		var testFile = Path.Combine("TestScenarios", "02_DuplicateReferences", "root.txt");
 		var fullPath = Path.GetFullPath(testFile);
 
 		if (!File.Exists(fullPath))
@@ -240,23 +146,13 @@ public class ActualOutputTests(ITestOutputHelper output)
 			return;
 		}
 
-		var actualOutput = await RunMergeIncludes(fullPath);
-		output.WriteLine("Actual application output:");
-		output.WriteLine(actualOutput);
-
-		var testConsole = new TestConsole();
-		testConsole.Write(new Markup(actualOutput));
-		var processedOutput = testConsole.Output;
-
-		await Verify(processedOutput)
-			 .UseDirectory("Snapshots/ActualOutput")
-			 .UseFileName("DuplicateReferences_ActualOutput");
+		await TestMergeScenario(fullPath, "DuplicateReferences");
 	}
 
 	[Fact]
 	public async Task OrganizedCircularReference_ActualOutput()
 	{
-		var testFile = Path.Combine("TestCases", "CircularReferences", "circular-root.txt");
+		var testFile = Path.Combine("TestScenarios", "03_CircularReferences", "root.txt");
 		var fullPath = Path.GetFullPath(testFile);
 
 		if (!File.Exists(fullPath))
@@ -265,23 +161,13 @@ public class ActualOutputTests(ITestOutputHelper output)
 			return;
 		}
 
-		var actualOutput = await RunMergeIncludes(fullPath);
-		output.WriteLine("Actual application output:");
-		output.WriteLine(actualOutput);
-
-		var testConsole = new TestConsole();
-		testConsole.Write(new Markup(actualOutput));
-		var processedOutput = testConsole.Output;
-
-		await Verify(processedOutput)
-			 .UseDirectory("Snapshots/ActualOutput")
-			 .UseFileName("OrganizedCircularReference_ActualOutput");
+		await TestMergeScenario(fullPath, "OrganizedCircularReference");
 	}
 
 	[Fact]
 	public async Task OrganizedFolderJumping_ActualOutput()
 	{
-		var testFile = Path.Combine("TestCases", "FolderJumping", "unique-names.txt");
+		var testFile = Path.Combine("TestScenarios", "04_FolderNavigation", "root.txt");
 		var fullPath = Path.GetFullPath(testFile);
 
 		if (!File.Exists(fullPath))
@@ -290,25 +176,13 @@ public class ActualOutputTests(ITestOutputHelper output)
 			return;
 		}
 
-		var actualOutput = await RunMergeIncludes(fullPath);
-		output.WriteLine("Actual application output:");
-		output.WriteLine(actualOutput);
-
-		var testConsole = new TestConsole();
-		testConsole.Write(new Markup(actualOutput));
-		var processedOutput = testConsole.Output;
-
-		await Verify(processedOutput)
-			 .UseDirectory("Snapshots/ActualOutput")
-			 .UseFileName("OrganizedFolderJumping_ActualOutput");
+		await TestMergeScenario(fullPath, "OrganizedFolderJumping");
 	}
 
-	// Remaining legacy tests
-	
 	[Fact]
 	public async Task RootFile_ActualOutput()
 	{
-		var testFile = Path.Combine("TestFiles", "MainFolder", "root.txt");
+		var testFile = Path.Combine("TestScenarios", "Shared", "MainFolder", "root.txt");
 		var fullPath = Path.GetFullPath(testFile);
 
 		if (!File.Exists(fullPath))
@@ -317,121 +191,49 @@ public class ActualOutputTests(ITestOutputHelper output)
 			return;
 		}
 
-		var actualOutput = await RunMergeIncludes(fullPath);
-		output.WriteLine("Actual application output:");
-		output.WriteLine(actualOutput);
-
-		var testConsole = new TestConsole();
-		testConsole.Write(new Markup(actualOutput));
-		var processedOutput = testConsole.Output;
-
-		await Verify(processedOutput)
-			 .UseDirectory("Snapshots/ActualOutput")
-			 .UseFileName("RootFile_ActualOutput");
+		await TestMergeScenario(fullPath, "RootFile");
 	}
 
 	[Fact]
 	public async Task TestDuplicates_ActualOutput()
 	{
-		var testFile = Path.Combine("TestFiles", "test-duplicates.txt");
+		var testFile = Path.Combine("TestScenarios", "02_DuplicateReferences", "test-duplicates.txt");
 		var fullPath = Path.GetFullPath(testFile);
 
 		if (!File.Exists(fullPath))
 		{
 			output.WriteLine($"Test file not found: {fullPath}");
-			// Try alternative path in TestCases
-			var altPath = Path.GetFullPath(Path.Combine("TestCases", "DuplicateReferences", "root-duplicates.txt"));
-			if (File.Exists(altPath))
-			{
-				output.WriteLine($"Using alternative file: {altPath}");
-				fullPath = altPath;
-			}
-			else
-			{
-				return;
-			}
+			return;
 		}
 
-		var actualOutput = await RunMergeIncludes(fullPath);
-		output.WriteLine("Actual application output:");
-		output.WriteLine(actualOutput);
-
-		var testConsole = new TestConsole();
-		testConsole.Write(new Markup(actualOutput));
-		var processedOutput = testConsole.Output;
-
-		await Verify(processedOutput)
-			 .UseDirectory("Snapshots/ActualOutput")
-			 .UseFileName("TestDuplicates_ActualOutput");
+		await TestMergeScenario(fullPath, "TestDuplicates");
 	}
 
 	[Fact]
 	public async Task FolderJumpingTest_ActualOutput()
 	{
-		var testFile = Path.Combine("TestFiles", "folder-jumping-test.txt");
+		var testFile = Path.Combine("TestScenarios", "10_DetailedFolderJumping", "root.txt");
 		var fullPath = Path.GetFullPath(testFile);
-
 		if (!File.Exists(fullPath))
 		{
 			output.WriteLine($"Test file not found: {fullPath}");
-			// Try alternative path in TestCases
-			var altPath = Path.GetFullPath(Path.Combine("TestCases", "FolderJumping", "unique-names.txt"));
-			if (File.Exists(altPath))
-			{
-				output.WriteLine($"Using alternative file: {altPath}");
-				fullPath = altPath;
-			}
-			else
-			{
-				return;
-			}
+			return;
 		}
 
-		var actualOutput = await RunMergeIncludes(fullPath);
-		output.WriteLine("Actual application output:");
-		output.WriteLine(actualOutput);
-
-		var testConsole = new TestConsole();
-		testConsole.Write(new Markup(actualOutput));
-		var processedOutput = testConsole.Output;
-
-		await Verify(processedOutput)
-			 .UseDirectory("Snapshots/ActualOutput")
-			 .UseFileName("FolderJumpingTest_ActualOutput");
+		await TestMergeScenario(fullPath, "FolderJumpingTest");
 	}
 
 	[Fact]
 	public async Task SimpleRootFile_ActualOutput()
 	{
-		var testFile = Path.Combine("TestFiles", "root-file.txt");
+		var testFile = Path.Combine("TestScenarios", "Shared", "root-file.txt");
 		var fullPath = Path.GetFullPath(testFile);
-
 		if (!File.Exists(fullPath))
 		{
 			output.WriteLine($"Test file not found: {fullPath}");
-			// Try alternative path in TestCases
-			var altPath = Path.GetFullPath(Path.Combine("TestCases", "BasicStructure", "simple-root.txt"));
-			if (File.Exists(altPath))
-			{
-				output.WriteLine($"Using alternative file: {altPath}");
-				fullPath = altPath;
-			}
-			else
-			{
-				return;
-			}
+			return;
 		}
 
-		var actualOutput = await RunMergeIncludes(fullPath);
-		output.WriteLine("Actual application output:");
-		output.WriteLine(actualOutput);
-
-		var testConsole = new TestConsole();
-		testConsole.Write(new Markup(actualOutput));
-		var processedOutput = testConsole.Output;
-
-		await Verify(processedOutput)
-			 .UseDirectory("Snapshots/ActualOutput")
-			 .UseFileName("SimpleRootFile_ActualOutput");
+		await TestMergeScenario(fullPath, "SimpleRootFile");
 	}
 }

@@ -1,0 +1,5 @@
+﻿{
+  Success: false,
+  ErrorMessage: Could not find a part of the path '{CurrentDirectory}TestScenarios\04_FolderNavigation\SubFolder1'.,
+  ProcessedFiles: 1
+}

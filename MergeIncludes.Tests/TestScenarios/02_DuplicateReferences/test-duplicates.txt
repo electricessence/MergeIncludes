@@ -1,0 +1,11 @@
+# Test file with duplicate references
+This tests duplicate file references to see ID numbering.
+
+## First reference to sample01.txt
+#include ../07_WildcardIncludes/sample01.txt
+
+## First reference to sample02.txt  
+#include ../07_WildcardIncludes/sample02.txt
+
+## Second reference to sample01.txt (should be gray with [2])
+#include ../07_WildcardIncludes/sample01.txt

@@ -4,11 +4,10 @@ namespace MergeIncludes.Tests;
 
 [UsesVerify]
 public static class ExtensionsTests
-{
-    [Fact]
+{    [Fact]
     public static async Task MergeIncludesAsync()
     {
-        var root = new FileInfo(@".\sample.txt");
+        var root = new FileInfo(@"..\..\..\TestScenarios\08_CommentedIncludes\root.txt");
         var sb = new StringBuilder();
         await foreach (var line in root.MergeIncludesAsync())
         {
@@ -16,12 +15,10 @@ public static class ExtensionsTests
         }
 
         await Verify(sb.ToString());
-    }
-
-    [Fact]
+    }    [Fact]
     public static async Task MergeIncludesWildCardAsync()
     {
-        var root = new FileInfo(@".\sample-wildcard.txt");
+        var root = new FileInfo(@"..\..\..\TestScenarios\07_WildcardIncludes\root.txt");
         var sb = new StringBuilder();
         await foreach (var line in root.MergeIncludesAsync())
         {
@@ -29,13 +26,11 @@ public static class ExtensionsTests
         }
 
         await Verify(sb.ToString());
-    }
-
-    [Fact]
+    }    [Fact]
     public static Task FailRecursionAsync()
         => Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
-            var root = new FileInfo(@".\sample-recursive.txt");
+            var root = new FileInfo(@"..\..\..\TestScenarios\03_CircularReferences\simple-recursive.txt");
             await foreach (var line in root.MergeIncludesAsync())
             {
             }

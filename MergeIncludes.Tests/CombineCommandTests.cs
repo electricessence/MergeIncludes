@@ -9,8 +9,7 @@ public class CombineCommandTests
 	public async Task DefaultTreeDisplayMode_ShowsCorrectStructure()
 	{
 		// Arrange
-		var console = new TestConsole();
-		var rootFile = new FileInfo(Path.GetFullPath(@".\sample.txt"));
+		var console = new TestConsole();		var rootFile = new FileInfo(Path.GetFullPath(@"TestScenarios\08_CommentedIncludes\root.txt"));
 		var fileRelationships = CreateTestFileRelationships(rootFile);
 
 		// Act - Use the StructureAndReferenceView directly
@@ -23,25 +22,24 @@ public class CombineCommandTests
 			.UseDirectory("Snapshots")
 			.UseFileName("DefaultTreeDisplay");
 	}
-
 	// Helper method to create a test file relationship dictionary
 	private static Dictionary<string, List<string>> CreateTestFileRelationships(FileInfo rootFile)
 	{
 		var fileRelationships = new Dictionary<string, List<string>>
 		{
-			// Add sample01.txt and sample02.txt as children of sample.txt for testing
+			// Add sample01.txt from wildcard includes as children of root for testing
 			[rootFile.FullName] =
 		[
-			Path.GetFullPath(@".\sample01.txt"),
-			Path.GetFullPath(@".\sample02.txt")
+			Path.GetFullPath(@"TestScenarios\07_WildcardIncludes\sample01.txt"),
+			Path.GetFullPath(@"TestScenarios\07_WildcardIncludes\sample02.txt")
 		]
 		};
 
 		// Add sample02-01.txt as a child of sample02.txt for testing
-		var sample02Path = Path.GetFullPath(@".\sample02.txt");
+		var sample02Path = Path.GetFullPath(@"TestScenarios\07_WildcardIncludes\sample02.txt");
 		fileRelationships[sample02Path] =
 		[
-			Path.GetFullPath(@".\sample02-01.txt")
+			Path.GetFullPath(@"TestScenarios\07_WildcardIncludes\sample02-01.txt")
 		];
 
 		return fileRelationships;

@@ -1,0 +1,11 @@
+﻿First
+## Comment
+#include ../07_WildcardIncludes/sample01.txt
+
+Second
+// ## Comment
+// #include ../07_WildcardIncludes/sample02.txt
+
+First Again
+<!-- ## Comment -->
+<!-- #include ../07_WildcardIncludes/sample01.txt -->

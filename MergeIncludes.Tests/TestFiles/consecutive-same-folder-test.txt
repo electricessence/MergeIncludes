@@ -1,8 +1,0 @@
-# Test consecutive files in same subfolder
-#include SubFolder1/first.txt
-#include SubFolder1/second.txt
-#include SubFolder1/third.txt
-#include SubFolder2/alpha.txt
-#include SubFolder2/beta.txt
-#include root-file.txt
-#include SubFolder1/fourth.txt

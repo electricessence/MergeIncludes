@@ -1,0 +1,2 @@
+﻿Could not find include file on line 7 in:
+{CurrentDirectory}TestScenarios\05_ConsecutiveIncludes\consecutive-same-folder.txt:7

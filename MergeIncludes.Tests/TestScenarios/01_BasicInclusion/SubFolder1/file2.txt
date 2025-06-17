@@ -1,4 +1,0 @@
-// File 2 content
-void function2() {
-    // implementation
-}
