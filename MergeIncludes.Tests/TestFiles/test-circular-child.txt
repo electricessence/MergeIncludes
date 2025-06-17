@@ -1,0 +1,7 @@
+# Child file that creates circular reference
+This is the child file.
+
+## Include back to the root - this creates a circular reference!
+#include ./test-circular.txt
+
+## End of child file

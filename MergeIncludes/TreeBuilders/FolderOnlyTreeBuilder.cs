@@ -1,6 +1,5 @@
 using Spectre.Console;
 using Spectre.Console.Extensions;
-using Spectre.Console.Rendering;
 
 namespace MergeIncludes.TreeBuilders;
 
@@ -18,7 +17,7 @@ public static class FolderOnlyTreeBuilder
 	/// <summary>
 	/// Create a folder-only tree from a root file and its dependencies
 	/// </summary>
-	public static IRenderable FromDependencies(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
+	public static TreeMinimalWidth FromDependencies(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
 	{
 		var allFiles = new List<FileInfo> { rootFile };
 		CollectAllFilesRecursive(rootFile.FullName, fileRelationships, allFiles);
@@ -28,7 +27,7 @@ public static class FolderOnlyTreeBuilder
 	/// <summary>
 	/// Create a folder-only tree for the given files
 	/// </summary>
-	public static IRenderable Create(DirectoryInfo baseDirectory, IEnumerable<FileInfo> files)
+	public static TreeMinimalWidth Create(DirectoryInfo baseDirectory, IEnumerable<FileInfo> files)
 	{
 		return CreateFolderOnlyTree(baseDirectory, files);
 	}
@@ -36,7 +35,7 @@ public static class FolderOnlyTreeBuilder
 	/// <summary>
 	/// Create a folder-only tree for the given files, showing only directory structure
 	/// </summary>
-	private static IRenderable CreateFolderOnlyTree(DirectoryInfo baseDirectory, IEnumerable<FileInfo> files)
+	private static TreeMinimalWidth CreateFolderOnlyTree(DirectoryInfo baseDirectory, IEnumerable<FileInfo> files)
 	{
 		// Create root folder, only add link in Windows Terminal
 		var rootFolderName = $"📁 {baseDirectory.Name}";

@@ -11,7 +11,7 @@ public class FolderStructureTests
 	{
 		// Arrange
 		var console = new TestConsole();
-		var rootFile = new FileInfo(Path.GetFullPath(@".\TestFiles\MainFolder\root.txt"));
+		var rootFile = new FileInfo(Path.GetFullPath(@".\TestCases\ComplexCircular\complex-root.txt"));
 		var fileRelationships = BuildComplexFileRelationships();
 
 		// Act - Use the StructureAndReferenceView directly
@@ -30,7 +30,7 @@ public class FolderStructureTests
 	{
 		// Arrange
 		var console = new TestConsole();
-		var rootFile = new FileInfo(Path.GetFullPath(@".\TestFiles\MainFolder\root.txt"));
+		var rootFile = new FileInfo(Path.GetFullPath(@".\TestCases\ComplexCircular\complex-root.txt"));
 		var fileRelationships = BuildComplexFileRelationships();
 
 		// Act - Use the StructureAndReferenceView directly for repeated dependencies
@@ -46,10 +46,11 @@ public class FolderStructureTests
 
 	private static Dictionary<string, List<string>> BuildComplexFileRelationships()
 	{
-		var rootPath = Path.GetFullPath(@".\TestFiles\MainFolder\root.txt");
-		var basePath = Path.GetFullPath(@".\TestFiles");
+		// Use the updated paths in TestCases directory
+		var rootPath = Path.GetFullPath(@".\TestCases\ComplexCircular\complex-root.txt");
+		var basePath = Path.GetFullPath(@".\TestCases");
 
-		var mainFolder = Path.Combine(basePath, "MainFolder");
+		var mainFolder = Path.Combine(basePath, "ComplexCircular");
 		var subFolder1 = Path.Combine(mainFolder, "SubFolder1");
 		var subFolder2 = Path.Combine(mainFolder, "SubFolder2");
 		var anotherFolder = Path.Combine(basePath, "AnotherFolder");

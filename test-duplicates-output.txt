@@ -1,0 +1,15 @@
+# Test file with duplicate references
+This file tests duplicate reference handling.
+
+This is sample 01.
+
+This is sample 01.
+
+This is sample 02.
+
+This is a leaf
+
+
+This is sample 01.
+
+

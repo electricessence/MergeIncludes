@@ -1,8 +1,8 @@
+using MergeIncludes.TreeBuilders;
 using Spectre.Console;
 using Spectre.Console.Extensions;
 using Spectre.Console.Rendering;
 using System.Text;
-using MergeIncludes.TreeBuilders;
 
 namespace MergeIncludes.Renderables;
 
@@ -38,7 +38,9 @@ public sealed class StructureAndReferenceView : IRenderable
 	{
 		// Delegate to the internal content for rendering
 		return _content.Render(options, maxWidth);
-	}	private static IRenderable CreateTwoColumnTreeTable(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
+	}
+
+	private static Table CreateTwoColumnTreeTable(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
 	{
 		// Create the left column: folder structure tree using aligned builder
 		var folderTree = AlignedFolderTreeBuilder.FromDependencies(rootFile, fileRelationships);
@@ -62,22 +64,24 @@ public sealed class StructureAndReferenceView : IRenderable
 		table.AddRow(folderTree, separator, referenceTree);
 
 		return table;
-	}	private static IRenderable CreateFolderStructureTree(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
+	}
+
+	private static TreeMinimalWidth CreateFolderStructureTree(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
 	{
 		// Create root folder - blue color, no bold
 		var rootFolderName = $"📁 {rootFile.Directory!.Name}";
 		var rootStyle = new Style(foreground: Color.Blue);
-		
+
 		var rootText = HyperLink.For(rootFile.Directory.FullName, rootFolderName, rootStyle);
 		var tree = new TreeMinimalWidth(rootText);
 
 		// Track which files we've seen and assign them unique IDs (same as reference tree)
 		var fileIds = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 		var nextId = 0;
-		
+
 		// Assign ID to root file so if it appears in dependencies it's treated as repeat
 		fileIds[rootFile.FullName] = nextId++;
-		
+
 		// Track visited paths to prevent infinite recursion due to circular references
 		var visitedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -89,7 +93,7 @@ public sealed class StructureAndReferenceView : IRenderable
 		return tree;
 	}
 
-	private static IRenderable CreateReferenceTree(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
+	private static TreeMinimalWidth CreateReferenceTree(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
 	{
 		// Create root node with yellow color (not bold)
 		// HyperLink.For handles Windows Terminal detection internally
@@ -106,7 +110,9 @@ public sealed class StructureAndReferenceView : IRenderable
 		BuildCompleteReferenceTreeRecursive(tree, rootFile.FullName, fileRelationships, fileIds, ref nextId, visitedPaths);
 
 		return tree;
-	}/// <summary>
+	}
+
+	/// <summary>
 	/// Recursively builds the complete reference tree hierarchy with ALL references and consistent IDs
 	/// </summary>
 	private static void BuildCompleteReferenceTreeRecursive(
@@ -146,11 +152,13 @@ public sealed class StructureAndReferenceView : IRenderable
 				if (isFirstOccurrence)
 				{
 					// First occurrence: assign new ID
-					fileIds[dependency] = nextId++;				}
+					fileIds[dependency] = nextId++;
+				}
 
 				var fileId = fileIds[dependency];
 				var fileName = dependencyFile.Name;
-				var displayText = $"{fileName} [{fileId}]"; if (isCircularReference)
+				var displayText = $"{fileName} [{fileId}]";
+				if (isCircularReference)
 				{
 					// Circular reference: show in red with warning icon
 					displayText += " ⚠";
@@ -162,7 +170,9 @@ public sealed class StructureAndReferenceView : IRenderable
 				{
 					// First occurrence: use cyan color
 					var dependencyText = HyperLink.For(dependencyFile.FullName, displayText, new Style(Color.Cyan1));
-					var childNode = tree.AddNode(dependencyText);					// Recursively build dependencies for ALL occurrences
+					var childNode = tree.AddNode(dependencyText);
+
+					// Recursively build dependencies for ALL occurrences
 					BuildCompleteReferenceTreeNodeRecursive(
 						childNode,
 						dependency,
@@ -192,6 +202,7 @@ public sealed class StructureAndReferenceView : IRenderable
 		// Remove from visited before returning to allow the file to appear in other branches
 		visitedPaths.Remove(filePath);
 	}
+
 	/// <summary>
 	/// Recursively builds child nodes in the complete reference tree
 	/// </summary>
@@ -216,7 +227,9 @@ public sealed class StructureAndReferenceView : IRenderable
 		{
 			// Skip self-references to prevent root file duplication  
 			if (string.Equals(dependency, filePath, StringComparison.OrdinalIgnoreCase))
-				continue; if (File.Exists(dependency))
+				continue;
+
+			if (File.Exists(dependency))
 			{
 				var dependencyFile = new FileInfo(dependency);
 
@@ -279,7 +292,9 @@ public sealed class StructureAndReferenceView : IRenderable
 
 		// Remove from visited before returning to allow the file to appear in other branches
 		visitedPaths.Remove(filePath);
-	}	/// <summary>
+	}
+
+	/// <summary>
 	/// Context tracker for smart folder display to avoid duplication and show proper hierarchy
 	/// </summary>
 	private class SmartFolderContext
@@ -287,23 +302,39 @@ public sealed class StructureAndReferenceView : IRenderable
 		public DirectoryInfo RootDirectory { get; }
 		public string CurrentFolderPath { get; set; } = "";
 		public int CurrentDepth { get; set; } = 0;
-		public List<string> DisplayedFolders { get; } = new();
+
+		private readonly HashSet<string> _displayedFolders;
+
+		private readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> _displayedFoldersLookup;
 
 		public SmartFolderContext(DirectoryInfo rootDirectory)
 		{
 			RootDirectory = rootDirectory;
+			var df = new HashSet<string>();
+			_displayedFolders = df;
+			_displayedFoldersLookup = df.GetAlternateLookup<ReadOnlySpan<char>>();
 		}
+
+		public bool WasDisplayed(ReadOnlySpan<char> path)
+			=> _displayedFoldersLookup.Contains(path);
+
+		public bool Add(string path)
+			=> _displayedFolders.Add(path);
+
+		public bool Add(ReadOnlySpan<char> path)
+			=> !WasDisplayed(path) && _displayedFolders.Add(path.ToString());
+
 	}
 
 	/// <summary>
 	/// Build smart folder alignment that mirrors the reference tree traversal exactly
 	/// </summary>
 	private static void BuildSmartFolderAlignmentRecursive(
-		TreeMinimalWidth tree, 
+		TreeMinimalWidth tree,
 		string filePath,
-		Dictionary<string, List<string>> fileRelationships, 
-		Dictionary<string, int> fileIds, 
-		ref int nextId, 
+		Dictionary<string, List<string>> fileRelationships,
+		Dictionary<string, int> fileIds,
+		ref int nextId,
 		HashSet<string> visitedPaths,
 		SmartFolderContext context)
 	{
@@ -367,11 +398,12 @@ public sealed class StructureAndReferenceView : IRenderable
 		// Remove from visited before returning to allow the file to appear in other branches
 		visitedPaths.Remove(filePath);
 	}
+
 	/// <summary>
 	/// Creates smart folder line that only shows folder names when path changes
 	/// Shows proper tree hierarchy and avoids duplication
 	/// </summary>
-	private static IRenderable CreateSmartFolderLine(string relativePath, SmartFolderContext context)
+	private static Text CreateSmartFolderLine(string relativePath, SmartFolderContext context)
 	{
 		if (relativePath == context.CurrentFolderPath)
 		{
@@ -382,9 +414,8 @@ public sealed class StructureAndReferenceView : IRenderable
 		else
 		{
 			// Different folder - update context and determine what to show
-			var previousPath = context.CurrentFolderPath;
 			context.CurrentFolderPath = relativePath;
-			
+
 			if (string.IsNullOrEmpty(relativePath))
 			{
 				// Root folder file
@@ -393,46 +424,77 @@ public sealed class StructureAndReferenceView : IRenderable
 			}
 			else
 			{
-				// Subfolder - determine what needs to be shown
-				var pathParts = relativePath.Split('/');
-				context.CurrentDepth = pathParts.Length;
-				
+				// Sub-folder - determine what needs to be shown
+				var count = 0;
+				foreach (var _ in relativePath.AsSpan().Split('/')) count++;
+				context.CurrentDepth = count;
+
 				// Determine if this is a new folder branch or continuation
-				var folderDisplay = DetermineSmartFolderDisplay(previousPath, relativePath, pathParts, context);
+				var folderDisplay = DetermineSmartFolderDisplay(relativePath.AsSpan(), context);
+
 				return new Text(folderDisplay, new Style(Color.Green));
 			}
 		}
 	}
 
 	/// <summary>
-	/// Determines smart folder display based on path changes and context
+	/// Determines smart folder display based on context and path
 	/// </summary>
-	private static string DetermineSmartFolderDisplay(string previousPath, string currentPath, string[] pathParts, SmartFolderContext context)
+	/// <param name="path">Path as a ReadOnlySpan of chars</param>
+	/// <param name="context">The smart folder context</param>
+	/// <returns>Formatted display string for the folder line</returns>
+	private static string DetermineSmartFolderDisplay(ReadOnlySpan<char> path, SmartFolderContext context)
 	{
-		// For now, implement a simple but effective approach:
-		// Show the last folder name with proper indentation based on depth
-		
-		var depth = pathParts.Length;
-		var lastFolder = pathParts.Last();
-		
-		// Check if we've shown this folder path before
-		var fullPathKey = string.Join("/", pathParts);
-		
-		if (context.DisplayedFolders.Contains(fullPathKey))
+		// Use a single StringBuilder instance to avoid multiple string allocations
+		var builder = new StringBuilder(64);
+
+		// Count path parts without allocating an array
+		int depth = 1;
+		for (int i = 0; i < path.Length; i++)
 		{
-			// This exact folder path was already shown - use continuation
-			var indent = depth > 1 ? new string(' ', (depth - 1) * 2) : "";
-			return $"{indent}│";
+			if (path[i] == '/')
+				depth++;
+		}
+
+		// Get the last folder name without allocating
+		ReadOnlySpan<char> lastFolder = path;
+		int lastSlashIndex = path.LastIndexOf('/');
+		if (lastSlashIndex >= 0)
+		{
+			lastFolder = path.Slice(lastSlashIndex + 1);
+		}
+
+		// Check if we've shown this folder path before
+		if (context.Add(path))
+		{
+			if (depth > 1)
+			{
+				// Append indent spaces
+				int indentSpaces = (depth - 1) * 2;
+				builder.Append(' ', indentSpaces);
+			}
+
+			// Append connector and folder name
+			builder.Append("├── 📁 ");
+			builder.Append(lastFolder);
+			builder.Append('/');
 		}
 		else
 		{
-			// New folder path - show it and mark as displayed
-			context.DisplayedFolders.Add(fullPathKey);
-			var indent = depth > 1 ? new string(' ', (depth - 1) * 2) : "";
-			var connector = "├── ";
-			return $"{indent}{connector}📁 {lastFolder}/";
+			// This exact folder path was already shown - use continuation
+			if (depth > 1)
+			{
+				// Append indent spaces
+				int indentSpaces = (depth - 1) * 2;
+				builder.Append(' ', indentSpaces);
+			}
+
+			builder.Append('│');
 		}
+
+		return builder.ToString();
 	}
+
 	/// <summary>
 	/// Gets continuation indicator for files in the same folder
 	/// </summary>
@@ -446,25 +508,6 @@ public sealed class StructureAndReferenceView : IRenderable
 		{
 			var indent = new string(' ', (depth - 1) * 2);
 			return $"{indent}│";
-		}
-	}
-
-	/// <summary>
-	/// Get the display name for a folder relative to the base directory
-	/// </summary>
-	private static string GetFolderDisplayName(DirectoryInfo baseDirectory, DirectoryInfo targetDirectory)
-	{
-		if (targetDirectory.FullName.StartsWith(baseDirectory.FullName, StringComparison.OrdinalIgnoreCase))
-		{
-			// Subdirectory - show relative path
-			var relativePath = Path.GetRelativePath(baseDirectory.FullName, targetDirectory.FullName);
-			return $"📁 {relativePath.Replace('\\', '/')}/";
-		}
-		else
-		{
-			// Outside base directory - show relative path
-			var relativePath = Path.GetRelativePath(baseDirectory.FullName, targetDirectory.FullName);
-			return $"📁 {relativePath.Replace('\\', '/')}/";
 		}
 	}
 }

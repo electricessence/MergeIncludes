@@ -1,4 +1,3 @@
-using Spectre.Console;
 using Spectre.Console.Rendering;
 using System.Reflection;
 
@@ -18,7 +17,7 @@ internal static class ListExtensions
 	public static void AddOrReplaceLast<T>(this List<T> list, T item)
 	{
 		if (list.Count > 0)
-			list[list.Count - 1] = item;
+			list[^1] = item;
 		else
 			list.Add(item);
 	}
@@ -91,10 +90,11 @@ public sealed class TreeMinimalWidth : Renderable, IHasTreeNodes
 		_root = new TreeNode(new Markup(label));
 	}
 	/// <inheritdoc />
-	protected override Measurement Measure(RenderOptions options, int maxWidth)	{
+	protected override Measurement Measure(RenderOptions options, int maxWidth)
+	{
 		// Calculate the actual content width needed
 		var contentWidth = CalculateMinimalWidth(options, maxWidth);
-		
+
 		// Return proper min/max: 
 		// - Min: reasonable minimum to avoid excessive wrapping (but allow some compression)
 		// - Max: the natural content width for best display
@@ -120,7 +120,7 @@ public sealed class TreeMinimalWidth : Renderable, IHasTreeNodes
 	{
 		var visitedNodes = new HashSet<TreeNode>();
 		var stack = new Stack<Queue<TreeNode>>();
-		stack.Push(new Queue<TreeNode>(new[] { _root }));
+		stack.Push(new Queue<TreeNode>([_root]));
 
 		var levels = new List<Segment>
 		{
@@ -148,15 +148,15 @@ public sealed class TreeMinimalWidth : Renderable, IHasTreeNodes
 			stack.Push(stackNode);
 
 			if (isLastChild)
-				levels.AddOrReplaceLast(GetGuide(options, TreeGuidePart.End));			var prefix = levels.Skip(1).ToList();
+				levels.AddOrReplaceLast(GetGuide(options, TreeGuidePart.End)); var prefix = levels.Skip(1).ToList();
 			var prefixWidth = Segment.CellCount(prefix);
-			
+
 			// Get the renderable and calculate its natural width
 			var renderable = TreeNodeHelper.GetRenderable(current);
-			
+
 			// For proper measurement: give it generous space to measure its natural size
 			var measurement = renderable.Measure(options, Math.Max(maxWidth - prefixWidth, 50));
-			
+
 			// Use the Max (preferred) width rather than Min to avoid unnecessary wrapping
 			// This ensures icons and text display properly without being squished
 			var contentWidth = measurement.Max;
@@ -179,13 +179,13 @@ public sealed class TreeMinimalWidth : Renderable, IHasTreeNodes
 	/// <summary>
 	/// Render the tree with the specified width
 	/// </summary>
-	private IEnumerable<Segment> RenderWithWidth(RenderOptions options, int renderWidth)
+	private List<Segment> RenderWithWidth(RenderOptions options, int renderWidth)
 	{
 		var result = new List<Segment>();
 		var visitedNodes = new HashSet<TreeNode>();
 
 		var stack = new Stack<Queue<TreeNode>>();
-		stack.Push(new Queue<TreeNode>(new[] { _root }));
+		stack.Push(new Queue<TreeNode>([_root]));
 
 		var levels = new List<Segment>
 		{
@@ -205,13 +205,13 @@ public sealed class TreeMinimalWidth : Renderable, IHasTreeNodes
 			}
 
 			var isLastChild = stackNode.Count == 1;
-			var current = stackNode.Dequeue();			if (!visitedNodes.Add(current))
+			var current = stackNode.Dequeue(); if (!visitedNodes.Add(current))
 				throw new InvalidOperationException("Cycle detected in tree - unable to render.");
 
 			stack.Push(stackNode);
 
 			if (isLastChild)
-				levels.AddOrReplaceLast(GetGuide(options, TreeGuidePart.End));			var prefix = levels.Skip(1).ToList();
+				levels.AddOrReplaceLast(GetGuide(options, TreeGuidePart.End)); var prefix = levels.Skip(1).ToList();
 			// Use our calculated minimal width instead of maxWidth
 			var renderable = TreeNodeHelper.GetRenderable(current);
 			var renderableLines = Segment.SplitLines(renderable.Render(options, renderWidth - Segment.CellCount(prefix)));
