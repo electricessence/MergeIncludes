@@ -7,10 +7,6 @@ namespace Spectre.Console.Extensions;
 /// </summary>
 public static class PathLink
 {
-	/// <summary>
-	/// Gets a value indicating whether we're running in Windows Terminal.
-	/// </summary>
-	private static bool IsWindowsTerminal => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WT_SESSION"));
 
 	/// <summary>
 	/// Creates a linked text path for a file.
@@ -26,9 +22,8 @@ public static class PathLink
 		{
 			throw new ArgumentNullException(nameof(filePath));
 		}
-
 		// Only create a link when in Windows Terminal or if explicitly forced
-		bool createLink = forceLinkCreation || IsWindowsTerminal;
+		bool createLink = TerminalCapabilities.ShouldCreateHyperlinks(forceLinkCreation);
 		var linkPath = new LinkableTextPath(filePath, createLink);
 		
 		if (style != null)
@@ -61,7 +56,7 @@ public static class PathLink
 		}
 
 		// Only create a link when in Windows Terminal or if explicitly forced
-		bool createLink = forceLinkCreation || IsWindowsTerminal;
+		bool createLink = TerminalCapabilities.ShouldCreateHyperlinks(forceLinkCreation);
 		string? linkUrl = createLink ? filePath : null;
 		
 		var linkPath = new LinkableTextPath(displayPath, linkUrl);
@@ -98,7 +93,7 @@ public static class PathLink
 		}
 
 		// Only create a link when in Windows Terminal or if explicitly forced
-		bool createLink = forceLinkCreation || IsWindowsTerminal;
+		bool createLink = TerminalCapabilities.ShouldCreateHyperlinks(forceLinkCreation);
 
 		return new LinkableTextPath(filePath, createLink)
 			.RootStyle(rootColor)
@@ -123,7 +118,7 @@ public static class PathLink
 		}
 
 		// Only create a link when in Windows Terminal or if explicitly forced
-		bool createLink = forceLinkCreation || IsWindowsTerminal;
+		bool createLink = TerminalCapabilities.ShouldCreateHyperlinks(forceLinkCreation);
 		var linkPath = new LinkableTextPath(directoryPath, createLink);
 		
 		if (style != null)
@@ -156,7 +151,7 @@ public static class PathLink
 		}
 
 		// Only create a link when in Windows Terminal or if explicitly forced
-		bool createLink = forceLinkCreation || IsWindowsTerminal;
+		bool createLink = TerminalCapabilities.ShouldCreateHyperlinks(forceLinkCreation);
 		string? linkUrl = createLink ? directoryPath : null;
 		
 		var linkPath = new LinkableTextPath(displayPath, linkUrl);
@@ -226,7 +221,7 @@ public static class PathLink
 		}
 
 		// Only create a link when in Windows Terminal or if explicitly forced
-		bool shouldCreateLink = forceLinkCreation || IsWindowsTerminal;
+		bool shouldCreateLink = TerminalCapabilities.ShouldCreateHyperlinks(forceLinkCreation);
 		var linkUrl = shouldCreateLink ? url : null;
 		
 		var linkPath = new LinkableTextPath(path, linkUrl);
@@ -290,7 +285,7 @@ public static class PathLink
 		Style fileStyle = GetFileTypeStyle(extension);
 
 		// Only create a link when in Windows Terminal or if explicitly forced
-		bool createLink = forceLinkCreation || IsWindowsTerminal;
+		bool createLink = TerminalCapabilities.ShouldCreateHyperlinks(forceLinkCreation);
 
 		return new LinkableTextPath(filePath, createLink)
 			.RootStyle(Color.Blue)
@@ -323,7 +318,7 @@ public static class PathLink
 		Style fileStyle = GetFileTypeStyle(extension);
 
 		// Only create a link when in Windows Terminal or if explicitly forced
-		bool createLink = forceLinkCreation || IsWindowsTerminal;
+		bool createLink = TerminalCapabilities.ShouldCreateHyperlinks(forceLinkCreation);
 		string? linkUrl = createLink ? filePath : null;
 
 		return new LinkableTextPath(displayPath, linkUrl)

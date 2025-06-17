@@ -52,16 +52,6 @@ public sealed class LinkableTextPath(string path, string? linkUrl) : IRenderable
 	private Style? _separatorStyle;
 	private Style? _stemStyle;
 	private Style? _leafStyle;
-
-	/// <summary>
-	/// Gets a value indicating whether we're running in Windows Terminal.
-	/// </summary>
-	/// <remarks>
-	/// Windows Terminal sets the WT_SESSION environment variable when it runs.
-	/// Only Windows Terminal and some other modern terminals support clickable links.
-	/// </remarks>
-	private static bool IsWindowsTerminal => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WT_SESSION"));
-
 	/// <summary>
 	/// Creates a new instance of <see cref="LinkableTextPath"/>.
 	/// </summary>
@@ -195,7 +185,7 @@ public sealed class LinkableTextPath(string path, string? linkUrl) : IRenderable
 		if (_leafStyle != null) textPath.LeafStyle(_leafStyle);
 
 		// If no link URL is specified or not in Windows Terminal, just render the text path without links
-		if (string.IsNullOrEmpty(linkUrl) || !IsWindowsTerminal)
+		if (string.IsNullOrEmpty(linkUrl) || !TerminalCapabilities.IsWindowsTerminal)
 		{
 			return textPath.Render(options, maxWidth);
 		}

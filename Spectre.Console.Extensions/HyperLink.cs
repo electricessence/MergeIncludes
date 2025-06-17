@@ -1,4 +1,4 @@
-﻿using Spectre.Console.Rendering;
+using Spectre.Console.Rendering;
 
 namespace Spectre.Console.Extensions;
 
@@ -8,15 +8,6 @@ namespace Spectre.Console.Extensions;
 /// </summary>
 public static class HyperLink
 {
-	/// <summary>
-	/// Gets a value indicating whether we're running in Windows Terminal.
-	/// </summary>
-	/// <remarks>
-	/// Windows Terminal sets the WT_SESSION environment variable when it runs.
-	/// Only Windows Terminal and some other modern terminals support clickable links.
-	/// </remarks>
-	private static bool IsWindowsTerminal => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WT_SESSION"));
-
 	/// <summary>
 	/// Creates a hyperlinked markup with custom markup content
 	/// </summary>
@@ -30,7 +21,7 @@ public static class HyperLink
 		ArgumentException.ThrowIfNullOrEmpty(path);
 
 		// Only create links when in Windows Terminal
-		if (!IsWindowsTerminal)
+		if (!TerminalCapabilities.IsWindowsTerminal)
 		{
 			return new Markup(markup, style ?? Style.Plain);
 		}
@@ -55,7 +46,7 @@ public static class HyperLink
 		ArgumentException.ThrowIfNullOrEmpty(path);
 
 		// Only create links when in Windows Terminal
-		if (!IsWindowsTerminal)
+		if (!TerminalCapabilities.IsWindowsTerminal)
 		{
 			return new Text(text, style ?? Style.Plain);
 		}
