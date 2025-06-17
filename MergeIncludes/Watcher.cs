@@ -121,7 +121,7 @@ public static class FileWatcher
 					}
 				}
 			}, cancellationToken)
-			.ContinueWith(_ =>	changes.Writer.Complete());
+			.ContinueWith(_ => changes.Writer.Complete());
 
 			return changes.Reader.ReadAllAsync(cancellationToken);
 		}

@@ -222,21 +222,21 @@ public class DefaultTreeBuilder
 			{
 				return "│"; // File in root directory, just continuation line
 			}
-		// Build tree structure for this path using StringBuilder to avoid allocations
-		var sb = new System.Text.StringBuilder(pathParts.Count * 20); // Pre-size estimate
-		for (int i = pathParts.Count - 1; i >= 0; i--)
-		{
-			if (i == 0)
+			// Build tree structure for this path using StringBuilder to avoid allocations
+			var sb = new System.Text.StringBuilder(pathParts.Count * 20); // Pre-size estimate
+			for (int i = pathParts.Count - 1; i >= 0; i--)
 			{
-				sb.Append("├── 📁 ").Append(pathParts[i]).Append('/');
+				if (i == 0)
+				{
+					sb.Append("├── 📁 ").Append(pathParts[i]).Append('/');
+				}
+				else
+				{
+					sb.Insert(0, "│   ");
+				}
 			}
-			else
-			{
-				sb.Insert(0, "│   ");
-			}
-		}
 
-		return sb.ToString();
+			return sb.ToString();
 		}
 
 		return "";

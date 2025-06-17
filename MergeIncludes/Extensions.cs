@@ -160,13 +160,15 @@ public static partial class Extensions
 			if (commentPattern.IsMatch(line))
 			{
 				goto more;
-			}			var include = includePattern.Match(line);
+			}
+
+			var include = includePattern.Match(line);
 			if (!include.Success)
 			{
 				yield return line;
 				goto more;
 			}
-			
+
 			// Use ReadOnlySpan to avoid string allocation for file group
 			var fileGroup = include.Groups[FILE];
 			var includePath = Path.GetFullPath(Path.Combine(path.Value, fileGroup.Value));

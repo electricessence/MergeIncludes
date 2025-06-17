@@ -199,7 +199,7 @@ public sealed partial class CombineCommand
 
 			string executionDir = GetExecutionDirectory();
 			string executionRelative = Path.GetRelativePath(executionDir, file.FullName);
-			
+
 			// If it's not below execution directory or we want to try workspace root
 			if (useWorkspaceIfNearer && (executionRelative.StartsWith("..") || Path.IsPathRooted(executionRelative)))
 			{
@@ -207,18 +207,18 @@ public sealed partial class CombineCommand
 				var workspaceRoot = GetWorkspaceRoot(file.Directory ?? new DirectoryInfo(Directory.GetCurrentDirectory()));
 				string workspaceRelative = Path.GetRelativePath(workspaceRoot.FullName, file.FullName);
 				// If the workspace path is shorter and not going outside the workspace
-			if (!workspaceRelative.StartsWith("..") && 
-				(workspaceRelative.Length < executionRelative.Length || executionRelative.StartsWith("..")))
-			{
-				return $"./{workspaceRelative}";
+				if (!workspaceRelative.StartsWith("..") &&
+					(workspaceRelative.Length < executionRelative.Length || executionRelative.StartsWith("..")))
+				{
+					return $"./{workspaceRelative}";
+				}
 			}
-		}
 
-		// If within execution directory, just return the relative path with ./ prefix
-		if (!executionRelative.StartsWith("..") && !Path.IsPathRooted(executionRelative))
-		{
-			return $"./{executionRelative}";
-		}
+			// If within execution directory, just return the relative path with ./ prefix
+			if (!executionRelative.StartsWith("..") && !Path.IsPathRooted(executionRelative))
+			{
+				return $"./{executionRelative}";
+			}
 
 			// Otherwise fall back to the standard relative path method
 			return GetRelativeFilePath(file.FullName, Path.GetDirectoryName(file.FullName) ?? "");

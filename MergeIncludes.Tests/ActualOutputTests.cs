@@ -1,4 +1,3 @@
-using Spectre.Console;
 using Spectre.Console.Testing;
 using Xunit.Abstractions;
 
@@ -12,8 +11,8 @@ public class ActualOutputTests(ITestOutputHelper output)
 	/// </summary>
 	private async Task TestMergeScenario(string testFilePath, string scenarioName)
 	{
-		var settings = new Settings 
-		{ 
+		var settings = new Settings
+		{
 			RootFilePath = testFilePath,
 			DisplayMode = TreeDisplayMode.Default,
 			Trim = true
@@ -21,10 +20,10 @@ public class ActualOutputTests(ITestOutputHelper output)
 
 		output.WriteLine($"Testing scenario: {scenarioName}");
 		output.WriteLine($"File: {testFilePath}");
-		
+
 		// Get the merge result without writing files
 		var result = await CombineCommand.MergeToMemoryAsync(settings);
-		
+
 		// Verify the merged content separately
 		await Verify(result.MergedContent ?? result.ErrorMessage ?? "No content")
 			.UseDirectory("Snapshots/MergedContent")
@@ -34,14 +33,14 @@ public class ActualOutputTests(ITestOutputHelper output)
 		if (result.IsSuccess && result.MergedContent != null)
 		{
 			var testConsole = new TestConsole();
-			
+
 			// Simulate the tree display that would be shown to users
 			var rootFile = new FileInfo(testFilePath);
 			var structureView = new Renderables.StructureAndReferenceView(rootFile, result.FileRelationships);
 			testConsole.Write(structureView);
-			
+
 			var consoleOutput = testConsole.Output;
-			
+
 			// Verify the console output separately
 			await Verify(consoleOutput)
 				.UseDirectory("Snapshots/ConsoleOutput")
@@ -50,9 +49,10 @@ public class ActualOutputTests(ITestOutputHelper output)
 		else
 		{
 			// For error cases, verify the error handling display
-			await Verify(new { 
-				Success = result.IsSuccess, 
-				ErrorMessage = result.ErrorMessage,
+			await Verify(new
+			{
+				Success = result.IsSuccess,
+				result.ErrorMessage,
 				ProcessedFiles = result.ProcessedFiles.Count
 			})
 				.UseDirectory("Snapshots/ConsoleOutput")
@@ -60,7 +60,7 @@ public class ActualOutputTests(ITestOutputHelper output)
 		}
 	}
 	// Test scenarios using organized TestScenarios directory
-	
+
 	[Fact]
 	public async Task SimpleConsecutive_ActualOutput()
 	{
@@ -72,7 +72,7 @@ public class ActualOutputTests(ITestOutputHelper output)
 			output.WriteLine($"Test file not found: {fullPath}");
 			return;
 		}
-		
+
 		await TestMergeScenario(fullPath, "SimpleConsecutive");
 	}
 
@@ -118,7 +118,7 @@ public class ActualOutputTests(ITestOutputHelper output)
 
 		await TestMergeScenario(fullPath, "ComplexCircular");
 	}
-	
+
 	[Fact]
 	public async Task BasicStructure_ActualOutput()
 	{

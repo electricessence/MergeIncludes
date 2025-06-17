@@ -25,7 +25,7 @@ public static class PathLink
 		// Only create a link when in Windows Terminal or if explicitly forced
 		bool createLink = TerminalCapabilities.ShouldCreateHyperlinks(forceLinkCreation);
 		var linkPath = new LinkableTextPath(filePath, createLink);
-		
+
 		if (style != null)
 		{
 			return linkPath.LeafStyle(style);
@@ -33,7 +33,7 @@ public static class PathLink
 
 		return linkPath;
 	}
-	
+
 	/// <summary>
 	/// Creates a linked text path for a file, but with a custom display path.
 	/// </summary>
@@ -58,7 +58,7 @@ public static class PathLink
 		// Only create a link when in Windows Terminal or if explicitly forced
 		bool createLink = TerminalCapabilities.ShouldCreateHyperlinks(forceLinkCreation);
 		string? linkUrl = createLink ? filePath : null;
-		
+
 		var linkPath = new LinkableTextPath(displayPath, linkUrl);
 		if (style != null)
 		{
@@ -120,7 +120,7 @@ public static class PathLink
 		// Only create a link when in Windows Terminal or if explicitly forced
 		bool createLink = TerminalCapabilities.ShouldCreateHyperlinks(forceLinkCreation);
 		var linkPath = new LinkableTextPath(directoryPath, createLink);
-		
+
 		if (style != null)
 		{
 			return linkPath.LeafStyle(style);
@@ -128,7 +128,7 @@ public static class PathLink
 
 		return linkPath;
 	}
-	
+
 	/// <summary>
 	/// Creates a linked text path for a directory, but with a custom display path.
 	/// </summary>
@@ -153,7 +153,7 @@ public static class PathLink
 		// Only create a link when in Windows Terminal or if explicitly forced
 		bool createLink = TerminalCapabilities.ShouldCreateHyperlinks(forceLinkCreation);
 		string? linkUrl = createLink ? directoryPath : null;
-		
+
 		var linkPath = new LinkableTextPath(displayPath, linkUrl);
 		if (style != null)
 		{
@@ -223,7 +223,7 @@ public static class PathLink
 		// Only create a link when in Windows Terminal or if explicitly forced
 		bool shouldCreateLink = TerminalCapabilities.ShouldCreateHyperlinks(forceLinkCreation);
 		var linkUrl = shouldCreateLink ? url : null;
-		
+
 		var linkPath = new LinkableTextPath(path, linkUrl);
 		if (style != null)
 		{
@@ -293,7 +293,7 @@ public static class PathLink
 			.StemStyle(Color.DarkGreen)
 			.LeafStyle(fileStyle);
 	}
-	
+
 	/// <summary>
 	/// Creates a linked text path with file type coloring based on extension, but with a custom display path.
 	/// </summary>

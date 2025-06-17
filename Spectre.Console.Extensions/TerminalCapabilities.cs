@@ -4,25 +4,27 @@ namespace Spectre.Console.Extensions;
 /// Utilities for detecting terminal-specific capabilities
 /// </summary>
 public static class TerminalCapabilities
-{	/// <summary>
-	/// Gets a value indicating whether the current terminal supports clickable hyperlinks.
+{   /// <summary>
+	/// Gets a value indicating whether the current terminal supports clickable hyper-links.
 	/// Cached for performance since environment variables don't change during execution.
 	/// </summary>
 	public static bool Links { get; } = DetectHyperlinkSupport();
 
 	/// <summary>
 	/// Gets a value indicating whether we're running in Windows Terminal specifically.
-	/// Useful for Windows Terminal-specific features beyond just hyperlinks.
+	/// Useful for Windows Terminal-specific features beyond just hyper-links.
 	/// </summary>
-	public static bool IsWindowsTerminal { get; } = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WT_SESSION"));	/// <summary>
-	/// Determines if hyperlinks should be created based on terminal capabilities and user preference
+	public static bool IsWindowsTerminal { get; } = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WT_SESSION"));
+
+	/// <summary>
+	/// Determines if hyper-links should be created based on terminal capabilities and user preference
 	/// </summary>
 	/// <param name="forceCreation">If true, always create links regardless of terminal capabilities</param>
 	/// <returns>True if links should be created</returns>
 	public static bool ShouldCreateHyperlinks(bool forceCreation = false) => forceCreation || Links;
 
 	/// <summary>
-	/// Detects if the current terminal supports clickable hyperlinks
+	/// Detects if the current terminal supports clickable hyper-links
 	/// </summary>
 	private static bool DetectHyperlinkSupport()
 	{

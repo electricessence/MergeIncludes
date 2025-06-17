@@ -4,7 +4,7 @@ namespace MergeIncludes;
 /// Result of a merge operation, containing both the merged content and metadata
 /// </summary>
 public class MergeResult
-{	/// <summary>
+{   /// <summary>
 	/// Whether the merge was successful
 	/// </summary>
 	public bool IsSuccess { get; init; }
@@ -33,7 +33,8 @@ public class MergeResult
 	/// Create a successful merge result
 	/// </summary>
 	public static MergeResult Success(string mergedContent, List<FileInfo> processedFiles, Dictionary<string, List<string>> fileRelationships)
-	{		return new MergeResult
+	{
+		return new MergeResult
 		{
 			IsSuccess = true,
 			MergedContent = mergedContent,
@@ -46,7 +47,8 @@ public class MergeResult
 	/// Create a failed merge result
 	/// </summary>
 	public static MergeResult Failure(string errorMessage, List<FileInfo> processedFiles, Dictionary<string, List<string>> fileRelationships)
-	{		return new MergeResult
+	{
+		return new MergeResult
 		{
 			IsSuccess = false,
 			ErrorMessage = errorMessage,

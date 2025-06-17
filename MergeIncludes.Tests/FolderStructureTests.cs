@@ -5,7 +5,8 @@ namespace MergeIncludes.Tests;
 
 [UsesVerify]
 public class FolderStructureTests
-{	[Fact]
+{
+	[Fact]
 	public async Task ComplexFolderStructure_DisplaysCorrectly()
 	{
 		// Arrange

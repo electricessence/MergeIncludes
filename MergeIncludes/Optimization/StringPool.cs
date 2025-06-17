@@ -16,14 +16,14 @@ internal static class StringPool
 	{
 		var totalLength = basePath.Length + 1 + relativePath.Length; // +1 for separator
 		var buffer = CharPool.Rent(totalLength);
-		
+
 		try
 		{
 			var span = buffer.AsSpan(0, totalLength);
 			basePath.CopyTo(span);
 			span[basePath.Length] = Path.DirectorySeparatorChar;
 			relativePath.CopyTo(span[(basePath.Length + 1)..]);
-			
+
 			return new string(span);
 		}
 		finally
@@ -40,7 +40,7 @@ internal static class StringPool
 		const int CharsPerLevel = 4; // "│   " or "├── "
 		var totalLength = depth * CharsPerLevel;
 		var buffer = CharPool.Rent(totalLength);
-		
+
 		try
 		{
 			var span = buffer.AsSpan(0, totalLength);
@@ -56,7 +56,7 @@ internal static class StringPool
 					continueChar.CopyTo(levelSpan);
 				}
 			}
-			
+
 			return new string(span);
 		}
 		finally

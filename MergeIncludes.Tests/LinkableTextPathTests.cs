@@ -273,7 +273,7 @@ public class LinkableTextPathTests
 
 		// Act - Render with different widths to see truncation behavior
 		var results = new Dictionary<string, string>();
-		
+
 		foreach (var width in new[] { 20, 40, 60, 80, 120 })
 		{
 			var console = new TestConsole().Width(width);

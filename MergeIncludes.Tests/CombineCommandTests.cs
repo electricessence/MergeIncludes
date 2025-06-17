@@ -9,7 +9,7 @@ public class CombineCommandTests
 	public async Task DefaultTreeDisplayMode_ShowsCorrectStructure()
 	{
 		// Arrange
-		var console = new TestConsole();		var rootFile = new FileInfo(Path.GetFullPath(@"TestScenarios\08_CommentedIncludes\root.txt"));
+		var console = new TestConsole(); var rootFile = new FileInfo(Path.GetFullPath(@"TestScenarios\08_CommentedIncludes\root.txt"));
 		var fileRelationships = CreateTestFileRelationships(rootFile);
 
 		// Act - Use the StructureAndReferenceView directly

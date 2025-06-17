@@ -203,7 +203,7 @@ public sealed class LinkableTextPath(string path, string? linkUrl) : IRenderable
 		// Start from the full correct path (the linkUrl) and work backwards
 		var fullPath = linkUrl!;
 		var pathParts = SplitPathIntoParts(fullPath);
-		
+
 		// Find path components in the segments (skip separators and control codes)
 		var pathComponentSegments = segments
 			.Where(s => !s.IsControlCode && !string.IsNullOrEmpty(s.Text) && !IsPathSeparator(s.Text))
@@ -256,25 +256,25 @@ public sealed class LinkableTextPath(string path, string? linkUrl) : IRenderable
 	private static List<string> SplitPathIntoParts(string path)
 	{
 		var parts = new List<string>();
-		
+
 		if (Path.IsPathRooted(path))
 		{
 			// Handle root separately
 			var root = Path.GetPathRoot(path)!;
 			parts.Add(root.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-			
+
 			// Add remaining parts
 			var relativePath = path.Substring(root.Length);
 			if (!string.IsNullOrEmpty(relativePath))
 			{
-				parts.AddRange(relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar, 
+				parts.AddRange(relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar,
 					StringSplitOptions.RemoveEmptyEntries));
 			}
 		}
 		else
 		{
 			// Relative path
-			parts.AddRange(path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar, 
+			parts.AddRange(path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar,
 				StringSplitOptions.RemoveEmptyEntries));
 		}
 
@@ -288,18 +288,18 @@ public sealed class LinkableTextPath(string path, string? linkUrl) : IRenderable
 	private Dictionary<string, string> CreateSegmentToPathMapping(List<Segment> pathSegments, List<string> pathParts)
 	{
 		var mapping = new Dictionary<string, string>();
-		
+
 		// Work backwards from the leaf
 		var currentPath = linkUrl!;
-		
+
 		// Start from the end of both lists and work backwards
-		for (int segmentIndex = pathSegments.Count - 1, partIndex = pathParts.Count - 1; 
-			 segmentIndex >= 0 && partIndex >= 0; 
+		for (int segmentIndex = pathSegments.Count - 1, partIndex = pathParts.Count - 1;
+			 segmentIndex >= 0 && partIndex >= 0;
 			 segmentIndex--, partIndex--)
 		{
 			var segment = pathSegments[segmentIndex];
 			var expectedPart = pathParts[partIndex];
-			
+
 			// Handle truncated segments (containing "...")
 			if (segment.Text.Contains("..."))
 			{
