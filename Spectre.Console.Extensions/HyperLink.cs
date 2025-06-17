@@ -16,12 +16,11 @@ public static class HyperLink
 	/// <param name="style">Optional additional style to apply</param>
 	/// <returns>A renderable with hyperlink (only if in Windows Terminal)</returns>
 	public static IRenderable Markup(string path, string markup, Style? style = null)
-	{
-		ArgumentNullException.ThrowIfNull(markup);
+	{		ArgumentNullException.ThrowIfNull(markup);
 		ArgumentException.ThrowIfNullOrEmpty(path);
 
-		// Only create links when in Windows Terminal
-		if (!TerminalCapabilities.IsWindowsTerminal)
+		// Only create links when terminal supports them
+		if (!TerminalCapabilities.Links)
 		{
 			return new Markup(markup, style ?? Style.Plain);
 		}
@@ -41,12 +40,11 @@ public static class HyperLink
 	/// <param name="style">Optional additional style to apply</param>
 	/// <returns>A renderable with hyperlink (only if in Windows Terminal)</returns>
 	public static IRenderable For(string path, string text, Style? style = null)
-	{
-		ArgumentNullException.ThrowIfNull(text);
+	{		ArgumentNullException.ThrowIfNull(text);
 		ArgumentException.ThrowIfNullOrEmpty(path);
 
-		// Only create links when in Windows Terminal
-		if (!TerminalCapabilities.IsWindowsTerminal)
+		// Only create links when terminal supports them
+		if (!TerminalCapabilities.Links)
 		{
 			return new Text(text, style ?? Style.Plain);
 		}

@@ -14,11 +14,6 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 {
 	private readonly IAnsiConsole _console = console ?? throw new ArgumentNullException(nameof(console));
 
-	/// <summary>
-	/// Gets a value indicating whether we're running in Windows Terminal.
-	/// </summary>
-	private static bool IsWindowsTerminal => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WT_SESSION"));
-
 	public CombineCommand() : this(AnsiConsole.Console)
 	{
 	}

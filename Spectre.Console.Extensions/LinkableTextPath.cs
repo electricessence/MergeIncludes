@@ -185,7 +185,7 @@ public sealed class LinkableTextPath(string path, string? linkUrl) : IRenderable
 		if (_leafStyle != null) textPath.LeafStyle(_leafStyle);
 
 		// If no link URL is specified or not in Windows Terminal, just render the text path without links
-		if (string.IsNullOrEmpty(linkUrl) || !TerminalCapabilities.IsWindowsTerminal)
+		if (string.IsNullOrEmpty(linkUrl) || !TerminalCapabilities.Links)
 		{
 			return textPath.Render(options, maxWidth);
 		}
