@@ -396,7 +396,10 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-/MergeIncludes.Tests/sample.merged.txt
+
+# Generated merge output files (artifacts)
+**/*.merged.txt
+
 /MergeIncludes/Properties/launchSettings.json
 
 *.received.*

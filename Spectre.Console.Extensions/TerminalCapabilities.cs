@@ -22,7 +22,6 @@ public static class TerminalCapabilities
 	/// <param name="forceCreation">If true, always create links regardless of terminal capabilities</param>
 	/// <returns>True if links should be created</returns>
 	public static bool ShouldCreateHyperlinks(bool forceCreation = false) => forceCreation || Links;
-
 	/// <summary>
 	/// Detects if the current terminal supports clickable hyper-links
 	/// </summary>
@@ -32,9 +31,10 @@ public static class TerminalCapabilities
 		if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WT_SESSION")))
 			return true;
 
-		// VS Code integrated terminal
-		if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("VSCODE_INJECTION")))
-			return true;
+		// VS Code integrated terminal - currently has display corruption issues with hyperlinks
+		// Commented out until VS Code fixes hyperlink rendering
+		// if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("VSCODE_INJECTION")))
+		//     return true;
 
 		// iTerm2 (macOS)
 		var termProgram = Environment.GetEnvironmentVariable("TERM_PROGRAM");
