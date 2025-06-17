@@ -171,17 +171,29 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 				if (existed)
 					outputFile.Attributes |= FileAttributes.ReadOnly;
 				else
-					outputFile.Attributes = FileAttributes.ReadOnly;
-
-				// Use PathLink.File for the output file path which respects Windows Terminal detection
-				var outputPath = o.DisplayMode == TreeDisplayMode.RelativePath
-					? GetExecutionRelativeFilePath(outputFile)
-					: outputFile.FullName;
-
-				var mergePath = PathLink.File(outputFile.FullName, outputPath);
+					outputFile.Attributes = FileAttributes.ReadOnly;				// Use relative path for display, but keep full path for the link
+				var outputPath = GetExecutionRelativeFilePath(outputFile);
+				var mergePath = new LinkableTextPath(outputPath, outputFile.FullName)
+					.RootStyle(Color.Blue)
+					.SeparatorStyle(Color.Grey)
+					.StemStyle(Color.DarkGreen)
+					.LeafStyle(new Style(decoration: Decoration.Bold));
 				_console.Write(new Panel(mergePath)
 				{
 					Header = new PanelHeader("[springgreen1]Successfully merged include references to:[/]"),
+					Border = BoxBorder.Rounded
+				});				return list;
+			}			catch (InvalidOperationException ex) when (ex.Message.Contains("Detected recursive reference"))
+			{
+				// Handle circular reference error - display tree first, then failure panel
+				if (fileRelationships.Count > 0)
+				{
+					DisplayFileTrees(rootFile, fileRelationships, o.DisplayMode);
+				}
+
+				_console.Write(new Panel("[yellow]Circular Reference Detected[/]")
+				{
+					Header = new PanelHeader("[red]Failed to merge[/]"),
 					Border = BoxBorder.Rounded
 				});
 
@@ -322,5 +334,24 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 		}
 
 		visited.Remove(parentPath);
+	}
+
+	/// <summary>
+	/// Extracts the file path from a circular reference exception message
+	/// </summary>
+	private static string ExtractCircularReferencePath(string exceptionMessage)
+	{
+		// Extract path from message like "Detected recursive reference to {path}."
+		const string prefix = "Detected recursive reference to ";
+		const string suffix = ".";
+		
+		var startIndex = exceptionMessage.IndexOf(prefix);
+		if (startIndex == -1) return "unknown file";
+		
+		startIndex += prefix.Length;
+		var endIndex = exceptionMessage.LastIndexOf(suffix);
+		if (endIndex <= startIndex) return "unknown file";
+		
+		return exceptionMessage.Substring(startIndex, endIndex - startIndex);
 	}
 }

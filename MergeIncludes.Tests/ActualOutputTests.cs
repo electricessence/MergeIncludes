@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using System.Text;
+using Spectre.Console;
+using Spectre.Console.Testing;
 using Xunit.Abstractions;
 
 namespace MergeIncludes.Tests;
@@ -68,15 +70,19 @@ public class ActualOutputTests
 			return;
 		}
 
+		// Get the raw application output
 		var actualOutput = await RunMergeIncludes(fullPath);
 
 		_output.WriteLine("Actual application output:");
 		_output.WriteLine(actualOutput);
 
-		// Convert the output to a byte[] for verification to avoid encoding issues
-		var bytes = Encoding.UTF8.GetBytes(actualOutput);
+		// Process the output through Spectre.Console.Testing.TestConsole
+		// This will properly handle ANSI escape sequences
+		var testConsole = new TestConsole();
+		testConsole.Write(new Markup(actualOutput));
+		var processedOutput = testConsole.Output;
 
-		await Verify(bytes)
+		await Verify(processedOutput)
 			 .UseDirectory("Snapshots/ActualOutput")
 			 .UseFileName("SimpleConsecutive_ActualOutput");
 	}
@@ -93,15 +99,18 @@ public class ActualOutputTests
 			return;
 		}
 
+		// Get the raw application output
 		var actualOutput = await RunMergeIncludes(fullPath);
 
 		_output.WriteLine("Actual application output:");
 		_output.WriteLine(actualOutput);
 
-		// Convert the output to a byte[] for verification to avoid encoding issues
-		var bytes = Encoding.UTF8.GetBytes(actualOutput);
+		// Process the output through Spectre.Console.Testing.TestConsole
+		var testConsole = new TestConsole();
+		testConsole.Write(new Markup(actualOutput));
+		var processedOutput = testConsole.Output;
 
-		await Verify(bytes)
+		await Verify(processedOutput)
 			 .UseDirectory("Snapshots/ActualOutput")
 			 .UseFileName("ConsecutiveSameFolder_ActualOutput");
 	}
@@ -118,15 +127,18 @@ public class ActualOutputTests
 			return;
 		}
 
+		// Get the raw application output
 		var actualOutput = await RunMergeIncludes(fullPath);
 
 		_output.WriteLine("Actual application output:");
 		_output.WriteLine(actualOutput);
 
-		// Convert the output to a byte[] for verification to avoid encoding issues
-		var bytes = Encoding.UTF8.GetBytes(actualOutput);
+		// Process the output through Spectre.Console.Testing.TestConsole
+		var testConsole = new TestConsole();
+		testConsole.Write(new Markup(actualOutput));
+		var processedOutput = testConsole.Output;
 
-		await Verify(bytes)
+		await Verify(processedOutput)
 			 .UseDirectory("Snapshots/ActualOutput")
 			 .UseFileName("FolderJumping_ActualOutput");
 	}
@@ -143,15 +155,18 @@ public class ActualOutputTests
 			return;
 		}
 
+		// Get the raw application output
 		var actualOutput = await RunMergeIncludes(fullPath);
 
 		_output.WriteLine("Actual application output:");
 		_output.WriteLine(actualOutput);
 
-		// Convert the output to a byte[] for verification to avoid encoding issues
-		var bytes = Encoding.UTF8.GetBytes(actualOutput);
+		// Process the output through Spectre.Console.Testing.TestConsole
+		var testConsole = new TestConsole();
+		testConsole.Write(new Markup(actualOutput));
+		var processedOutput = testConsole.Output;
 
-		await Verify(bytes)
+		await Verify(processedOutput)
 			 .UseDirectory("Snapshots/ActualOutput")
 			 .UseFileName("ComplexCircular_ActualOutput");
 	}

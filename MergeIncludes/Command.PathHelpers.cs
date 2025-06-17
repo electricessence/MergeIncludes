@@ -206,20 +206,19 @@ public sealed partial class CombineCommand
 				// Try using the workspace root as an alternative
 				var workspaceRoot = GetWorkspaceRoot(file.Directory ?? new DirectoryInfo(Directory.GetCurrentDirectory()));
 				string workspaceRelative = Path.GetRelativePath(workspaceRoot.FullName, file.FullName);
-				
 				// If the workspace path is shorter and not going outside the workspace
-				if (!workspaceRelative.StartsWith("..") && 
-					(workspaceRelative.Length < executionRelative.Length || executionRelative.StartsWith("..")))
-				{
-					return $"{workspaceRelative} (workspace)";
-				}
-			}
-
-			// If within execution directory, just return the relative path
-			if (!executionRelative.StartsWith("..") && !Path.IsPathRooted(executionRelative))
+			if (!workspaceRelative.StartsWith("..") && 
+				(workspaceRelative.Length < executionRelative.Length || executionRelative.StartsWith("..")))
 			{
-				return executionRelative;
+				return $"./{workspaceRelative}";
 			}
+		}
+
+		// If within execution directory, just return the relative path with ./ prefix
+		if (!executionRelative.StartsWith("..") && !Path.IsPathRooted(executionRelative))
+		{
+			return $"./{executionRelative}";
+		}
 
 			// Otherwise fall back to the standard relative path method
 			return GetRelativeFilePath(file.FullName, Path.GetDirectoryName(file.FullName) ?? "");
