@@ -1,4 +1,0 @@
-﻿{
-  UsingAsLink: C:/Some/Test/Path/file.txt,
-  UsingToLink: C:/Some/Test/Path/file.txt
-}

@@ -1,8 +1,8 @@
 ﻿using Spectre.Console;
 using Spectre.Console.Cli;
+using Spectre.Console.Extensions;
 using System.Diagnostics.CodeAnalysis;
 using Throw;
-using Spectre.Console.Extensions;
 
 namespace MergeIncludes;
 
@@ -13,7 +13,7 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 	: AsyncCommand<Settings>
 {
 	private readonly IAnsiConsole _console = console ?? throw new ArgumentNullException(nameof(console));
-	
+
 	/// <summary>
 	/// Gets a value indicating whether we're running in Windows Terminal.
 	/// </summary>
@@ -174,7 +174,11 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 					outputFile.Attributes = FileAttributes.ReadOnly;
 
 				// Use PathLink.File for the output file path which respects Windows Terminal detection
-				var mergePath = PathLink.File(outputFile.FullName);
+				var outputPath = o.DisplayMode == TreeDisplayMode.RelativePath
+					? GetExecutionRelativeFilePath(outputFile)
+					: outputFile.FullName;
+
+				var mergePath = PathLink.File(outputFile.FullName, outputPath);
 				_console.Write(new Panel(mergePath)
 				{
 					Header = new PanelHeader("[springgreen1]Successfully merged include references to:[/]"),
@@ -206,9 +210,117 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 			case TreeDisplayMode.FullPath:
 				DisplayFullPathTree(rootFile, fileRelationships);
 				break;
+			case TreeDisplayMode.RelativePath:
+				DisplayRelativePathTree(rootFile, fileRelationships);
+				break;
 			default:
 				DisplayDefaultTree(rootFile, fileRelationships);
 				break;
 		}
+	}
+
+	/// <summary>
+	/// Display a tree with paths relative to the execution directory
+	/// </summary>
+	private void DisplayRelativePathTree(FileInfo rootFile, Dictionary<string, List<string>> fileRelationships)
+	{
+		// Show context about the execution directory
+		_console.MarkupLine($"[grey]Paths relative to execution directory: {GetExecutionDirectory()}[/]");
+
+		// Create the tree with the root file using execution-relative path
+		var rootPath = GetExecutionRelativeFilePath(rootFile);
+		var tree = new Tree($"[blue]{rootPath}[/]");
+
+		// Process children directly with the tree's nodes
+		var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+		// Start with the root file's children only - the root of the tree already shows the root file
+		if (fileRelationships.TryGetValue(rootFile.FullName, out var rootChildren))
+		{
+			foreach (var childPath in rootChildren)
+			{
+				// Skip self references
+				if (string.Equals(childPath, rootFile.FullName, StringComparison.OrdinalIgnoreCase))
+					continue;
+
+				try
+				{
+					var childFile = new FileInfo(childPath);
+					var childRelativePath = GetExecutionRelativeFilePath(childFile);
+
+					// Create a node for this child
+					var childNode = tree.AddNode($"[cyan]{childRelativePath}[/]");
+
+					// Process this child's children recursively
+					if (fileRelationships.ContainsKey(childPath))
+					{
+						var newVisited = new HashSet<string>(visited, StringComparer.OrdinalIgnoreCase)
+						{
+							rootFile.FullName
+						};
+						AddChildrenToRelativePathTree(childNode, childPath, fileRelationships, newVisited);
+					}
+				}
+				catch (Exception ex)
+				{
+					// Handle any errors gracefully
+					tree.AddNode($"[red]Error processing {Path.GetFileName(childPath)}: {ex.Message}[/]");
+				}
+			}
+		}
+
+		_console.Write(tree);
+	}
+
+	/// <summary>
+	/// Add children to a tree using execution-relative paths
+	/// </summary>
+	private static void AddChildrenToRelativePathTree(
+		TreeNode parentNode,
+		string parentPath,
+		Dictionary<string, List<string>> fileRelationships,
+		HashSet<string> visited)
+	{
+		if (visited.Contains(parentPath))
+		{
+			parentNode.AddNode("[red]⚠ Circular reference detected[/]");
+			return;
+		}
+
+		visited.Add(parentPath);
+
+		if (!fileRelationships.TryGetValue(parentPath, out var children))
+			return;
+
+		// Process each child path
+		foreach (var childPath in children)
+		{
+			// Skip self references
+			if (string.Equals(childPath, parentPath, StringComparison.OrdinalIgnoreCase))
+				continue;
+
+			try
+			{
+				var childFile = new FileInfo(childPath);
+				var childRelativePath = GetExecutionRelativeFilePath(childFile);
+
+				// Create a new node with the relative path
+				var childNode = parentNode.AddNode($"[cyan]{childRelativePath}[/]");
+
+				// Recursively add children if this file includes others
+				if (fileRelationships.ContainsKey(childPath))
+				{
+					AddChildrenToRelativePathTree(childNode, childPath, fileRelationships,
+						new HashSet<string>(visited, StringComparer.OrdinalIgnoreCase));
+				}
+			}
+			catch (Exception ex)
+			{
+				// Handle any errors gracefully
+				parentNode.AddNode($"[red]Error processing {Path.GetFileName(childPath)}: {ex.Message}[/]");
+			}
+		}
+
+		visited.Remove(parentPath);
 	}
 }

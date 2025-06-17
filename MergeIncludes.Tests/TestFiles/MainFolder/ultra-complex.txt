@@ -1,0 +1,15 @@
+# Ultra Complex Root with Shared Dependencies
+This demonstrates complex cross-references and shared dependencies.
+
+## Primary includes
+#include ./SubFolder1/component1.txt
+#include ./SubFolder2/component2.txt
+
+## Shared utility (will be referenced by multiple files)
+#include ./SubFolder2/common.txt
+
+## Cross-folder reference
+#include ./SubFolder1/subcomponent1.txt
+
+## External dependency
+#include ../AnotherFolder/external.txt

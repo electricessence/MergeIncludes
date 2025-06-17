@@ -1,0 +1,25 @@
+# Complex Root File with Repeated References
+This demonstrates a complex include structure with repeated dependencies.
+
+## Include from same directory
+#include ./local.txt
+
+## Include SubFolder1 component (which has its own dependencies)
+#include ./SubFolder1/component1.txt
+
+## Include SubFolder2 component (which also has dependencies)
+#include ./SubFolder2/component2.txt
+
+## Direct include of common.txt (repeated reference)
+#include ./SubFolder2/common.txt
+
+## Another direct include of subcomponent1.txt (repeated reference)
+#include ./SubFolder1/subcomponent1.txt
+
+## Include from external folder
+#include ../AnotherFolder/external.txt
+
+## Include local.txt again (repeated reference)
+#include ./local.txt
+
+## End of complex root file

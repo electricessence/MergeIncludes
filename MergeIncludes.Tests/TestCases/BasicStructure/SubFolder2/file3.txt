@@ -1,0 +1,4 @@
+// File 3 content
+void function3() {
+    // implementation
+}

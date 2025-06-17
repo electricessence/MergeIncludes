@@ -241,4 +241,49 @@ public class LinkableTextPathTests
 			.UseDirectory("Snapshots")
 			.UseFileName("AsLink_VS_ToLink_Comparison");
 	}
+
+	[Fact]
+	public async Task LinkableTextPath_TruncatedPath_PreservesCorrectLinks()
+	{
+		// Arrange - Use a very long path that will likely get truncated
+		var longPath = @"C:\Very\Long\Path\With\Many\Segments\That\Should\Get\Truncated\When\Rendered\In\A\Small\Width\final-file.txt";
+		var linkableTextPath = new LinkableTextPath(longPath, true)
+			.RootStyle(Color.Blue)
+			.SeparatorStyle(Color.Grey)
+			.StemStyle(Color.Green)
+			.LeafStyle(Color.Yellow);
+
+		// Act - Render with a very small width to force truncation
+		var console = new TestConsole().Width(40); // Small width to force truncation
+		console.Write(linkableTextPath);
+		var output = console.Output;
+
+		// Assert using Verify
+		await Verify(output)
+			.UseDirectory("Snapshots")
+			.UseFileName("LinkableTextPath_TruncatedPath_CorrectLinks");
+	}
+
+	[Fact]
+	public async Task LinkableTextPath_TruncatedPath_LinksAnalysis()
+	{
+		// Arrange - Test specifically the link preservation with truncation
+		var testPath = @"C:\Development\Projects\MyApp\src\Components\UserInterface\Views\Settings\UserPreferences.cs";
+		var linkableTextPath = new LinkableTextPath(testPath, true);
+
+		// Act - Render with different widths to see truncation behavior
+		var results = new Dictionary<string, string>();
+		
+		foreach (var width in new[] { 20, 40, 60, 80, 120 })
+		{
+			var console = new TestConsole().Width(width);
+			console.Write(linkableTextPath);
+			results[$"Width_{width}"] = console.Output;
+		}
+
+		// Assert using Verify
+		await Verify(results)
+			.UseDirectory("Snapshots")
+			.UseFileName("LinkableTextPath_TruncatedPath_Analysis");
+	}
 }

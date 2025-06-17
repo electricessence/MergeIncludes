@@ -1,0 +1,4 @@
+// This is the same as SubFolder1/subcomponent1.txt for testing
+void subcomponent1_function() {
+    // duplicate implementation
+}

@@ -1,0 +1,7 @@
+// Component 2
+#include ../SubFolder1/common.txt
+#include ./subcomponent1.txt
+
+void component2_function() {
+    // implementation
+}

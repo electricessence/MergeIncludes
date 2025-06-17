@@ -1,0 +1,16 @@
+# Test consecutive files in same subfolder
+This is the first file in SubFolder1
+
+This is the second file in SubFolder1
+
+This is the third file in SubFolder1
+
+This is alpha in SubFolder2
+
+This is beta in SubFolder2
+
+This is a file in the root directory
+
+This is the fourth file in SubFolder1
+
+

@@ -1,0 +1,7 @@
+# Alternating folder pattern
+#include FolderA/file1.txt
+#include FolderB/file2.txt
+#include FolderA/file3.txt
+#include FolderB/file4.txt
+#include FolderA/file5.txt
+#include FolderB/file6.txt

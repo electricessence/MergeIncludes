@@ -1,0 +1,13 @@
+# Test file for folder jumping between different directories
+// First include from SubFolder1
+#include SubFolder1/file1.txt
+// Then include from SubFolder2  
+#include SubFolder2/file2.txt
+// Jump back to SubFolder1 (should relist the folder)
+#include SubFolder1/file3.txt
+// Jump to MainFolder (root)
+#include file4.txt
+// Jump back to SubFolder2 (should relist the folder)
+#include SubFolder2/file5.txt
+// Jump back to MainFolder again
+#include file6.txt

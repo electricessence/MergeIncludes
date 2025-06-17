@@ -12,21 +12,30 @@ public enum TreeDisplayMode
     /// <summary>
     /// Default tree view with side-by-side folder structure and reference trees
     /// </summary>
-    Default = 0,    /// <summary>
-                    /// Tree showing file names with full paths
-                    /// </summary>
-    FullPath = 1
+    Default = 0,
+
+    /// <summary>
+    /// Tree showing file names with full paths
+    /// </summary>
+    FullPath = 1,
+
+    /// <summary>
+    /// Tree showing file paths relative to execution directory
+    /// </summary>
+    RelativePath = 2
 }
 
 public class MergeOptions : CommandSettings
 {
     [Description("Trims leading and trailing empty lines. Default is true.")]
     [CommandOption("-t|--trim <TRIM_ENABLED>")]
-    public bool? Trim { get; set; }    [Description("Adds additional lines after the contents. Default is 1.")]
+    public bool? Trim { get; set; }
+
+    [Description("Adds additional lines after the contents. Default is 1.")]
     [CommandOption("-p|--pad <LINE_PADDING>")]
     public int Padding { get; set; } = 1;
 
-    [Description("Tree display mode: Default (side-by-side trees), FullPath (file paths list)")]
+    [Description("Tree display mode: Default (side-by-side trees), FullPath (file paths list), RelativePath (paths relative to execution)")]
     [CommandOption("-d|--display <DISPLAY_MODE>")]
     public TreeDisplayMode DisplayMode { get; set; } = TreeDisplayMode.Default;
 

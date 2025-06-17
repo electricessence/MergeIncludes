@@ -1,0 +1,7 @@
+# Test with unique filenames per folder
+#include SubFolder1/unique1.txt
+#include SubFolder2/unique2.txt  
+#include SubFolder1/unique3.txt
+#include unique4.txt
+#include SubFolder2/unique5.txt
+#include unique6.txt

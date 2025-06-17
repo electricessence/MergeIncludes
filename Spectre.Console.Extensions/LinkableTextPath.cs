@@ -204,18 +204,27 @@ public sealed class LinkableTextPath(string path, string? linkUrl) : IRenderable
 		var segments = textPath.Render(options, maxWidth).ToList();
 		return CreateLinkedSegments(segments);
 	}
-
 	/// <summary>
-	/// Creates linked segments for a path, with each folder component linking to its corresponding path
+	/// Creates linked segments for a path, with each folder component linking to its corresponding path.
+	/// Works backwards from the full path to ensure links remain correct even when display text is truncated.
 	/// </summary>
 	private IEnumerable<Segment> CreateLinkedSegments(List<Segment> segments)
 	{
-		var pathBuilder = new List<string>();
-		var isFirstSegment = true;
+		// Start from the full correct path (the linkUrl) and work backwards
+		var fullPath = linkUrl!;
+		var pathParts = SplitPathIntoParts(fullPath);
+		
+		// Find path components in the segments (skip separators and control codes)
+		var pathComponentSegments = segments
+			.Where(s => !s.IsControlCode && !string.IsNullOrEmpty(s.Text) && !IsPathSeparator(s.Text))
+			.ToList();
+
+		// Create a mapping from display text to correct full path
+		var segmentToPathMap = CreateSegmentToPathMapping(pathComponentSegments, pathParts);
 
 		foreach (var segment in segments)
 		{
-			// Pass through control codes unchanged
+			// Pass through control codes and empty segments unchanged
 			if (segment.IsControlCode || string.IsNullOrEmpty(segment.Text))
 			{
 				yield return segment;
@@ -229,41 +238,104 @@ public sealed class LinkableTextPath(string path, string? linkUrl) : IRenderable
 				continue;
 			}
 
-			// This is a path component (folder or file name)
-			pathBuilder.Add(segment.Text);
-
-			// Determine the link URL for this segment
-			string segmentLinkUrl;
-
-			// Special handling for the first segment of absolute paths
-			if (isFirstSegment && Path.IsPathRooted(_path))
+			// This is a path component - find its correct full path
+			if (segmentToPathMap.TryGetValue(segment.Text, out var correctPath))
 			{
-				segmentLinkUrl = segment.Text.EndsWith(':')
-					? segment.Text + Path.DirectorySeparatorChar
-					: Path.DirectorySeparatorChar + segment.Text;
+				// Create a new style that includes the correct link
+				var style = segment.Style != Style.Plain
+					? new Style(
+						segment.Style.Foreground,
+						segment.Style.Background,
+						segment.Style.Decoration,
+						link: correctPath)
+					: new Style(link: correctPath);
 
+				yield return new Segment(segment.Text, style);
 			}
 			else
 			{
-				// Build cumulative path for this segment
-				segmentLinkUrl = isFirstSegment
-					? segment.Text
-					: string.Join(Path.DirectorySeparatorChar.ToString(), pathBuilder);
+				// Fallback - return segment without link if we can't map it
+				yield return segment;
+			}
+		}
+	}
+
+	/// <summary>
+	/// Splits a path into its component parts, preserving the structure needed for linking
+	/// </summary>
+	private static List<string> SplitPathIntoParts(string path)
+	{
+		var parts = new List<string>();
+		
+		if (Path.IsPathRooted(path))
+		{
+			// Handle root separately
+			var root = Path.GetPathRoot(path)!;
+			parts.Add(root.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+			
+			// Add remaining parts
+			var relativePath = path.Substring(root.Length);
+			if (!string.IsNullOrEmpty(relativePath))
+			{
+				parts.AddRange(relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar, 
+					StringSplitOptions.RemoveEmptyEntries));
+			}
+		}
+		else
+		{
+			// Relative path
+			parts.AddRange(path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar, 
+				StringSplitOptions.RemoveEmptyEntries));
+		}
+
+		return parts;
+	}
+
+	/// <summary>
+	/// Creates a mapping from display segment text to the correct full path for linking.
+	/// Works backwards from the leaf to ensure correct paths even with truncated display text.
+	/// </summary>
+	private Dictionary<string, string> CreateSegmentToPathMapping(List<Segment> pathSegments, List<string> pathParts)
+	{
+		var mapping = new Dictionary<string, string>();
+		
+		// Work backwards from the leaf
+		var currentPath = linkUrl!;
+		
+		// Start from the end of both lists and work backwards
+		for (int segmentIndex = pathSegments.Count - 1, partIndex = pathParts.Count - 1; 
+			 segmentIndex >= 0 && partIndex >= 0; 
+			 segmentIndex--, partIndex--)
+		{
+			var segment = pathSegments[segmentIndex];
+			var expectedPart = pathParts[partIndex];
+			
+			// Handle truncated segments (containing "...")
+			if (segment.Text.Contains("..."))
+			{
+				// For truncated segments, use the current path for the link
+				mapping[segment.Text] = currentPath;
+			}
+			else if (segment.Text == expectedPart || segment.Text.EndsWith(':'))
+			{
+				// Normal case - segment matches the expected path part
+				mapping[segment.Text] = currentPath;
+			}
+			else
+			{
+				// Segment doesn't match - might be truncated or modified
+				// Still map it to the current path
+				mapping[segment.Text] = currentPath;
 			}
 
-			isFirstSegment = false;
-
-			// Create a new style that includes the link
-			var style = segment.Style != Style.Plain
-				? new Style(
-					segment.Style.Foreground,
-					segment.Style.Background,
-					segment.Style.Decoration,
-					link: segmentLinkUrl)
-				: new Style(link: segmentLinkUrl);
-
-			yield return new Segment(segment.Text, style);
+			// Move to parent directory for next iteration
+			if (partIndex > 0)
+			{
+				currentPath = Path.GetDirectoryName(currentPath) ?? currentPath;
+			}
 		}
+
+		return mapping;
 	}
 
 	/// <summary>

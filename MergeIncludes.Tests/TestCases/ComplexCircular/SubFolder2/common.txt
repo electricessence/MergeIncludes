@@ -1,0 +1,4 @@
+// Common utilities (copy)
+void common_function() {
+    // shared implementation copy
+}

@@ -183,4 +183,51 @@ public sealed partial class CombineCommand
 			return Path.GetFileName(filePath);
 		}
 	}
+
+	/// <summary>
+	/// Gets a user-friendly representation of a file path relative to the execution directory
+	/// </summary>
+	/// <param name="file">The file to get a relative path for</param>
+	/// <param name="useWorkspaceIfNearer">Whether to use the workspace root as base if it's nearer than execution dir</param>
+	/// <returns>A user-friendly relative path from execution directory</returns>
+	private static string GetExecutionRelativeFilePath(FileInfo file, bool useWorkspaceIfNearer = true)
+	{
+		try
+		{
+			if (file == null)
+				return "unknown file";
+
+			string executionDir = GetExecutionDirectory();
+			string executionRelative = Path.GetRelativePath(executionDir, file.FullName);
+			
+			// If it's not below execution directory or we want to try workspace root
+			if (useWorkspaceIfNearer && (executionRelative.StartsWith("..") || Path.IsPathRooted(executionRelative)))
+			{
+				// Try using the workspace root as an alternative
+				var workspaceRoot = GetWorkspaceRoot(file.Directory ?? new DirectoryInfo(Directory.GetCurrentDirectory()));
+				string workspaceRelative = Path.GetRelativePath(workspaceRoot.FullName, file.FullName);
+				
+				// If the workspace path is shorter and not going outside the workspace
+				if (!workspaceRelative.StartsWith("..") && 
+					(workspaceRelative.Length < executionRelative.Length || executionRelative.StartsWith("..")))
+				{
+					return $"{workspaceRelative} (workspace)";
+				}
+			}
+
+			// If within execution directory, just return the relative path
+			if (!executionRelative.StartsWith("..") && !Path.IsPathRooted(executionRelative))
+			{
+				return executionRelative;
+			}
+
+			// Otherwise fall back to the standard relative path method
+			return GetRelativeFilePath(file.FullName, Path.GetDirectoryName(file.FullName) ?? "");
+		}
+		catch
+		{
+			// If any exception occurs, return just the filename as a fallback
+			return file.Name;
+		}
+	}
 }

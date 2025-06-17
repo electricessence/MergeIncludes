@@ -38,6 +38,40 @@ public static class PathLink
 
 		return linkPath;
 	}
+	
+	/// <summary>
+	/// Creates a linked text path for a file, but with a custom display path.
+	/// </summary>
+	/// <param name="filePath">The actual file path to link to.</param>
+	/// <param name="displayPath">The path text to display instead of the full path.</param>
+	/// <param name="style">Optional style to apply.</param>
+	/// <param name="forceLinkCreation">If true, creates a link even if not in Windows Terminal.</param>
+	/// <returns>A renderable path with a link to the file but showing the display path.</returns>
+	public static IRenderable File(string filePath, string displayPath, Style? style = null, bool forceLinkCreation = false)
+	{
+		if (string.IsNullOrEmpty(filePath))
+		{
+			throw new ArgumentNullException(nameof(filePath));
+		}
+
+		if (string.IsNullOrEmpty(displayPath))
+		{
+			// Fall back to showing the actual path if display path is empty
+			return File(filePath, style, forceLinkCreation);
+		}
+
+		// Only create a link when in Windows Terminal or if explicitly forced
+		bool createLink = forceLinkCreation || IsWindowsTerminal;
+		string? linkUrl = createLink ? filePath : null;
+		
+		var linkPath = new LinkableTextPath(displayPath, linkUrl);
+		if (style != null)
+		{
+			return linkPath.LeafStyle(style);
+		}
+
+		return linkPath;
+	}
 
 	/// <summary>
 	/// Creates a linked text path for a file with custom styling.
@@ -92,6 +126,40 @@ public static class PathLink
 		bool createLink = forceLinkCreation || IsWindowsTerminal;
 		var linkPath = new LinkableTextPath(directoryPath, createLink);
 		
+		if (style != null)
+		{
+			return linkPath.LeafStyle(style);
+		}
+
+		return linkPath;
+	}
+	
+	/// <summary>
+	/// Creates a linked text path for a directory, but with a custom display path.
+	/// </summary>
+	/// <param name="directoryPath">The actual directory path to link to.</param>
+	/// <param name="displayPath">The path text to display instead of the full path.</param>
+	/// <param name="style">Optional style to apply.</param>
+	/// <param name="forceLinkCreation">If true, creates a link even if not in Windows Terminal.</param>
+	/// <returns>A renderable path with a link to the directory but showing the display path.</returns>
+	public static IRenderable Directory(string directoryPath, string displayPath, Style? style = null, bool forceLinkCreation = false)
+	{
+		if (string.IsNullOrEmpty(directoryPath))
+		{
+			throw new ArgumentNullException(nameof(directoryPath));
+		}
+
+		if (string.IsNullOrEmpty(displayPath))
+		{
+			// Fall back to showing the actual path if display path is empty
+			return Directory(directoryPath, style, forceLinkCreation);
+		}
+
+		// Only create a link when in Windows Terminal or if explicitly forced
+		bool createLink = forceLinkCreation || IsWindowsTerminal;
+		string? linkUrl = createLink ? directoryPath : null;
+		
+		var linkPath = new LinkableTextPath(displayPath, linkUrl);
 		if (style != null)
 		{
 			return linkPath.LeafStyle(style);
@@ -225,6 +293,40 @@ public static class PathLink
 		bool createLink = forceLinkCreation || IsWindowsTerminal;
 
 		return new LinkableTextPath(filePath, createLink)
+			.RootStyle(Color.Blue)
+			.SeparatorStyle(Color.Grey)
+			.StemStyle(Color.DarkGreen)
+			.LeafStyle(fileStyle);
+	}
+	
+	/// <summary>
+	/// Creates a linked text path with file type coloring based on extension, but with a custom display path.
+	/// </summary>
+	/// <param name="filePath">The actual file path to link to.</param>
+	/// <param name="displayPath">The path text to display instead of the full path.</param>
+	/// <param name="forceLinkCreation">If true, creates a link even if not in Windows Terminal.</param>
+	/// <returns>A renderable path with a link to the file with the specified display path and appropriate coloring.</returns>
+	public static IRenderable Smart(string filePath, string displayPath, bool forceLinkCreation = false)
+	{
+		if (string.IsNullOrEmpty(filePath))
+		{
+			throw new ArgumentNullException(nameof(filePath));
+		}
+
+		if (string.IsNullOrEmpty(displayPath))
+		{
+			// Fall back to showing the actual path if display path is empty
+			return Smart(filePath, forceLinkCreation);
+		}
+
+		string extension = Path.GetExtension(filePath);
+		Style fileStyle = GetFileTypeStyle(extension);
+
+		// Only create a link when in Windows Terminal or if explicitly forced
+		bool createLink = forceLinkCreation || IsWindowsTerminal;
+		string? linkUrl = createLink ? filePath : null;
+
+		return new LinkableTextPath(displayPath, linkUrl)
 			.RootStyle(Color.Blue)
 			.SeparatorStyle(Color.Grey)
 			.StemStyle(Color.DarkGreen)

@@ -1,0 +1,4 @@
+// Another component
+void another_function() {
+    // another implementation
+}

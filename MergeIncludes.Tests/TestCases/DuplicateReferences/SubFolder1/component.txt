@@ -1,0 +1,6 @@
+// Component in SubFolder1
+#include ../shared.txt
+
+void component_function() {
+    // component implementation
+}

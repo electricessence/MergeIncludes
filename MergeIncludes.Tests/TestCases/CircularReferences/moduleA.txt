@@ -1,0 +1,6 @@
+// Module A
+#include ./moduleB.txt
+
+void moduleA_function() {
+    // implementation
+}

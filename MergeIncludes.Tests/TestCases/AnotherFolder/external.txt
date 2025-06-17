@@ -1,0 +1,4 @@
+// External file
+void external_function() {
+    // external implementation
+}

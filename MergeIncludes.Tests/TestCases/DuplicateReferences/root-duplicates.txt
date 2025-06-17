@@ -1,0 +1,7 @@
+# Root File with Duplicates
+This demonstrates duplicate references.
+
+#include ./shared.txt
+#include ./SubFolder1/component.txt
+#include ./shared.txt
+#include ./SubFolder2/another.txt

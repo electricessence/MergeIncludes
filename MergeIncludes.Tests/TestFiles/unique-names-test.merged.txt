@@ -1,0 +1,14 @@
+# Test with unique filenames per folder
+This is unique1 in SubFolder1
+
+This is unique2 in SubFolder2
+
+This is unique3 in SubFolder1
+
+This is unique4 in root
+
+This is unique5 in SubFolder2
+
+This is unique6 in root
+
+

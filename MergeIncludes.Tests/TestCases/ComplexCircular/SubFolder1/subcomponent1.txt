@@ -1,0 +1,4 @@
+// Subcomponent 1
+void subcomponent1_function() {
+    // implementation
+}

@@ -1,0 +1,4 @@
+// Local utility functions
+void local_function() {
+    // local implementation
+}

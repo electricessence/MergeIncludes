@@ -1,0 +1,8 @@
+# Shared Utility File
+This file is referenced by multiple other files to create complex dependencies.
+
+## This includes another shared file
+#include ../AnotherFolder/external.txt
+
+## This includes something from SubFolder1
+#include ../SubFolder1/subcomponent1.txt

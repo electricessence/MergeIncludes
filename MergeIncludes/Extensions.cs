@@ -167,9 +167,7 @@ public static partial class Extensions
 			{
 				yield return line;
 				goto more;
-			}
-
-			var includePath = Path.GetFullPath(Path.Combine(path.Value, include.Groups[FILE].Value));
+			}			var includePath = Path.GetFullPath(Path.Combine(path.Value, include.Groups[FILE].Value));
 			if (active.Contains(includePath))
 				throw new InvalidOperationException($"Detected recursive reference to {includePath}.");
 
@@ -177,6 +175,12 @@ public static partial class Extensions
 			// Require means to only include it once.
 			if (require && registry.ContainsKey(includePath))
 				goto more;
+
+			// Invoke callback for every include, not just first registration
+			if (registry.TryGetValue(includePath, out var includeFileInfo))
+			{
+				onFileAccessed?.Invoke(includeFileInfo);
+			}
 
 			var exact = include.Groups[EXACT].Success;
 

@@ -398,3 +398,5 @@ FodyWeavers.xsd
 *.sln.iml
 /MergeIncludes.Tests/sample.merged.txt
 /MergeIncludes/Properties/launchSettings.json
+
+*.received.*

@@ -1,0 +1,4 @@
+# Simple consecutive test
+#include SubA/file1.txt
+#include SubA/file2.txt
+#include SubB/file3.txt

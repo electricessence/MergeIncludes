@@ -1,0 +1,19 @@
+# Simple Root File
+This is a basic test with simple includes.
+
+// File 1 content
+void function1() {
+    // implementation
+}
+
+// File 2 content
+void function2() {
+    // implementation
+}
+
+// File 3 content
+void function3() {
+    // implementation
+}
+
+

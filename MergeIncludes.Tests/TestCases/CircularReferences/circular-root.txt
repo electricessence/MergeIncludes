@@ -1,0 +1,5 @@
+# Root File with Circular Reference
+This demonstrates a circular reference.
+
+#include ./moduleA.txt
+#include ./moduleB.txt

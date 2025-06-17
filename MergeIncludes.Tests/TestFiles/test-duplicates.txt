@@ -1,0 +1,14 @@
+# Test file with duplicate references
+This file tests duplicate reference handling.
+
+## First reference to sample01.txt
+#include ../sample01.txt
+
+## Second reference to sample01.txt (should be [2] and gray)
+#include ../sample01.txt
+
+## Reference to another file
+#include ../sample02.txt
+
+## Third reference to sample01.txt (should be [3] and gray)
+#include ../sample01.txt
