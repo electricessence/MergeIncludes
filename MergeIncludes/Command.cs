@@ -98,80 +98,60 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 		cancelSource.Cancel();
 
 		return 0;
-
 		async ValueTask<List<FileInfo>> Merge()
 		{
 			var existed = outputFile.Exists;
 			if (existed)
 				outputFile.Attributes &= ~FileAttributes.ReadOnly;
 
-			var list = new List<FileInfo>();
-			var fileRelationships = new Dictionary<string, List<string>>();
-
-			// Stack to track the current inclusion path
-			var includeStack = new Stack<string>();
-			includeStack.Push(rootFile.FullName);
-
-			// Use a MemoryStream to buffer the output instead of writing directly to the file
-			using var memoryStream = new MemoryStream();
-			using var writer = new StreamWriter(memoryStream);
-
 			try
 			{
-				// Process the files and write to the memory buffer
-				await foreach (var line in rootFile.MergeIncludesAsync(o, info =>
+				// Use the new MergeToMemoryAsync method to get the result
+				var mergeResult = await MergeToMemoryAsync(o);
+
+				if (!mergeResult.IsSuccess)
 				{
-					if (info.FullName == outputFile.FullName)
-						throw new InvalidOperationException("Attempting to include the output file.");
-
-					// Track all files for the flat list (used for watching)
-					list.Add(info);
-
-					// Get the parent file that included this file
-					var parentFile = includeStack.Peek();
-
-					// Record the parent-child relationship
-					if (!fileRelationships.TryGetValue(parentFile, out List<string>? value))
+					// Handle failure case - display tree first, then failure panel
+					if (mergeResult.FileRelationships.Count > 0)
 					{
-						value = [];
-						fileRelationships[parentFile] = value;
+						DisplayFileTrees(rootFile, mergeResult.FileRelationships, o.DisplayMode);
 					}
 
-					value.Add(info.FullName);
-
-					// Push this file onto the stack as it might include other files
-					includeStack.Push(info.FullName);
-
-					// Note: We don't pop from the stack here because we don't know when the
-					// file processing is complete. The stack will accumulate the current branch
-					// of file inclusions.
-				}))
-				{
-					await writer.WriteLineAsync(line);
-
-					// If we detect a line without an include statement, we can assume we've moved back up
-					// in the file hierarchy by one level (this is a simplification but generally works)
-					if (!line.Contains("#include") && !line.Contains("#require") && includeStack.Count > 1)
+					if (mergeResult.ErrorMessage?.Contains("Detected recursive reference") == true)
 					{
-						includeStack.Pop();
+						_console.Write(new Panel("[yellow]Circular Reference Detected[/]")
+						{
+							Header = new PanelHeader("[red]Failed to merge[/]"),
+							Border = BoxBorder.Rounded
+						});
 					}
+					else
+					{
+						_console.Write(new Panel($"[red]{mergeResult.ErrorMessage}[/]")
+						{
+							Header = new PanelHeader("[red]Failed to merge[/]"),
+							Border = BoxBorder.Rounded
+						});
+					}
+
+					return mergeResult.ProcessedFiles;
 				}
-
-				await writer.FlushAsync();
 
 				// If we got here, everything was successful, so now write to the actual file
 				using var output = outputFile.Open(FileMode.Create, FileAccess.Write);
-				memoryStream.Position = 0;
-				await memoryStream.CopyToAsync(output);
+				using var contentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(mergeResult.MergedContent!));
+				await contentStream.CopyToAsync(output);
 
 				// Create and render the file tree based on the selected display mode
-				DisplayFileTrees(rootFile, fileRelationships, o.DisplayMode);
+				DisplayFileTrees(rootFile, mergeResult.FileRelationships, o.DisplayMode);
 
 				// Helps prevent accidental editing by user.
 				if (existed)
 					outputFile.Attributes |= FileAttributes.ReadOnly;
 				else
-					outputFile.Attributes = FileAttributes.ReadOnly;				// Use relative path for display, but keep full path for the link
+					outputFile.Attributes = FileAttributes.ReadOnly;
+
+				// Use relative path for display, but keep full path for the link
 				var outputPath = GetExecutionRelativeFilePath(outputFile);
 				var mergePath = new LinkableTextPath(outputPath, outputFile.FullName)
 					.RootStyle(Color.Blue)
@@ -182,27 +162,13 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 				{
 					Header = new PanelHeader("[springgreen1]Successfully merged include references to:[/]"),
 					Border = BoxBorder.Rounded
-				});				return list;
-			}			catch (InvalidOperationException ex) when (ex.Message.Contains("Detected recursive reference"))
-			{
-				// Handle circular reference error - display tree first, then failure panel
-				if (fileRelationships.Count > 0)
-				{
-					DisplayFileTrees(rootFile, fileRelationships, o.DisplayMode);
-				}
-
-				_console.Write(new Panel("[yellow]Circular Reference Detected[/]")
-				{
-					Header = new PanelHeader("[red]Failed to merge[/]"),
-					Border = BoxBorder.Rounded
 				});
 
-				return list;
+				return mergeResult.ProcessedFiles;
 			}
 			catch
 			{
 				// If there was an error, we don't modify the output file
-				// since we only wrote to the memory stream
 				throw;
 			}
 		}
@@ -337,21 +303,89 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 	}
 
 	/// <summary>
-	/// Extracts the file path from a circular reference exception message
+	/// Performs the merge operation and returns the result without writing to a file.
+	/// This method is primarily intended for testing and scenarios where you want 
+	/// to get the merged content without file I/O.
 	/// </summary>
-	private static string ExtractCircularReferencePath(string exceptionMessage)
+	/// <param name="settings">The merge settings</param>
+	/// <returns>A MergeResult containing the merged content or error information</returns>
+	public static async Task<MergeResult> MergeToMemoryAsync(Settings settings)
 	{
-		// Extract path from message like "Detected recursive reference to {path}."
-		const string prefix = "Detected recursive reference to ";
-		const string suffix = ".";
-		
-		var startIndex = exceptionMessage.IndexOf(prefix);
-		if (startIndex == -1) return "unknown file";
-		
-		startIndex += prefix.Length;
-		var endIndex = exceptionMessage.LastIndexOf(suffix);
-		if (endIndex <= startIndex) return "unknown file";
-		
-		return exceptionMessage.Substring(startIndex, endIndex - startIndex);
+		settings.ThrowIfNull().OnlyInDebug();
+		var rootFile = settings.GetRootFile();
+
+		var list = new List<FileInfo>();
+		var fileRelationships = new Dictionary<string, List<string>>();
+
+		// Stack to track the current inclusion path
+		var includeStack = new Stack<string>();
+		includeStack.Push(rootFile.FullName);
+
+		// Use a MemoryStream to buffer the output
+		using var memoryStream = new MemoryStream();
+		using var writer = new StreamWriter(memoryStream);
+
+		try
+		{           // Process the files and write to the memory buffer
+			await foreach (var line in rootFile.MergeIncludesAsync(settings, info =>
+			{
+				// Check if we're trying to include the output file (only relevant if settings has output file)
+				if (settings.OutputFilePath != null)
+				{
+					var outputFile = settings.GetOutputFile(rootFile);
+					if (info.FullName == outputFile.FullName)
+						throw new InvalidOperationException("Attempting to include the output file.");
+				}
+
+				// Track all files for the flat list (used for watching)
+				list.Add(info);
+
+				// Get the parent file that included this file
+				var parentFile = includeStack.Peek();
+
+				// Record the parent-child relationship
+				if (!fileRelationships.TryGetValue(parentFile, out List<string>? value))
+				{
+					value = [];
+					fileRelationships[parentFile] = value;
+				}
+
+				value.Add(info.FullName);
+
+				// Push this file onto the stack as it might include other files
+				includeStack.Push(info.FullName);
+
+				// Note: We don't pop from the stack here because we don't know when the
+				// file processing is complete. The stack will accumulate the current branch
+				// of file inclusions.
+			}))
+			{
+				await writer.WriteLineAsync(line);
+
+				// If we detect a line without an include statement, we can assume we've moved back up
+				// in the file hierarchy by one level (this is a simplification but generally works)
+				if (!line.Contains("#include") && !line.Contains("#require") && includeStack.Count > 1)
+				{
+					includeStack.Pop();
+				}
+			}
+
+			await writer.FlushAsync();
+
+			// Get the merged content as a string
+			memoryStream.Position = 0;
+			using var reader = new StreamReader(memoryStream);
+			var mergedContent = await reader.ReadToEndAsync();
+
+			return MergeResult.Success(mergedContent, list, fileRelationships);
+		}
+		catch (InvalidOperationException ex) when (ex.Message.Contains("Detected recursive reference"))
+		{
+			return MergeResult.Failure(ex.Message, list, fileRelationships);
+		}
+		catch (Exception ex)
+		{
+			return MergeResult.Failure(ex.Message, list, fileRelationships);
+		}
 	}
 }

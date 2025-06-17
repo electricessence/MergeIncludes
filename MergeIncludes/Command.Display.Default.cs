@@ -30,21 +30,21 @@ partial class CombineCommand
 		var structureAndReferenceView
 			= new StructureAndReferenceView(rootFile, fileRelationships);
 
-		// Create content with header, separator, and the structure/reference view
-		var content = new Rows(
-			rootPath,
-			new Rule() { Style = Color.Grey },
-			structureAndReferenceView
-		);
-
-		// Create panel with the content
-		var panel = new Panel(content)
+		_console.Write(new Panel(rootPath)
 		{
+			Header = new PanelHeader("Root File"),
 			Border = BoxBorder.Rounded,
 			Padding = new Padding(1, 0, 1, 0),
 			Expand = false
-		};
+		});
 
-		_console.Write(panel);
+		// Create panel with the content
+		_console.Write(new Panel(structureAndReferenceView)
+		{
+			Header = new PanelHeader("Structure"),
+			Border = BoxBorder.Rounded,
+			Padding = new Padding(1, 0, 2, 0),
+			Expand = false
+		});
 	}
 }
