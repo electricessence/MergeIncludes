@@ -1,0 +1,20 @@
+﻿# Escape Sequences Test
+
+This file tests the escape sequence functionality.
+
+
+Plain text escape:
+#include ./should-be-literal.txt
+
+JavaScript style escape:
+// #include ./should-be-literal.js
+
+HTML style escape:
+<!-- #include ./should-be-literal.html -->
+
+YAML/Config style escape:
+# #require ./should-be-literal.yml
+
+
+This will include actual content:
+This is actual content that should be included.

@@ -114,6 +114,21 @@ public class ScenarioTests(ITestOutputHelper outputHelper)
 
 		await Verify(trimmedOutput)
 			.UseDirectory("Snapshots/DisplayModes")
-			.UseFileName(testName);
+			.UseFileName(testName);	}
+
+	[Fact]
+	public async Task EscapeSequences_ConvertsToLiteralText()
+	{
+		// Arrange
+		var rootFile = new FileInfo(Path.GetFullPath(@"TestScenarios\05_EscapeSequences\root.txt"));
+
+		// Act
+		var output = await rootFile.MergeIncludesAsync().ToListAsync();
+		var result = string.Join("\n", output).TrimEnd();
+
+		// Assert - Verify using snapshot testing
+		await Verify(result)
+			.UseDirectory("Snapshots")
+			.UseFileName("EscapeSequences");
 	}
 }

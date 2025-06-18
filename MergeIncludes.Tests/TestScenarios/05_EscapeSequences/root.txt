@@ -1,0 +1,22 @@
+# Escape Sequences Test
+
+This file tests the escape sequence functionality.
+
+## Escaped Directives (should appear as literal text):
+
+Plain text escape:
+##include ./should-be-literal.txt
+
+JavaScript style escape:
+// ##include ./should-be-literal.js
+
+HTML style escape:
+<!-- ##include ./should-be-literal.html -->
+
+YAML/Config style escape:
+# ##require ./should-be-literal.yml
+
+## Normal Directives (should be processed):
+
+This will include actual content:
+#include ./content.txt
