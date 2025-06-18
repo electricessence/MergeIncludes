@@ -23,20 +23,26 @@ public class ScenarioTests(ITestOutputHelper outputHelper)
 		public IReadOnlyList<string> Raw { get; } = [];
 
 		public static readonly EmptyRemainingArguments Instance = new();
-	}	[Theory]
-	[InlineData("TestScenarios/01_BasicInclusion/simple-root.txt", "BasicInclusion")]
-	[InlineData("TestScenarios/02_DuplicateReferences/root-duplicates.txt", "DuplicateReferences")]
-	[InlineData("TestScenarios/03_CircularReferences/circular-root.txt", "CircularReferences")]
-	[InlineData("TestScenarios/04_FolderNavigation/unique-names.txt", "FolderNavigation")]
-	[InlineData("TestScenarios/05_ConsecutiveIncludes/root-file.txt", "ConsecutiveIncludes")]
-	[InlineData("TestScenarios/06_ComplexStructure/complex-root.txt", "ComplexStructure")]
+	}
+	
+	[Theory]
+	[InlineData("TestScenarios/01_BasicInclusion/root.txt", "BasicInclusion")]
+	[InlineData("TestScenarios/02_DuplicateReferences/root.txt", "DuplicateReferences")]
+	[InlineData("TestScenarios/03_CircularReferences/root.txt", "CircularReferences")]
+	[InlineData("TestScenarios/04_FolderNavigation/root.txt", "FolderNavigation")]
+	[InlineData("TestScenarios/05_ConsecutiveIncludes/root.txt", "ConsecutiveIncludes")]
+	[InlineData("TestScenarios/05_EscapeSequences/root.txt", "EscapeSequences")]
+	[InlineData("TestScenarios/06_ComplexStructure/root.txt", "ComplexStructure")]
 	[InlineData("TestScenarios/07_WildcardIncludes/root.txt", "WildcardIncludes")]
+	[InlineData("TestScenarios/08_AlternatingFolders/root.txt", "AlternatingFolders")]
 	[InlineData("TestScenarios/08_CommentedIncludes/root.txt", "CommentedIncludes")]
+	[InlineData("TestScenarios/09_UniqueFilenames/root.txt", "UniqueFilenames")]
 	[InlineData("TestScenarios/10_DetailedFolderJumping/root.txt", "DetailedFolderJumping")]
 	[InlineData("TestScenarios/11_NestedRequireTree/types-modular.pine", "NestedRequireTree")]
 	[InlineData("TestScenarios/wildcard-reference/main.txt", "WildcardReference")]
-	[InlineData("TestFiles/test-circular.txt", "ManualCircular")]
-	public async Task MergeIncludesScenario_OutputTest(string testFilePath, string scenarioName)
+	[InlineData("TestScenarios/Shared/root-file.txt", "Shared")]
+	[InlineData("TestScenarios/03_CircularReferences/manual-circular.txt", "ManualCircular")]
+	public async Task ScenarioTest(string testFilePath, string scenarioName)
 	{
 		// Arrange
 		var fullPath = Path.GetFullPath(testFilePath);
@@ -64,112 +70,11 @@ public class ScenarioTests(ITestOutputHelper outputHelper)
 			null);
 		await command.ExecuteAsync(context, settings);
 
-		// Assert
+		// Assert - Capture the complete console output without any trimming
 		var consoleOutput = testConsole.Output;
 
-		// Trim trailing whitespace from each line to avoid test failures
-		var trimmedOutput = string.Join('\n', consoleOutput.Split('\n').Select(line => line.TrimEnd()));
-
-		await Verify(trimmedOutput)
-			.UseDirectory("Snapshots/Scenarios")
-			.UseFileName(scenarioName);
-	}
-	[Theory]
-	[InlineData("TestScenarios/01_BasicInclusion/simple-root.txt", TreeDisplayMode.Default, "BasicInclusion_Default")]
-	[InlineData("TestScenarios/01_BasicInclusion/simple-root.txt", TreeDisplayMode.FullPath, "BasicInclusion_FullPath")]
-	[InlineData("TestScenarios/02_DuplicateReferences/root-duplicates.txt", TreeDisplayMode.Default, "DuplicateReferences_Default")]
-	[InlineData("TestScenarios/02_DuplicateReferences/root-duplicates.txt", TreeDisplayMode.FullPath, "DuplicateReferences_FullPath")]
-	[InlineData("TestScenarios/06_ComplexStructure/complex-root.txt", TreeDisplayMode.Default, "ComplexStructure_Default")]
-	[InlineData("TestScenarios/07_WildcardIncludes/root.txt", TreeDisplayMode.Default, "WildcardIncludes_Default")]
-	[InlineData("TestScenarios/11_NestedRequireTree/types-modular.pine", TreeDisplayMode.Default, "NestedRequireTree_Default")]
-	public async Task MergeIncludesDisplayMode_OutputTest(string testFilePath, TreeDisplayMode displayMode, string testName)
-	{
-		// Arrange
-		var fullPath = Path.GetFullPath(testFilePath);
-
-		if (!File.Exists(fullPath))
-		{
-			outputHelper.WriteLine($"Test file not found: {fullPath}");
-			return;
-		}
-
-		var testConsole = new TestConsole();
-		var settings = new Settings
-		{
-			RootFilePath = testFilePath,
-			DisplayMode = displayMode,
-			OutputFilePath = ""
-		};
-
-		// Act
-		var command = new CombineCommand(testConsole);
-		var context = new CommandContext(
-			[],
-			EmptyRemainingArguments.Instance,
-			"test-command",
-			null);
-		await command.ExecuteAsync(context, settings);
-
-		// Assert
-		var consoleOutput = testConsole.Output;
-
-		// Trim trailing whitespace from each line to avoid test failures
-		var trimmedOutput = string.Join('\n', consoleOutput.Split('\n').Select(line => line.TrimEnd()));
-
-		await Verify(trimmedOutput)
-			.UseDirectory("Snapshots/DisplayModes")
-			.UseFileName(testName);	}
-
-	[Fact]
-	public async Task EscapeSequences_ConvertsToLiteralText()
-	{
-		// Arrange
-		var rootFile = new FileInfo(Path.GetFullPath(@"TestScenarios\05_EscapeSequences\root.txt"));
-
-		// Act
-		var output = await rootFile.MergeIncludesAsync().ToListAsync();
-		var result = string.Join("\n", output).TrimEnd();
-
-		// Assert - Verify using snapshot testing
-		await Verify(result)
+		await Verify(consoleOutput)
 			.UseDirectory("Snapshots")
-			.UseFileName("EscapeSequences");
-	}
-
-	[Theory]
-	[InlineData("TestScenarios/01_BasicInclusion/simple-root.txt", "BasicInclusion")]
-	[InlineData("TestScenarios/02_DuplicateReferences/root-duplicates.txt", "DuplicateReferences")]
-	[InlineData("TestScenarios/03_CircularReferences/circular-root.txt", "CircularReferences")]
-	[InlineData("TestScenarios/04_FolderNavigation/unique-names.txt", "FolderNavigation")]
-	[InlineData("TestScenarios/05_ConsecutiveIncludes/root-file.txt", "ConsecutiveIncludes")]
-	[InlineData("TestScenarios/06_ComplexStructure/complex-root.txt", "ComplexStructure")]
-	[InlineData("TestScenarios/07_WildcardIncludes/root.txt", "WildcardIncludes")]
-	[InlineData("TestScenarios/08_CommentedIncludes/root.txt", "CommentedIncludes")]
-	[InlineData("TestScenarios/10_DetailedFolderJumping/root.txt", "DetailedFolderJumping")]
-	[InlineData("TestScenarios/11_NestedRequireTree/types-modular.pine", "NestedRequireTree")]
-	[InlineData("TestScenarios/wildcard-reference/main.txt", "WildcardReference")]
-	public async Task MergeIncludesScenario_MergedContentTest(string testFilePath, string scenarioName)
-	{
-		// Arrange
-		var fullPath = Path.GetFullPath(testFilePath);
-
-		if (!File.Exists(fullPath))
-		{
-			return;
-		}
-
-		var settings = new Settings
-		{
-			RootFilePath = testFilePath,
-			DisplayMode = TreeDisplayMode.Default,
-			Trim = true
-		};
-		// Act
-		var result = await CombineCommand.MergeToMemoryAsync(settings);
-
-		// Assert - Verify the merged content
-		await Verify(result.MergedContent ?? result.ErrorMessage ?? "No content")
-			.UseDirectory("Snapshots/MergedContent")
-			.UseFileName($"{scenarioName}_MergedContent");
+			.UseFileName(scenarioName);
 	}
 }

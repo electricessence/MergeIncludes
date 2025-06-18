@@ -1,0 +1,11 @@
+﻿╭─Root File──────────────────────────────────────╮
+│ ./TestScenarios/03_CircularReferences/root.txt │
+╰────────────────────────────────────────────────╯
+╭─Structure───────────────────────────────────╮
+│ 📁 03_CircularReferences / root.txt         │
+│ ├──                        ├── moduleA.txt  │
+│ └──                        └── moduleB.txt  │
+╰─────────────────────────────────────────────╯
+╭─Failed to merge─────────────╮
+│ Circular Reference Detected │
+╰─────────────────────────────╯

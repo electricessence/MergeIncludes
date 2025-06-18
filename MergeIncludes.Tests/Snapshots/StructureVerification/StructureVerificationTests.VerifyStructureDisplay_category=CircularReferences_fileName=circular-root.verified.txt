@@ -1,7 +1,0 @@
-﻿📁 03_CircularReferences / root.txt                     
-├──                        ├── moduleA.txt [1]          
-├──                        │   └── moduleB.txt [2]      
-├──                        │       └── moduleA.txt [1] ⚠
-├──                        └── moduleB.txt [2]          
-├──                            └── moduleA.txt [1]      
-└──                                └── moduleB.txt [2] ⚠

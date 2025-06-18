@@ -1,5 +1,0 @@
-{
-  Success: false,
-  ErrorMessage: Detected recursive reference to {CurrentDirectory}TestScenarios\03_CircularReferences\moduleA.txt.,
-  ProcessedFiles: 3
-}

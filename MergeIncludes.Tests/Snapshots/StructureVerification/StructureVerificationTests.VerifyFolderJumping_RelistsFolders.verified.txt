@@ -1,7 +1,0 @@
-﻿📁 04_FolderNavigation / root.txt       
-├── 📁 SubFolder1        ├── unique1.txt
-├── 📁 SubFolder2        ├── unique2.txt
-├── 📁 SubFolder1        ├── unique3.txt
-├──                      ├── unique4.txt
-├── 📁 SubFolder2        ├── unique5.txt
-└──                      └── unique6.txt

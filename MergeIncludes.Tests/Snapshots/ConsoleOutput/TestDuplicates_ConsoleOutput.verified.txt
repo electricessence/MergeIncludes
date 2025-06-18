@@ -1,5 +1,0 @@
-📁 02_DuplicateReferences     / test-duplicates.txt
-└── 📁 ../07_WildcardIncludes   ├── sample01.txt [1]
-    ├──                         ├── sample02.txt
-    ├──                         │   └── sample02-01.txt
-    └──                         └── sample01.txt [1]

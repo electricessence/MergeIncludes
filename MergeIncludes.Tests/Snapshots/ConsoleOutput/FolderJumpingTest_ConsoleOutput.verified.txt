@@ -1,7 +1,0 @@
-📁 10_DetailedFolderJumping / root.txt
-├── 📁 ../Shared/SubFolder1   ├── file1.txt
-├── 📁 ../Shared/SubFolder2   ├── file2.txt
-├── 📁 ../Shared/SubFolder1   ├── file3.txt
-├── 📁 ../Shared              ├── file4.txt
-├── 📁 ../Shared/SubFolder2   ├── file5.txt
-└── 📁 ../Shared              └── file6.txt

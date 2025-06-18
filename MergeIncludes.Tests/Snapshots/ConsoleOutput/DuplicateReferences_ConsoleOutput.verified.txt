@@ -1,6 +1,0 @@
-📁 02_DuplicateReferences / root.txt
-├──                         ├── shared.txt [1]
-├── 📁 SubFolder1           ├── component.txt
-├──                         │   └── shared.txt [1]
-├──                         ├── shared.txt [1]
-└── 📁 SubFolder2           └── another.txt

@@ -1,7 +1,0 @@
-{
-  Success: false,
-  ErrorMessage:
-Could not find include file on line 5 in:
-{CurrentDirectory}TestScenarios\01_BasicInclusion\root.txt:5,
-  ProcessedFiles: 2
-}

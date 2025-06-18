@@ -1,7 +1,0 @@
-﻿📁 05_ConsecutiveIncludes / consecutive-same-folder.txt
-├── 📁 SubFolder1           ├── first.txt              
-│   ├──                     ├── second.txt             
-│   └──                     ├── third.txt              
-├── 📁 SubFolder2           ├── alpha.txt              
-│   └──                     ├── beta.txt               
-└── 📁 SubFolder1           └── fourth.txt             

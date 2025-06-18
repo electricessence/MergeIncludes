@@ -1,8 +1,0 @@
-﻿📁 wildcard-reference / main.txt
-├── 📁 files            ├── file-a.txt
-│   ├──                 ├── file-b.txt
-│   └──                 ├── file-c.txt
-├── 📁 config           ├── config-a.txt
-│   └──                 ├── config-b.txt
-└── 📁 scripts          ├── script-1.txt
-    └──                 └── script-2.txt

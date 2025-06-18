@@ -1,4 +1,0 @@
-﻿📁 01_BasicInclusion        / root.txt
-├── 📁 ../Shared/SubFolder1   ├── file1.txt
-├── 📁 ../Shared/SubFolder2   ├── file2.txt
-└── 📁 ../Shared/SubFolder1   └── file3.txt
