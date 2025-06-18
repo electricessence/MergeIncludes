@@ -7,7 +7,7 @@
 *This README is built using MergeIncludes itself*
 
 [![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4?style=for-the-badge&logo=dotnet)](https://dotnet.microsoft.com/)
-[![MIT License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge)]()
 [![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge)]()
 
@@ -246,25 +246,6 @@ MergeIncludes ./docs/README-template.md -o ./README.md
 ```
 
 
-- **Visual Indicators**: `⚠️` symbols mark duplicate references
-- **Reference Numbers**: `[1]`, `[2]`, `[3]` track file usage
-- **Smart Handling**: `#require` prevents duplicates, `#include` allows them
-
-- **Windows Terminal**: Clickable file links and rich colors
-- **VS Code Terminal**: Clean display optimized for integrated terminals
-- **Standard Terminals**: Full functionality with graceful fallbacks
-
-- **String Pooling**: Minimizes memory allocations
-- **Path Caching**: Optimizes file system operations  
-- **Lazy Evaluation**: Processes files only when needed
-- **Circular Detection**: Prevents infinite recursion
-
-- **Default**: Side-by-side folder structure and reference trees
-- **FullPath**: Complete file paths for debugging
-- **RelativePath**: Clean relative paths for documentation
-
----
-
 
 - **.NET 9.0** or higher
 - **Windows 10+**, **macOS 10.15+**, or **Linux** (any modern distribution)
@@ -335,7 +316,7 @@ MergeIncludes ./README-template.md --watch -o ../README.md
 ---
 
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **GPL-3.0 License** - see the [LICENSE](LICENSE) file for details.
 
 ---
 
