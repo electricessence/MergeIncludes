@@ -1,0 +1,7 @@
+﻿{
+  Width_120: C:/Development/Projects/MyApp/src/Components/UserInterface/Views/Settings/UserPreferences.cs,
+  Width_20: …UserPreferences.cs,
+  Width_40: C:/…/Views/Settings/UserPreferences.cs,
+  Width_60: C:/…/UserInterface/Views/Settings/UserPreferences.cs,
+  Width_80: C:/…/MyApp/src/Components/UserInterface/Views/Settings/UserPreferences.cs
+}

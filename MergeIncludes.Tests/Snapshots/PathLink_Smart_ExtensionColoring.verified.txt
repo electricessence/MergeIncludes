@@ -1,0 +1,8 @@
+﻿{
+  .cs: C:/Project/Program.cs,
+  .html: C:/Project/Page.html,
+  .json: C:/Project/Data.json,
+  .md: C:/Project/Readme.md,
+  .png: C:/Project/Image.png,
+  .xyz: C:/Project/Unknown.xyz
+}

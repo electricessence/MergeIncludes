@@ -1,4 +1,0 @@
-﻿This is sample 01.
-This is sample 02.
-
-This is a leaf

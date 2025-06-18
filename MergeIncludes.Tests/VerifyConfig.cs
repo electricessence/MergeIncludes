@@ -19,20 +19,9 @@ public static class VerifyConfig
 			= Environment.UserInteractive
 		   && !Environment.GetEnvironmentVariable("CI")?
 				.ToLower().Contains("true", StringComparison.CurrentCultureIgnoreCase) == true;
-
-		// In Visual Studio or interactive development, enable diff-tools and auto-verify
-		if (isVisualStudio || isInteractive)
-		{
-			// Enable automatic diff-tool launching when tests fail in development
-			VerifierSettings.AutoVerify();
-			Console.WriteLine("Verify: Running in development mode - auto-verify enabled");
-		}
-		else
-		{
-			// In automated environments (like when I run tests), disable auto-verify
-			// This will create .received.txt files that need manual approval
-			Console.WriteLine("Verify: Running in automated mode - manual approval required");
-		}
+		// Always disable auto-verify to ensure tests fail when output doesn't match expected
+		// This prevents automatic overwriting of verified files with incorrect output
+		Console.WriteLine("Verify: Auto-verify disabled - manual approval required for all changes");
 
 		// Configure better console output for failed verifications
 		VerifierSettings.OnVerifyMismatch((filePair, message) =>
