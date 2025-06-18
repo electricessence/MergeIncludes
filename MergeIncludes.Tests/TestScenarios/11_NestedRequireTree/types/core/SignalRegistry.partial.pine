@@ -1,0 +1,145 @@
+// #require ./SignalDefinition.partial.pine
+// #require ./SignalConfiguration.partial.pine
+// #require ./SignalGroup.partial.pine
+
+// SignalRegistry - Registry for managing definitions, configurations, and runtime groups
+// @type SignalRegistry
+// @field definitions (map<string, SignalDefinition>) Static signal definitions keyed by name
+// @field configurations (map<string, SignalConfiguration>) Per-instance behavior settings keyed by signalName
+// @field groups (map<string, SignalGroup>) Runtime signal groups keyed by group name
+type SignalRegistry
+    map<string, SignalDefinition> definitions
+    map<string, SignalConfiguration> configurations
+    map<string, SignalGroup> groups
+
+///////////////////////////////////////////////////
+// SIGNALREGISTRY METHODS
+///////////////////////////////////////////////////
+
+// @function Adds a signal definition to the registry (fluent interface)
+// @param this (SignalRegistry) The SignalRegistry instance
+// @param definition (SignalDefinition) Signal definition to register
+// @returns (SignalRegistry) Self-reference for method chaining
+method addDefinition(SignalRegistry this, SignalDefinition definition) =>
+    this.definitions.put(definition.name, definition)
+    this
+
+// @function Adds a signal configuration to the registry (fluent interface)
+// @param this (SignalRegistry) The SignalRegistry instance
+// @param config (SignalConfiguration) Configuration to register
+// @returns (SignalRegistry) Self-reference for method chaining
+method addConfiguration(SignalRegistry this, SignalConfiguration config) =>
+    this.configurations.put(config.signalName, config)
+    this
+
+// @function Adds a signal group to the registry (fluent interface)
+// @param this (SignalRegistry) The SignalRegistry instance
+// @param group (SignalGroup) Group to register
+// @returns (SignalRegistry) Self-reference for method chaining
+method addGroup(SignalRegistry this, SignalGroup group) =>
+    this.groups.put(group.name, group)
+    this
+
+// @function Checks if a signal definition exists by name - O(1) lookup
+// @param this (SignalRegistry) The SignalRegistry instance
+// @param name (string) Signal name to check
+// @returns (bool) True if definition exists in registry
+method hasDefinition(SignalRegistry this, string name) =>
+    this.definitions.contains(name)
+
+// @function Gets a signal definition by name - O(1) lookup
+// @param this (SignalRegistry) The SignalRegistry instance
+// @param name (string) Signal name to retrieve
+// @returns (SignalDefinition or na) Definition if exists, na otherwise
+method getDefinition(SignalRegistry this, string name) =>
+    this.definitions.get(name)
+
+// @function Gets a signal configuration by signal name - O(1) lookup
+// @param this (SignalRegistry) The SignalRegistry instance
+// @param name (string) Signal name to retrieve configuration for
+// @returns (SignalConfiguration or na) Configuration if exists, na otherwise
+method getConfiguration(SignalRegistry this, string name) =>
+    this.configurations.get(name)
+
+// @function Gets a signal group by name - O(1) lookup
+// @param this (SignalRegistry) The SignalRegistry instance
+// @param name (string) Group name to retrieve
+// @returns (SignalGroup or na) Group if exists, na otherwise
+method getGroup(SignalRegistry this, string name) =>
+    this.groups.get(name)
+
+// @function Gets the total number of registered signal definitions
+// @param this (SignalRegistry) The SignalRegistry instance
+// @returns (int) Count of definitions in the registry
+method getDefinitionCount(SignalRegistry this) =>
+    this.definitions.size()
+
+// @function Gets the total number of registered signal configurations
+// @param this (SignalRegistry) The SignalRegistry instance
+// @returns (int) Count of configurations in the registry
+method getConfigurationCount(SignalRegistry this) =>
+    this.configurations.size()
+
+// @function Gets the total number of registered signal groups
+// @param this (SignalRegistry) The SignalRegistry instance
+// @returns (int) Count of groups in the registry
+method getGroupCount(SignalRegistry this) =>
+    this.groups.size()
+
+// @function Validates that a signal name has a registered definition
+// @param this (SignalRegistry) The SignalRegistry instance
+// @param name (string) Signal name to validate
+// @returns (bool) True if signal has a definition in the registry
+method validateSignalName(SignalRegistry this, string name) =>
+    this.hasDefinition(name)
+
+// @function Gets array of all registered definition names in insertion order
+// @param this (SignalRegistry) The SignalRegistry instance
+// @returns (array<string>) Array of all definition names/keys
+method getAllDefinitionNames(SignalRegistry this) =>
+    this.definitions.keys()
+
+// @function Gets array of all registered configuration names in insertion order
+// @param this (SignalRegistry) The SignalRegistry instance
+// @returns (array<string>) Array of all configuration signal names/keys
+method getAllConfigurationNames(SignalRegistry this) =>
+    this.configurations.keys()
+
+// @function Gets array of all registered group names in insertion order
+// @param this (SignalRegistry) The SignalRegistry instance
+// @returns (array<string>) Array of all group names/keys
+method getAllGroupNames(SignalRegistry this) =>
+    this.groups.keys()
+
+// @function Removes a signal definition from the registry (fluent interface)
+// @param this (SignalRegistry) The SignalRegistry instance
+// @param name (string) Name of definition to remove
+// @returns (SignalRegistry) Self-reference for method chaining
+method removeDefinition(SignalRegistry this, string name) =>
+    this.definitions.remove(name)
+    this
+
+// @function Removes a signal configuration from the registry (fluent interface)
+// @param this (SignalRegistry) The SignalRegistry instance
+// @param name (string) Signal name of configuration to remove
+// @returns (SignalRegistry) Self-reference for method chaining
+method removeConfiguration(SignalRegistry this, string name) =>
+    this.configurations.remove(name)
+    this
+
+// @function Removes a signal group from the registry (fluent interface)
+// @param this (SignalRegistry) The SignalRegistry instance
+// @param name (string) Name of group to remove
+// @returns (SignalRegistry) Self-reference for method chaining
+method removeGroup(SignalRegistry this, string name) =>
+    this.groups.remove(name)
+    this
+
+// @function Clears all registries (definitions, configurations, groups) (fluent interface)
+// @param this (SignalRegistry) The SignalRegistry instance
+// @returns (SignalRegistry) Self-reference for method chaining
+method clear(SignalRegistry this) =>
+    this.definitions.clear()
+    this.configurations.clear()
+    this.groups.clear()
+    this

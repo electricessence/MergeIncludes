@@ -1,0 +1,32 @@
+// #require ../core/SignalConfiguration.partial.pine
+// #require ../core/SignalInstance.partial.pine
+
+// SignalConfiguration methods (self-modifying fluent interface)
+method setWeight(SignalConfiguration this, float weight) =>
+    this.weight := weight
+    this
+
+method setThresholds(SignalConfiguration this, float weak, float strong) =>
+    this.thresholdWeak := weak
+    this.thresholdStrong := strong
+    this
+
+method setNormalization(SignalConfiguration this, string scheme) =>
+    this.normalizationScheme := scheme
+    this
+
+method enable(SignalConfiguration this) =>
+    this.enabled := true
+    this
+
+method disable(SignalConfiguration this) =>
+    this.enabled := false
+    this
+
+// Key factory method - configuration creates signal instances
+method createSignal(SignalConfiguration this, float rawValue, float confidence = 1.0) =>
+    SignalInstance.new(
+      this.signalName,
+      rawValue,
+      confidence,
+      array.new<SignalThought>())

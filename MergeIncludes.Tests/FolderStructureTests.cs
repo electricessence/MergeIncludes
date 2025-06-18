@@ -23,6 +23,25 @@ public class FolderStructureTests
 			.UseDirectory("Snapshots")
 			.UseFileName("ComplexFolderStructure");
 	}
+
+	[Fact]
+	public async Task ComplexFolderStructureWithRequire_DisplaysCorrectly()
+	{
+		// Arrange
+		var console = new TestConsole();
+		var rootFile = new FileInfo(Path.GetFullPath(@"TestScenarios\Shared\MainFolder\complex-root-require.txt"));
+		var fileRelationships = BuildComplexFileRelationshipsWithRequire();
+
+		// Act - Use the StructureAndReferenceView directly
+		var structureAndReferenceView = new Renderables.StructureAndReferenceView(rootFile, fileRelationships);
+		console.Write(structureAndReferenceView);
+		
+		// Assert - Verify console output
+		var output = console.Output.TrimEnd();
+		await Verify(output)
+			.UseDirectory("Snapshots")
+			.UseFileName("ComplexFolderStructureWithRequire");
+	}
 	private static Dictionary<string, List<string>> BuildComplexFileRelationships()
 	{
 		// Use the updated paths in TestScenarios directory
@@ -58,6 +77,61 @@ public class FolderStructureTests
 		[
 			subcomponent1Path,
 			localPath,          // This is a repeat dependency since it's also included by root
+            commonPath
+		],
+
+			// Component2 includes
+			[component2Path] =
+		[
+			commonPath,
+			subcomponent1Path   // This will be a repeat when component1 is also included
+        ],
+
+			// External file includes
+			[externalPath] =
+		[
+			commonPath          // This will be a repeat across folder boundaries
+        ]
+		};
+
+		return fileRelationships;
+	}
+
+	private static Dictionary<string, List<string>> BuildComplexFileRelationshipsWithRequire()
+	{
+		// Use the updated paths in TestScenarios directory
+		var rootPath = Path.GetFullPath(@".\TestScenarios\Shared\MainFolder\complex-root-require.txt");
+		var basePath = Path.GetFullPath(@".\TestScenarios");
+
+		var mainFolder = Path.Combine(basePath, "Shared", "MainFolder");
+		var subFolder1 = Path.Combine(mainFolder, "SubFolder1");
+		var subFolder2 = Path.Combine(mainFolder, "SubFolder2");
+		var anotherFolder = Path.Combine(basePath, "AnotherFolder");
+
+		// Define all file paths
+		var localPath = Path.Combine(mainFolder, "local.txt");
+		var component1Path = Path.Combine(subFolder1, "component1.txt");
+		var subcomponent1Path = Path.Combine(subFolder1, "subcomponent1.txt");
+		var component2Path = Path.Combine(subFolder2, "component2.txt");
+		var commonPath = Path.Combine(subFolder2, "common.txt");
+		var externalPath = Path.Combine(anotherFolder, "external.txt");
+
+		var fileRelationships = new Dictionary<string, List<string>>
+		{
+			// Root file requires - with #require, duplicates should be filtered out during processing
+			[rootPath] =
+		[
+			localPath,
+			component1Path,
+			component2Path,
+			externalPath
+		],
+
+			// Component1 includes (same as original since these are the underlying file dependencies)
+			[component1Path] =
+		[
+			subcomponent1Path,
+			localPath,          // This is a repeat dependency since it's also required by root
             commonPath
 		],
 

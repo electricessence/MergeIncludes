@@ -1,0 +1,73 @@
+// #require ./SignalInstance.partial.pine
+// @type SignalConfiguration
+// @field signalName (simple string) References SignalDefinition.name
+// @field moduleName (simple string) Module this config applies to (optional for global config)
+// @field weight (simple float) Weight for aggregation (default 1.0)
+// @field thresholdWeak (simple float) Threshold for weak signals (default 0.3)
+// @field thresholdStrong (simple float) Threshold for strong signals (default 0.7)
+// @field normalizationScheme (simple string) "minmax", "zscore", "percentile" (default "minmax")
+// @field enabled (simple bool) Whether this signal is active (default true)
+type SignalConfiguration
+    string signalName
+    string moduleName
+    float weight
+    float thresholdWeak
+    float thresholdStrong
+    string normalizationScheme
+    bool enabled
+
+///////////////////////////////////////////////////
+// SIGNALCONFIGURATION METHODS
+///////////////////////////////////////////////////
+
+// @function Sets the weight for signal aggregation (fluent interface)
+// @param this (SignalConfiguration) The SignalConfiguration instance
+// @param weight (float) Weight value for signal aggregation (typically 0.1-5.0)
+// @returns (SignalConfiguration) Self-reference for method chaining
+method setWeight(SignalConfiguration this, float weight) =>
+    this.weight := weight
+    this
+
+// @function Sets weak and strong signal thresholds (fluent interface)
+// @param this (SignalConfiguration) The SignalConfiguration instance
+// @param weak (float) Threshold for weak signals (typically 0.1-0.4)
+// @param strong (float) Threshold for strong signals (typically 0.6-0.9)
+// @returns (SignalConfiguration) Self-reference for method chaining
+method setThresholds(SignalConfiguration this, float weak, float strong) =>
+    this.thresholdWeak := weak
+    this.thresholdStrong := strong
+    this
+
+// @function Sets the normalization scheme for signal processing (fluent interface)
+// @param this (SignalConfiguration) The SignalConfiguration instance
+// @param scheme (string) Normalization method: "minmax", "zscore", or "percentile"
+// @returns (SignalConfiguration) Self-reference for method chaining
+method setNormalization(SignalConfiguration this, string scheme) =>
+    this.normalizationScheme := scheme
+    this
+
+// @function Enables this signal configuration (fluent interface)
+// @param this (SignalConfiguration) The SignalConfiguration instance
+// @returns (SignalConfiguration) Self-reference for method chaining
+method enable(SignalConfiguration this) =>
+    this.enabled := true
+    this
+
+// @function Disables this signal configuration (fluent interface)
+// @param this (SignalConfiguration) The SignalConfiguration instance
+// @returns (SignalConfiguration) Self-reference for method chaining
+method disable(SignalConfiguration this) =>
+    this.enabled := false
+    this
+
+// @function Factory method to create a new SignalInstance from this configuration
+// @param this (SignalConfiguration) The SignalConfiguration instance
+// @param rawValue (float) The raw numeric signal value
+// @param confidence (float) Optional confidence level (0.0-1.0, default 1.0)
+// @returns (SignalInstance) New SignalInstance created with this configuration's signal name
+method createSignal(SignalConfiguration this, float rawValue, float confidence = 1.0) =>
+    SignalInstance.new(
+      this.signalName,
+      rawValue,
+      confidence,
+      array.new<SignalThought>())

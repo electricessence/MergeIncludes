@@ -1,0 +1,64 @@
+// #require ../core/SignalGroup.partial.pine
+
+// SignalGroup basic methods
+method getName(SignalGroup this) => this.name
+method getDescription(SignalGroup this) => this.description
+method getSignals(SignalGroup this) => this.signals
+method getAggregatedSignal(SignalGroup this) => this.aggregatedSignal
+
+method setDescription(SignalGroup this, string description) =>
+    this.description := description
+    this
+
+method addSignal(SignalGroup this, SignalInstance signal) =>
+    array.push(this.signals, signal)
+    this
+
+method removeSignal(SignalGroup this, string signalName) =>
+    for i = array.size(this.signals) - 1 to 0
+        signal = array.get(this.signals, i)
+        if signal.name == signalName
+            array.remove(this.signals, i)
+            break
+    this
+
+method hasSignal(SignalGroup this, string signalName) =>
+    for i = 0 to array.size(this.signals) - 1
+        signal = array.get(this.signals, i)
+        if signal.name == signalName
+            true
+    false
+
+method getSignalCount(SignalGroup this) =>
+    array.size(this.signals)
+
+method getSignalAt(SignalGroup this, int index) => array.get(this.signals, index)
+
+method isEmpty(SignalGroup this) => array.size(this.signals) == 0
+
+method clear(SignalGroup this) =>
+    array.clear(this.signals)
+    this
+
+method hasValidSignals(SignalGroup this) =>
+    for i = 0 to array.size(this.signals) - 1
+        signal = array.get(this.signals, i)
+        if signal.isValid()
+            true
+    false
+
+method getValidSignals(SignalGroup this) =>
+    validSignals = array.new<SignalInstance>()
+    for i = 0 to array.size(this.signals) - 1
+        signal = array.get(this.signals, i)
+        if signal.isValid()
+            array.push(validSignals, signal)
+    validSignals
+
+method getTotalWarnings(SignalGroup this) =>
+    warningCount = 0
+    for i = 0 to array.size(this.signals) - 1
+        signal = array.get(this.signals, i)
+        if signal.hasWarnings()
+            warningCount += 1
+    warningCount

@@ -1,0 +1,134 @@
+///////////////////////////////////////////////////
+// GROUP AGGREGATION ENGINE
+///////////////////////////////////////////////////
+
+// Get the dominant sentiment from an array of signals (using latest thought per signal)
+getDominantSentiment(array<SignalInstance> signals) =>
+    sentimentCounts = array.new<array<string>>()  // [sentiment, count] pairs
+
+    for i = 0 to array.size(signals) - 1
+        signal = array.get(signals, i)
+        latestThought = getLatestThought(signal)
+
+        if latestThought.message != "No interpretation available"
+            sentiment = latestThought.sentiment
+            found = false
+
+            // Look for existing sentiment entry
+            for j = 0 to array.size(sentimentCounts) - 1
+                pair = array.get(sentimentCounts, j)
+                if array.get(pair, 0) == sentiment
+                    count = str.tonumber(array.get(pair, 1)) + 1
+                    array.set(pair, 1, str.tostring(count))
+                    found := true
+                    break
+
+            // Add new sentiment entry if not found
+            if not found
+                array.push(sentimentCounts, array.from(sentiment, "1"))
+
+    // Find most frequent sentiment
+    dominantSentiment = "📊"  // default fallback
+    maxCount = 0
+
+    for i = 0 to array.size(sentimentCounts) - 1
+        pair = array.get(sentimentCounts, i)
+        count = str.tonumber(array.get(pair, 1))
+        if count > maxCount
+            maxCount := count
+            dominantSentiment := array.get(pair, 0)
+
+    dominantSentiment
+
+// Summarize thoughts from an array of signals with a maximum number of entries
+summarizeThoughts(array<SignalInstance> signals, int maxThoughts) =>
+    thoughts = array.new<string>()
+
+    for i = 0 to array.size(signals) - 1
+        signal = array.get(signals, i)
+        latestThought = getLatestThought(signal)
+
+        if latestThought.message != "No interpretation available"
+            thoughtSummary = signal.name + ": " + latestThought.message
+            array.push(thoughts, thoughtSummary)
+
+    // Build summary string with semicolon separation
+    if array.size(thoughts) == 0
+        ""
+    else
+        summary = ""
+        entriesToInclude = math.min(maxThoughts, array.size(thoughts))
+
+        for i = 0 to entriesToInclude - 1
+            if i > 0
+                summary += "; "
+            summary += array.get(thoughts, i)
+
+        summary
+
+// Generate sentiment based on numeric value as fallback
+fallbackSentimentFromValue(float value) =>
+    switch
+        value > 0.3 => "📈"
+        value < -0.3 => "📉"
+        => "➡️"
+
+// Calculate aggregated signal for group with inherited thoughts
+calculateGroupAggregation(SignalGroup group, SignalRegistry registry) =>
+    if array.size(group.signals) == 0
+        group.aggregatedSignal := newSignalInstance(group.name + "_AGG", na, 0.0)
+        addThought(group.aggregatedSignal, "⚠️", "Empty group - no signals to aggregate")
+        group
+
+    totalWeightedValue = 0.0
+    totalConfidence = 0.0
+    totalWeight = 0.0
+    validSignals = 0
+
+    for i = 0 to array.size(group.signals) - 1
+        signal = array.get(group.signals, i)
+        if not na(signal.rawValue)
+            // Find configuration for weighting (create default if not found)
+            config = na(registry) ? newSignalConfiguration(signal.name) : findConfiguration(registry, signal.name)
+            weight = config.enabled ? config.weight : 0.0
+
+            if weight > 0.0
+                totalWeightedValue += signal.rawValue * weight
+                totalConfidence += signal.confidence * weight
+                totalWeight += weight
+                validSignals += 1
+
+    if totalWeight > 0
+        aggregatedValue = totalWeightedValue / totalWeight
+        aggregatedConfidence = totalConfidence / totalWeight
+
+        group.aggregatedSignal := newSignalInstance(
+            group.name + "_AGG",
+            aggregatedValue,
+            aggregatedConfidence
+        )
+
+        // Use helper functions for sentiment and summary generation
+        dominantSentiment = getDominantSentiment(group.signals)
+
+        // Fallback to value-based sentiment if no clear dominant sentiment found
+        if dominantSentiment == "📊"
+            dominantSentiment := fallbackSentimentFromValue(aggregatedValue)
+
+        // Build comprehensive summary with inherited context
+        summary = "Aggregated from " + str.tostring(validSignals) + " signals"
+        thoughtsSummary = summarizeThoughts(group.signals, 3)
+
+        if thoughtsSummary != ""
+            summary += " | Key insights: " + thoughtsSummary
+
+        addThought(group.aggregatedSignal, dominantSentiment, summary)
+    else
+        group.aggregatedSignal := SignalInstance.new(group.name + "_AGG", na, 0.0, array.new<SignalThought>())
+        addThought(group.aggregatedSignal, "⚠️", "No valid signals for aggregation")
+
+    group
+
+// SignalGroup aggregation method
+method calculateAggregation(SignalGroup this, SignalRegistry registry) =>
+    calculateGroupAggregation(this, registry)

@@ -1,0 +1,9 @@
+///////////////////////////////////////////////////
+// SIGNAL REGISTRY METHODS
+///////////////////////////////////////////////////
+// Methods are now embedded directly in their type partials
+// This file is preserved for backwards compatibility but no longer needed
+
+// Types with embedded methods
+// #require ./core/SignalRegistry.partial.pine
+// #require ./core/SignalsFramework.partial.pine

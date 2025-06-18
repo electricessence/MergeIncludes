@@ -1,0 +1,34 @@
+// #require ../core/SignalRegistry.partial.pine
+
+// SignalRegistry methods
+method addDefinition(SignalRegistry this, SignalDefinition definition) =>
+    array.push(this.definitions, definition)
+    this
+
+method addConfiguration(SignalRegistry this, SignalConfiguration config) =>
+    array.push(this.configurations, config)
+    this
+
+method addGroup(SignalRegistry this, SignalGroup group) =>
+    array.push(this.groups, group)
+    this
+
+method hasDefinition(SignalRegistry this, string name) =>
+    definition = this.findDefinition(name)
+    definition.category != "unknown"
+
+method getDefinitionCount(SignalRegistry this) =>
+    array.size(this.definitions)
+
+method getGroupCount(SignalRegistry this) =>
+    array.size(this.groups)
+
+method validateSignalName(SignalRegistry this, string name) =>
+    this.hasDefinition(name)
+
+// Extended methods that depend on utility functions
+method findDefinition(SignalRegistry this, string name) =>
+    findDefinition(this, name)
+
+method findConfiguration(SignalRegistry this, string name) =>
+    findConfiguration(this, name)

@@ -1,0 +1,102 @@
+///////////////////////////////////////////////////
+// UTILITY FUNCTIONS
+///////////////////////////////////////////////////
+
+// Add a thought to a signal instance (for visual/logging purposes only)
+addThought(SignalInstance signal, string sentiment, string message) =>
+    thought = newSignalThought(sentiment, message)
+    array.push(signal.thoughts, thought)
+    signal
+
+// Get all thoughts for a signal instance
+getAllThoughts(SignalInstance signal) =>
+    signal.thoughts
+
+// Get the most recent thought
+getLatestThought(SignalInstance signal) =>
+    if array.size(signal.thoughts) > 0
+        array.get(signal.thoughts, array.size(signal.thoughts) - 1)
+    else
+        newSignalThought("😐", "No interpretation available")
+
+// Clear all thoughts from a signal (useful for testing)
+clearThoughts(SignalInstance signal) =>
+    signal.thoughts := array.new<SignalThought>()
+    signal
+
+// Find configuration for a signal
+findConfiguration(SignalRegistry registry, string signalName, string moduleName = "") =>
+    for i = 0 to array.size(registry.configurations) - 1
+        config = array.get(registry.configurations, i)
+        if config.signalName == signalName and (moduleName == "" or config.moduleName == moduleName)
+            config
+    // Return default configuration if not found
+    newSignalConfiguration(signalName, moduleName)
+
+// Add configuration to registry
+addConfiguration(SignalRegistry registry, SignalConfiguration config) =>
+    array.push(registry.configurations, config)
+    registry
+
+// Apply normalization based on configuration
+applyNormalization(float rawValue, SignalDefinition definition, SignalConfiguration config) =>
+    if config.normalizationScheme == "zscore"
+        // Z-score normalization (placeholder - would need historical data)
+        rawValue
+    else if config.normalizationScheme == "percentile"
+        // Percentile normalization (placeholder - would need historical data)
+        rawValue
+    else
+        // Default minmax normalization
+        range = definition.maxValue - definition.minValue
+        if range > 0
+            (rawValue - definition.minValue) / range
+        else
+            0.5
+
+// Update configuration parameter
+updateConfiguration(SignalConfiguration config, string parameter, float value) =>
+    switch parameter
+        "weight" =>
+            config.weight := value
+            config
+        "thresholdWeak" =>
+            config.thresholdWeak := value
+            config
+        "thresholdStrong" =>
+            config.thresholdStrong := value
+            config
+        => config
+
+// Register a signal definition
+registerDefinition(SignalRegistry registry, SignalDefinition definition) =>
+    array.push(registry.definitions, definition)
+    registry
+
+// Find signal definition by name
+findDefinition(SignalRegistry registry, string name) =>
+    for i = 0 to array.size(registry.definitions) - 1
+        def = array.get(registry.definitions, i)
+        if def.name == name
+            def
+    // Return default if not found
+    newSignalDefinition(name, "Unknown signal", -1.0, 1.0, "unknown")
+
+// Add signal group to registry
+addGroup(SignalRegistry registry, SignalGroup group) =>
+    array.push(registry.groups, group)
+    registry
+
+// Find signal group by name
+findGroup(SignalRegistry registry, string name) =>
+    for i = 0 to array.size(registry.groups) - 1
+        group = array.get(registry.groups, i)
+        if group.name == name
+            group
+    // Return null equivalent if not found
+    newSignalGroup("NOT_FOUND", "Group not found")
+
+// Add signal to group
+addSignalToGroup(SignalGroup group, SignalInstance signal) =>
+    array.push(group.signals, signal)
+    group

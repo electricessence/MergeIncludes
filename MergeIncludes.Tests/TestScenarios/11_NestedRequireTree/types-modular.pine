@@ -1,0 +1,43 @@
+// #include ./types/0000 - header.pine
+// @description Signal Framework Types - Modular type system for advanced signal processing
+// Note: Remove library() declaration until framework is finalized and ready for publication
+
+// #require ./types/0100 - constants.pine
+// #require ./types/0200 - core-types.pine
+// #require ./types/0300 - factories.pine
+// #require ./types/0400 - basic-methods.pine
+// #require ./types/0500 - group-methods.pine
+// #require ./types/0600 - registry-methods.pine
+// #require ./types/0700 - utilities.pine
+// #require ./types/0800 - rendering.pine
+// #require ./types/0900 - aggregation.pine
+
+///////////////////////////////////////////////////
+// ARCHITECTURE SUMMARY
+///////////////////////////////////////////////////
+//
+// CORE DESIGN PRINCIPLES:
+//
+// 1. STRUCTURE vs BEHAVIOR SEPARATION:
+//    - SignalDefinition: Immutable declaration of what the signal measures
+//    - SignalConfiguration: Mutable behavioral settings (weights, thresholds, etc.)
+//
+// 2. DATA vs INTERPRETATION SEPARATION:
+//    - SignalInstance: Pure numeric observations and confidence scores
+//    - SignalThought: Optional human-readable interpretations for visual/logging
+//
+// 3. STATIC vs RUNTIME BOUNDARIES:
+//    - Static: Definitions and configurations (network structure)
+//    - Runtime: Signal instances, thoughts, and group evaluations
+//
+// 4. THOUGHTS ARE LIGHTWEIGHT:
+//    - Optional array for visual/debugging purposes only
+//    - Do not affect core signal logic or calculations
+//    - Used purely for human-readable context and logging
+//
+// 5. MODULAR DESIGN:
+//    - Each module focuses on a specific aspect of the type system
+//    - Types, factories, methods, utilities, and aggregation are separated
+//    - Enables easy maintenance and extension of functionality
+//
+///////////////////////////////////////////////////

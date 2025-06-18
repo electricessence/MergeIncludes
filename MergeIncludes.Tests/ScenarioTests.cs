@@ -23,15 +23,18 @@ public class ScenarioTests(ITestOutputHelper outputHelper)
 		public IReadOnlyList<string> Raw { get; } = [];
 
 		public static readonly EmptyRemainingArguments Instance = new();
-	}
-
-	[Theory]
+	}	[Theory]
 	[InlineData("TestScenarios/01_BasicInclusion/simple-root.txt", "BasicInclusion")]
 	[InlineData("TestScenarios/02_DuplicateReferences/root-duplicates.txt", "DuplicateReferences")]
 	[InlineData("TestScenarios/03_CircularReferences/circular-root.txt", "CircularReferences")]
 	[InlineData("TestScenarios/04_FolderNavigation/unique-names.txt", "FolderNavigation")]
 	[InlineData("TestScenarios/05_ConsecutiveIncludes/root-file.txt", "ConsecutiveIncludes")]
 	[InlineData("TestScenarios/06_ComplexStructure/complex-root.txt", "ComplexStructure")]
+	[InlineData("TestScenarios/07_WildcardIncludes/root.txt", "WildcardIncludes")]
+	[InlineData("TestScenarios/08_CommentedIncludes/root.txt", "CommentedIncludes")]
+	[InlineData("TestScenarios/10_DetailedFolderJumping/root.txt", "DetailedFolderJumping")]
+	[InlineData("TestScenarios/11_NestedRequireTree/types-modular.pine", "NestedRequireTree")]
+	[InlineData("TestScenarios/wildcard-reference/main.txt", "WildcardReference")]
 	[InlineData("TestFiles/test-circular.txt", "ManualCircular")]
 	public async Task MergeIncludesScenario_OutputTest(string testFilePath, string scenarioName)
 	{
@@ -71,13 +74,14 @@ public class ScenarioTests(ITestOutputHelper outputHelper)
 			.UseDirectory("Snapshots/Scenarios")
 			.UseFileName(scenarioName);
 	}
-
 	[Theory]
 	[InlineData("TestScenarios/01_BasicInclusion/simple-root.txt", TreeDisplayMode.Default, "BasicInclusion_Default")]
 	[InlineData("TestScenarios/01_BasicInclusion/simple-root.txt", TreeDisplayMode.FullPath, "BasicInclusion_FullPath")]
 	[InlineData("TestScenarios/02_DuplicateReferences/root-duplicates.txt", TreeDisplayMode.Default, "DuplicateReferences_Default")]
 	[InlineData("TestScenarios/02_DuplicateReferences/root-duplicates.txt", TreeDisplayMode.FullPath, "DuplicateReferences_FullPath")]
 	[InlineData("TestScenarios/06_ComplexStructure/complex-root.txt", TreeDisplayMode.Default, "ComplexStructure_Default")]
+	[InlineData("TestScenarios/07_WildcardIncludes/root.txt", TreeDisplayMode.Default, "WildcardIncludes_Default")]
+	[InlineData("TestScenarios/11_NestedRequireTree/types-modular.pine", TreeDisplayMode.Default, "NestedRequireTree_Default")]
 	public async Task MergeIncludesDisplayMode_OutputTest(string testFilePath, TreeDisplayMode displayMode, string testName)
 	{
 		// Arrange
@@ -130,5 +134,42 @@ public class ScenarioTests(ITestOutputHelper outputHelper)
 		await Verify(result)
 			.UseDirectory("Snapshots")
 			.UseFileName("EscapeSequences");
+	}
+
+	[Theory]
+	[InlineData("TestScenarios/01_BasicInclusion/simple-root.txt", "BasicInclusion")]
+	[InlineData("TestScenarios/02_DuplicateReferences/root-duplicates.txt", "DuplicateReferences")]
+	[InlineData("TestScenarios/03_CircularReferences/circular-root.txt", "CircularReferences")]
+	[InlineData("TestScenarios/04_FolderNavigation/unique-names.txt", "FolderNavigation")]
+	[InlineData("TestScenarios/05_ConsecutiveIncludes/root-file.txt", "ConsecutiveIncludes")]
+	[InlineData("TestScenarios/06_ComplexStructure/complex-root.txt", "ComplexStructure")]
+	[InlineData("TestScenarios/07_WildcardIncludes/root.txt", "WildcardIncludes")]
+	[InlineData("TestScenarios/08_CommentedIncludes/root.txt", "CommentedIncludes")]
+	[InlineData("TestScenarios/10_DetailedFolderJumping/root.txt", "DetailedFolderJumping")]
+	[InlineData("TestScenarios/11_NestedRequireTree/types-modular.pine", "NestedRequireTree")]
+	[InlineData("TestScenarios/wildcard-reference/main.txt", "WildcardReference")]
+	public async Task MergeIncludesScenario_MergedContentTest(string testFilePath, string scenarioName)
+	{
+		// Arrange
+		var fullPath = Path.GetFullPath(testFilePath);
+
+		if (!File.Exists(fullPath))
+		{
+			return;
+		}
+
+		var settings = new Settings
+		{
+			RootFilePath = testFilePath,
+			DisplayMode = TreeDisplayMode.Default,
+			Trim = true
+		};
+		// Act
+		var result = await CombineCommand.MergeToMemoryAsync(settings);
+
+		// Assert - Verify the merged content
+		await Verify(result.MergedContent ?? result.ErrorMessage ?? "No content")
+			.UseDirectory("Snapshots/MergedContent")
+			.UseFileName($"{scenarioName}_MergedContent");
 	}
 }
