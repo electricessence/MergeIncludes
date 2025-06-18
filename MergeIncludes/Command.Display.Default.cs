@@ -16,11 +16,10 @@ partial class CombineCommand
 	{
 		// Get the base directory of the root file
 		var baseDirectory = rootFile.Directory
-			?? throw new InvalidOperationException("Root file directory cannot be null");
-		// Create the root path display using LinkableTextPath with execution-relative path
-		// The display path is relative, but the link target is still the full path for proper linking
+			?? throw new InvalidOperationException("Root file directory cannot be null");		// Create the root path display using LinkableTextPath with execution-relative path
+		// The display path is relative, but the link target is the actual file for proper linking
 		var relativePath = GetExecutionRelativeFilePath(rootFile);
-		var rootPath = new LinkableTextPath(relativePath, baseDirectory.FullName)
+		var rootPath = new LinkableTextPath(relativePath, rootFile.FullName)
 			.RootStyle(Color.Blue)
 			.SeparatorStyle(Color.Grey)
 			.StemStyle(Color.DarkGreen)

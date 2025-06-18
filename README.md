@@ -1,28 +1,43 @@
 # 🔄 MergeIncludes
 
-> **A powerful, modern CLI tool for merging text files with beautiful visualization**
+> **The most elegant way to merge modular text files with stunning visualization**
 
 [![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4?style=for-the-badge&logo=dotnet)](https://dotnet.microsoft.com/)
 [![MIT License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge)]()
 [![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge)]()
 
-**MergeIncludes** transforms modular text projects into unified documents with recursive `#include` processing, beautiful tree visualization, and smart terminal integration. Perfect for documentation, configuration files, code generation, and complex text assembly workflows.
+Transform your modular text projects into unified masterpieces. **MergeIncludes** recursively processes `#include` directives with beautiful tree visualization, smart terminal integration, and blazing-fast performance.
 
-## ✨ Key Features
+Perfect for **documentation assembly**, **configuration management**, **code generation**, and **complex text workflows**.
 
-- 🔄 **Recursive Processing** - Handle nested includes to any depth
-- 🎯 **Smart Directives** - Support `#include`, `#require`, and wildcards  
-- 🌳 **Beautiful Visualization** - Interactive file trees with clickable links (Windows Terminal)
-- ⚡ **Watch Mode** - Auto-rebuild on file changes
-- 🎨 **Terminal-Aware** - Optimized display for different terminal capabilities
-- 🔧 **Flexible Output** - Custom output paths and formatting options
-- 🌐 **Cross-Platform** - Windows, macOS, and Linux support
+---
+
+## ✨ Why MergeIncludes?
+
+### 🎯 **Built for Modern Workflows**
+- **Recursive Processing** - Handle nested includes to unlimited depth
+- **Smart Directives** - `#include`, `#require`, wildcards, and comments
+- **Watch Mode** - Auto-rebuild on file changes for rapid iteration
+- **Cross-Platform** - Windows, macOS, Linux ready
+
+### � **Beautiful Terminal Experience**
+- **Interactive Trees** - Visual file structure with clickable links (Windows Terminal)
+- **Terminal-Aware** - Optimized display for VS Code, Windows Terminal, and standard terminals
+- **Smart Detection** - Automatically adapts to your terminal's capabilities
+- **Professional Output** - Clean, formatted results every time
+
+### ⚡ **Performance Optimized**
+- **Memory Efficient** - Advanced string pooling and caching
+- **Fast Processing** - Optimized for large file hierarchies
+- **Circular Detection** - Smart prevention of infinite loops
+- **Error Resilient** - Graceful handling of missing files and edge cases
+
+---
 
 ## 🚀 Quick Start
 
 ### Installation
-
 ```bash
 # Install as global tool (recommended)
 dotnet tool install --global MergeIncludes
@@ -33,343 +48,282 @@ cd MergeIncludes
 dotnet build -c Release
 ```
 
-### Basic Usage
-
+### Your First Merge
 ```bash
-# Merge a file (creates MyFile.merged.txt)
-MergeIncludes ./MyFile.txt
+# Basic merge (creates MyDocument.merged.txt)
+MergeIncludes ./MyDocument.txt
 
-# Custom output location
-MergeIncludes ./docs/main.md -o ./dist/complete.md
+# Custom output
+MergeIncludes ./docs/main.md -o ./dist/complete-guide.md
 
 # Watch for changes
 MergeIncludes ./project/root.txt --watch
 ```
 
-## 📖 How It Works
-
-MergeIncludes processes files containing special directives and replaces them with the content of referenced files:
-
-### Input Structure
-```
-📁 project/
-├── 📄 main.txt
-├── 📁 sections/
-│   ├── 📄 intro.txt
-│   ├── 📄 features.txt
-│   └── 📄 conclusion.txt
-└── 📁 shared/
-    └── 📄 footer.txt
-```
-
-### main.txt
-```text
-# My Project Documentation
-
-#include ./sections/intro.txt
-#include ./sections/features.txt
-#include ./sections/conclusion.txt
-
----
-#include ./shared/footer.txt
-```
-
-### Result
-**MergeIncludes** combines everything into a single `main.merged.txt` file with all content merged.
-
 ---
 
-## 🎯 Directive Syntax
+## 🎬 See It In Action
 
-| Directive | Description | Example |
-|-----------|-------------|---------|
-| `#include` | Include file content | `#include ./path/file.txt` |
-| `#require` | Same as include | `#require ./config/settings.json` |
+### Beautiful Tree Visualization
+```
+╭─Root File──────────────────────────────────────────╮
+│ ./docs/user-guide.md                               │
+╰────────────────────────────────────────────────────╯
+╭─Structure─────────────────────────────────────────────────╮
+│ 📁 docs                 / user-guide.md                  │
+│ ├── 📁 chapters           ├── introduction.md [1]        │
+│ ├── 📁 sections           ├── getting-started.md [2]     │
+│ │   └── 📁 examples       │   └── basic-example.md [3]   │
+│ ├── 📁 sections           ├── advanced-usage.md [4]      │
+│ │   └── 📁 examples       │   └── complex-example.md [5] │
+│ └── 📁 shared             └── footer.md [6]              │
+╰───────────────────────────────────────────────────────────╯
+╭─Reference Tree────────────────────────────────────────────╮
+│ user-guide.md                                             │
+│ ├── introduction.md [1]                                   │
+│ ├── getting-started.md [2]                                │
+│ │   └── basic-example.md [3]                              │
+│ ├── advanced-usage.md [4]                                 │
+│ │   ├── complex-example.md [5]                            │
+│ │   └── basic-example.md [3] ⚠️                           │
+│ └── footer.md [6]                                         │
+╰───────────────────────────────────────────────────────────╯
+```
+
+### Watch Mode Magic
+```bash
+$ MergeIncludes ./project/main.txt --watch
+🔍 Watching for changes... Press any key to stop.
+
+📝 File changed: ./project/sections/intro.txt
+🔄 Rebuilding... Done! ✨
+```
+
+---
+
+## 📖 Directive Reference
+
+| Directive | Behavior | Example |
+|-----------|----------|---------|
+| `#include` | Always includes content (allows duplicates) | `#include ./sections/intro.md` |
+| `#require` | Include only once (prevents duplicates) | `#require ./config/settings.json` |
 | **Wildcards** | Include multiple files | `#include ./docs/*.md` |
 | **Comments** | Ignored in output | `## This won't appear` |
 
-### Supported File Types
-
+### Supported in Any File Type
 ```text
-📄 Plain Text       →  #include ./file.txt
 📝 Markdown         →  <!-- #include ./section.md -->
 🌐 HTML             →  <!-- #include ./component.html -->
-⚙️  Configuration   →  # include ./config.json
-🔧 Scripts          →  // include ./module.js
+⚙️  Configuration   →  # include ./config.yaml
+🔧 JavaScript       →  // #include ./module.js
+🐍 Python           →  # #include ./utilities.py
+📄 Plain Text       →  #include ./content.txt
 ```
 
 ---
 
-## 🖼️ Beautiful Terminal Output
+## 💡 Real-World Use Cases
 
-### Windows Terminal (with Hyperlinks)
-*[Screenshot Placeholder: Windows Terminal with clickable file links and colored tree structure]*
-
-### VS Code Terminal (Clean Display)  
-*[Screenshot Placeholder: VS Code terminal with clean tree structure, no link corruption]*
-
-### Example Tree Visualization
+### 📚 **Technical Documentation**
 ```
-╭─Root File──────────────────────────────────╮
-│ ./project/main.txt                         │
-╰────────────────────────────────────────────╯
-╭─Structure─────────────────────────────────────────╮
-│ 📁 project              / main.txt               │
-│ ├── 📁 sections           ├── intro.txt [1]      │
-│ ├── 📁 sections           ├── features.txt [2]   │
-│ ├── 📁 sections           ├── conclusion.txt [3] │
-│ └── 📁 shared             └── footer.txt [4]     │
-╰───────────────────────────────────────────────────╯
-╭─Successfully merged include references to:────────╮
-│ ./project/main.merged.txt                         │
-╰───────────────────────────────────────────────────╯
+📁 docs/
+├── 📄 user-guide.md          ← Root document
+├── 📁 chapters/
+│   ├── 📄 installation.md
+│   ├── 📄 configuration.md
+│   └── 📄 troubleshooting.md
+├── 📁 examples/
+│   ├── 📄 basic-usage.md
+│   └── 📄 advanced-tips.md
+└── 📁 shared/
+    ├── 📄 header.md
+    └── 📄 footer.md
+```
+
+```bash
+# Build complete documentation
+MergeIncludes ./docs/user-guide.md -o ./dist/complete-guide.md --watch
+```
+
+### 🔧 **Configuration Management**
+```
+📁 config/
+├── 📄 production.yml         ← Environment config
+├── 📁 modules/
+│   ├── 📄 database.yml
+│   ├── 📄 logging.yml
+│   └── 📄 security.yml
+└── 📁 secrets/
+    └── 📄 api-keys.yml
+```
+
+```bash
+# Deploy with merged configuration
+MergeIncludes ./config/production.yml -o ./deploy/app-config.yml
+```
+
+### 🌐 **Static Site Generation**
+```
+📁 site/
+├── 📄 index.html             ← Main template
+├── 📁 components/
+│   ├── 📄 header.html
+│   ├── 📄 navigation.html
+│   └── 📄 footer.html
+└── 📁 content/
+    ├── 📄 hero-section.html
+    └── 📄 features.html
+```
+
+### 📊 **Report Assembly**
+```
+📁 reports/
+├── 📄 monthly-report.md      ← Report template
+├── 📁 sections/
+│   ├── 📄 executive-summary.md
+│   ├── 📄 financial-data.md
+│   └── 📄 recommendations.md
+└── 📁 data/
+    ├── 📄 charts.md
+    └── 📄 tables.md
 ```
 
 ---
 
-## ⚙️ Command Line Options
+## ⚙️ Command Reference
 
 ```bash
 USAGE:
-    MergeIncludes <ROOT_FILEPATH> [OPTIONS]
+    MergeIncludes <ROOT_FILE> [OPTIONS]
 
 ARGUMENTS:
-    <ROOT_FILEPATH>    The root file to start processing from
+    <ROOT_FILE>                The file to start processing from
 
 OPTIONS:
-    -o, --out <OUTPUT_FILEPATH>     Custom output file path
-    -d, --display <DISPLAY_MODE>    Tree display mode:
-                                      Default      - Side-by-side trees
-                                      FullPath     - Full file paths
-                                      RelativePath - Relative paths
-    -w, --watch                     Watch for file changes
-    -t, --trim <TRIM_ENABLED>       Trim empty lines (default: true)
-    -p, --pad <LINE_PADDING>        Add padding lines (default: 1)
-        --hide-path                 Hide source paths in output
-    -h, --help                      Show help information
+    -o, --out <OUTPUT>         Custom output file path
+    -d, --display <MODE>       Tree display mode:
+                                 Default      - Side-by-side trees
+                                 FullPath     - Full file paths  
+                                 RelativePath - Relative paths
+    -w, --watch               Watch for file changes
+    -t, --trim <ENABLED>      Trim empty lines (default: true)
+    -p, --pad <LINES>         Add padding lines (default: 1)
+        --tree                Show tree visualization only
+        --hide-path           Hide source paths in merged output
+    -h, --help                Show help information
+    -v, --version             Show version information
 ```
 
----
-
-## 💡 Real-World Examples
-
-### 📚 Documentation Assembly
+### Examples
 ```bash
-# Combine scattered documentation into a single guide
-MergeIncludes ./docs/user-guide.md -o ./dist/complete-guide.md
-```
+# Basic merge
+MergeIncludes ./main.txt
 
-### 🔧 Configuration Merging  
-```bash
-# Merge modular config files for deployment
-MergeIncludes ./config/production.conf -o ./deploy/app.conf
-```
+# Custom output with tree display
+MergeIncludes ./docs/guide.md -o ./output/complete.md -d FullPath
 
-### 📄 Report Generation
-```bash
-# Build complex reports from sections
-MergeIncludes ./reports/monthly-template.txt --watch
-```
+# Watch mode for development
+MergeIncludes ./project/main.txt --watch --trim false
 
-### 🌐 Static Site Generation
-```bash
-# Assemble web pages from components
-MergeIncludes ./src/index.html -o ./public/index.html
+# Show tree structure only
+MergeIncludes ./config/app.yml --tree
 ```
 
 ---
 
 ## 🔍 Advanced Features
 
-### Wildcard Includes
+### 🎯 **Smart Wildcard Processing**
 ```text
-# Include all markdown files from a directory
+# Include all markdown files in order
 #include ./chapters/*.md
 
-# Include specific file patterns
+# Include specific patterns
 #include ./modules/core-*.js
+#include ./data/report-??-*.csv
 ```
 
-### Watch Mode with Auto-Rebuild
-```bash
-# Automatically rebuild when any referenced file changes
-MergeIncludes ./project/main.txt --watch
-```
-*[Screenshot Placeholder: Terminal showing watch mode detecting file changes and auto-rebuilding]*
+### 🔄 **Duplicate Detection & Warnings**
+- **Visual Indicators**: `⚠️` symbols mark duplicate references
+- **Reference Numbers**: `[1]`, `[2]`, `[3]` track file usage
+- **Smart Handling**: `#require` prevents duplicates, `#include` allows them
 
-### Smart Terminal Detection
-- **Windows Terminal**: Rich hyperlinks and enhanced colors
-- **VS Code Terminal**: Clean display optimized for embedded terminals  
-- **Standard Terminals**: Fallback to plain text with full functionality
+### 📺 **Terminal Integration**
+- **Windows Terminal**: Clickable file links and rich colors
+- **VS Code Terminal**: Clean display optimized for integrated terminals
+- **Standard Terminals**: Full functionality with graceful fallbacks
+
+### ⚡ **Performance Features**
+- **String Pooling**: Minimizes memory allocations
+- **Path Caching**: Optimizes file system operations  
+- **Lazy Evaluation**: Processes files only when needed
+- **Circular Detection**: Prevents infinite recursion
 
 ---
 
-## 🏗️ Project Structure Examples
+## 🛠️ Technical Specifications
 
-### Complex Documentation Project
-```
-📁 my-docs/
-├── 📄 manual.txt                 ← Root file
-├── 📁 chapters/
-│   ├── 📄 01-introduction.md
-│   ├── 📄 02-installation.md  
-│   ├── 📄 03-usage.md
-│   └── 📄 04-advanced.md
-├── 📁 shared/
-│   ├── 📄 header.md
-│   ├── 📄 footer.md
-│   └── 📄 legal.md
-└── 📁 examples/
-    ├── 📄 basic-example.txt
-    └── 📄 advanced-example.txt
-```
+### Requirements
+- **.NET 9.0** or higher
+- **Windows 10+**, **macOS 10.15+**, or **Linux** (any modern distribution)
+- **Terminal**: Any ANSI-compatible terminal (enhanced features in Windows Terminal)
 
-### Configuration Management
-```
-📁 config/
-├── 📄 app.conf                  ← Root configuration
-├── 📁 environments/
-│   ├── 📄 development.conf
-│   ├── 📄 staging.conf
-│   └── 📄 production.conf
-├── 📁 modules/
-│   ├── 📄 database.conf
-│   ├── 📄 logging.conf
-│   └── 📄 security.conf
-└── 📁 secrets/
-    └── 📄 api-keys.conf
-```
-
----
-
-## 🔧 Technical Details
-
-### Performance Features
-- **Optimized String Operations** - Uses `StringBuilder` and string pooling
-- **Path Caching** - Efficient file system operations
-- **Smart Terminal Detection** - Cached capability detection
-- **Memory Efficient** - Minimal allocations during processing
+### File Support
+- **Text Files**: `.txt`, `.md`, `.html`, `.css`, `.js`, `.py`, `.yml`, `.json`, etc.
+- **Encoding**: UTF-8, UTF-16, ASCII
+- **Size Limits**: Optimized for files up to 100MB (larger files supported)
+- **Path Lengths**: Full Windows long path support
 
 ### Error Handling
-- **Circular Reference Detection** - Prevents infinite loops
-- **Missing File Warnings** - Clear error messages
-- **Path Validation** - Robust file system handling
-
-### Terminal Capabilities
-- **Hyperlink Support Detection** - Windows Terminal, iTerm2, and more
-- **Fallback Rendering** - Clean output in all terminals
-- **Color Support** - Rich formatting where available
-
----
-
-## 📝 License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+- **Missing Files**: Clear warnings with suggested fixes
+- **Circular References**: Automatic detection and prevention
+- **Permission Issues**: Helpful error messages
+- **Invalid Syntax**: Detailed line-by-line feedback
 
 ---
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+We welcome contributions! Here's how to get started:
+
+1. **Fork** the repository
+2. **Create** your feature branch: `git checkout -b feature/amazing-feature`
+3. **Commit** your changes: `git commit -m 'Add amazing feature'`
+4. **Push** to the branch: `git push origin feature/amazing-feature`
+5. **Open** a Pull Request
+
+### Development Setup
+```bash
+git clone <repository-url>
+cd MergeIncludes
+dotnet restore
+dotnet build
+dotnet test
+```
 
 ---
 
-## 🆘 Support
+## � License
 
-- 📋 **Issues**: [GitHub Issues](../../issues)
-- 💬 **Discussions**: [GitHub Discussions](../../discussions)  
-- 📧 **Contact**: [Your Contact Info]
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🆘 Support & Community
+
+- 🐛 **Bug Reports**: [GitHub Issues](../../issues)
+- 💡 **Feature Requests**: [GitHub Discussions](../../discussions)
+- 📚 **Documentation**: [Wiki](../../wiki)
+- 💬 **Community**: [Discussions](../../discussions)
 
 ---
 
 <div align="center">
 
-**⭐ Star this repo if MergeIncludes helps your workflow! ⭐**
+**⭐ Star this repo if MergeIncludes improves your workflow! ⭐**
 
-*Built with ❤️ and .NET 9*
+*Built with ❤️ using .NET 9 and modern C# practices*
+
+**[Download Latest Release](../../releases) • [View Documentation](../../wiki) • [Join Community](../../discussions)**
 
 </div>
-### Script Files (JavaScript, Python, etc.)
-// #include ./relative/path/to/script.js
-// ## This is a comment that won't appear in the output
-### Directive Behavior
-
-- `#include` - Always inserts the contents of the referenced file, even if it has been included before
-- `#require` - Only inserts the contents when the file is first referenced (similar to C/C++ `#include` guards)
-- Lines beginning with `##` are treated as comments and removed from the output
-
-## Wildcard Support
-
-File paths (not directories) can contain wildcards to include multiple files:
-#require ./templates/*.html
-#require ./modules/mod-??.js
-Matching files are processed in alphabetical order. The rules for each directive still apply:
-
-- With `#require`, if any one of the matching files has already been included, it will be skipped
-- With `#include`, all matching files will be included
-
-## Display Options
-
-Control how the file inclusion tree is displayed using the `-d` or `--display` option:
-MergeIncludes ./MyFile.txt -d Default     # Side-by-side trees (folder structure and references)
-MergeIncludes ./MyFile.txt -d FullPath    # Simple list with full file paths
-When running in Windows Terminal, file paths in the output are clickable links for easy navigation.
-
-## Advanced Options
-
-### Watch Mode
-
-Monitor files for changes and automatically rebuild when they change:
-MergeIncludes ./MyFile.txt --watch
-Press any key to stop watching.
-
-### Whitespace Control
-MergeIncludes ./MyFile.txt --trim false   # Preserve all whitespace (default is to trim)
-MergeIncludes ./MyFile.txt --pad 2        # Add 2 blank lines at the end (default is 1)
-## Examples
-
-### Basic Document Assembly
-
-**main.md**:# My Document
-
-## Introduction
-<!-- #include ./intro.md -->
-
-## Main Content
-<!-- #include ./content/*.md -->
-
-## Conclusion
-<!-- #include ./conclusion.md -->
-### Script Assembly with Conditional Includes
-
-**build.js**:// Core library
-// #require ./lib/core.js
-
-// Feature modules - only included once even if required multiple times
-// #require ./features/feature-a.js
-// #require ./features/feature-b.js
-
-// Always include latest configuration
-// #include ./config.js
-
-// Development helpers (commented out in production)
-// ## #include ./debug-tools.js
-## Error Handling
-
-MergeIncludes provides clear error messages for common issues:
-
-- Missing include files
-- Recursive inclusion loops
-- Invalid file permissions
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
