@@ -39,16 +39,15 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 		var rootFile = o.GetRootFile();
 		var outputFile = o.GetOutputFile(rootFile);
 
-		var files = await Merge();
+		var (success, files) = await Merge();
 
-		if (!o.Watch) return 0;
+		if (!o.Watch) return success ? 0 : 1;
 
 		using var cancelSource = new CancellationTokenSource();
 		var token = cancelSource.Token;
-		_ = Task.Run(async () =>
-			await _console.Status()
+		_ = Task.Run(async () => await _console.Status()
 				.StartAsync("[turquoise2]Watching files for changes. (Press any key to stop watching.)[/]",
-				async _ =>
+				async ctx =>
 				{
 					while (!token.IsCancellationRequested)
 					{
@@ -72,7 +71,7 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 							if (token.IsCancellationRequested)
 								return;
 
-							files = await Merge();
+							(_, files) = await Merge();
 						}
 						catch (OperationCanceledException)
 						{
@@ -93,7 +92,8 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 		cancelSource.Cancel();
 
 		return 0;
-		async ValueTask<List<FileInfo>> Merge()
+
+		async ValueTask<(bool Success, List<FileInfo> Files)> Merge()
 		{
 			var existed = outputFile.Exists;
 			if (existed)
@@ -129,7 +129,7 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 						});
 					}
 
-					return mergeResult.ProcessedFiles;
+					return (false, mergeResult.ProcessedFiles);
 				}
 
 				// If we got here, everything was successful, so now write to the actual file
@@ -159,7 +159,7 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 					Border = BoxBorder.Rounded
 				});
 
-				return mergeResult.ProcessedFiles;
+				return (true, mergeResult.ProcessedFiles);
 			}
 			catch
 			{
@@ -308,19 +308,15 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 	{
 		settings.ThrowIfNull().OnlyInDebug();
 		var rootFile = settings.GetRootFile();
-
 		var list = new List<FileInfo>();
 		var fileRelationships = new Dictionary<string, List<string>>();
 
-		// Stack to track the current inclusion path
-		var includeStack = new Stack<string>();
-		includeStack.Push(rootFile.FullName);
+		// Track which file is currently being processed for includes
+		var currentlyProcessingFile = rootFile.FullName;
 
 		// Use a MemoryStream to buffer the output
 		using var memoryStream = new MemoryStream();
-		using var writer = new StreamWriter(memoryStream);
-
-		try
+		using var writer = new StreamWriter(memoryStream);try
 		{           // Process the files and write to the memory buffer
 			await foreach (var line in rootFile.MergeIncludesAsync(settings, info =>
 			{
@@ -335,34 +331,16 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 				// Track all files for the flat list (used for watching)
 				list.Add(info);
 
-				// Get the parent file that included this file
-				var parentFile = includeStack.Peek();
-
-				// Record the parent-child relationship
-				if (!fileRelationships.TryGetValue(parentFile, out List<string>? value))
+				// Record the parent-child relationship using the currently processing file
+				if (!fileRelationships.TryGetValue(currentlyProcessingFile, out List<string>? value))
 				{
 					value = [];
-					fileRelationships[parentFile] = value;
+					fileRelationships[currentlyProcessingFile] = value;
 				}
 
 				value.Add(info.FullName);
-
-				// Push this file onto the stack as it might include other files
-				includeStack.Push(info.FullName);
-
-				// Note: We don't pop from the stack here because we don't know when the
-				// file processing is complete. The stack will accumulate the current branch
-				// of file inclusions.
-			}))
-			{
+			}))			{
 				await writer.WriteLineAsync(line);
-
-				// If we detect a line without an include statement, we can assume we've moved back up
-				// in the file hierarchy by one level (this is a simplification but generally works)
-				if (!line.Contains("#include") && !line.Contains("#require") && includeStack.Count > 1)
-				{
-					includeStack.Pop();
-				}
 			}
 
 			await writer.FlushAsync();

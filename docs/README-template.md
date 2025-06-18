@@ -1,58 +1,46 @@
 # 🔄 MergeIncludes
 
-> **The most elegant way to merge modular text files with stunning visualization**
-> 
-> *🎯 This README demonstrates MergeIncludes in action - it's built from modular sections using the tool itself!*
+**Merge modular text files with `#include` directives**
+
+*This README is built using MergeIncludes itself*
 
 <!-- #include ./shared/badges.md -->
 
-Transform your modular text projects into unified masterpieces. **MergeIncludes** recursively processes `#include` directives with beautiful tree visualization, smart terminal integration, and blazing-fast performance.
+## What it does
 
-<!-- #include ./sections/why-mergeincludes.md -->
+MergeIncludes processes text files containing `#include` directives and merges them into a single output file. Perfect for documentation, configuration files, and any text assembly workflow.
 
-<!-- #include ./sections/quick-start.md -->
+**Input**: Multiple modular files with include directives  
+**Output**: Single unified file with all content merged
 
-<!-- #include ./sections/demo-showcase.md -->
+![README Generation](./docs/assets/screenshots/readme-generation.png)
 
-<!-- #include ./sections/directive-reference.md -->
+<!-- #include ./sections/*.md -->
 
-<!-- #include ./sections/use-cases.md -->
+## Terminal Output
 
-<!-- #include ./sections/command-reference.md -->
+MergeIncludes shows you what it's doing with clear tree visualization:
 
-<!-- #include ./sections/advanced-features.md -->
+![Tree Visualization](./docs/assets/screenshots/tree-visualization.png)
 
-<!-- #include ./sections/technical-specs.md -->
+Watch mode rebuilds automatically when files change:
 
-<!-- #include ./shared/footer.md -->
+![Watch Mode](./docs/assets/screenshots/watch-mode.png)
 
-## 📚 Living Example
+## Self-Demonstrating
 
-**This README is built using MergeIncludes itself!** 🎉
+This README is built from modular sections using wildcard includes:
 
 ```bash
-# See the magic - build this README from its modular parts
+# Build this README (uses wildcard: ./sections/*.md)
 MergeIncludes ./docs/README-template.md -o ./README.md
 
-# Watch the docs update live as you edit sections
-MergeIncludes ./docs/README-template.md -o ./README.md --watch
+# Watch for changes  
+./docs/update-readme.ps1 -Watch
 ```
 
-**Source Structure:**
-```
-📁 docs/
-├── 📄 README-template.md     ← This template
-├── 📁 sections/
-│   ├── 📄 quick-start.md
-│   ├── 📄 directive-reference.md
-│   ├── 📄 use-cases.md
-│   └── 📄 command-reference.md
-└── 📁 shared/
-    ├── 📄 badges.md
-    ├── 📄 hero.md
-    └── 📄 footer.md
-```
+The wildcard includes all numbered sections in order, demonstrating the guaranteed ordering feature.
 
-**Result:** The complete README.md you're reading right now! 📖✨
+![Before and After](./docs/assets/screenshots/before-after.png)
 
----
+<!-- #include ./shared/footer.md -->

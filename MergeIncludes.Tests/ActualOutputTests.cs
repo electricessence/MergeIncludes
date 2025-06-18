@@ -239,4 +239,19 @@ public class ActualOutputTests(ITestOutputHelper output)
 
 		await TestMergeScenario(fullPath, "SimpleRootFile");
 	}
+
+	[Fact]
+	public async Task WildcardReference_ActualOutput()
+	{
+		var testFile = Path.Combine("TestScenarios", "wildcard-reference", "main.txt");
+		var fullPath = Path.GetFullPath(testFile);
+
+		if (!File.Exists(fullPath))
+		{
+			output.WriteLine($"Test file not found: {fullPath}");
+			return;
+		}
+
+		await TestMergeScenario(fullPath, "WildcardReference");
+	}
 }

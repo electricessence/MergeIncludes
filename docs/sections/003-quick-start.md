@@ -1,27 +1,23 @@
-## 🚀 Quick Start
+## Quick Start
 
-### Installation
+### Install
 ```bash
-# Install as global tool (recommended)
 dotnet tool install --global MergeIncludes
-
-# Or build from source
-git clone <repository-url>
-cd MergeIncludes
-dotnet build -c Release
 ```
 
-### Your First Merge
+### Use
 ```bash
-# Basic merge (creates MyDocument.merged.txt)
-MergeIncludes ./MyDocument.txt
+# Merge a file (creates MyFile.merged.txt)
+MergeIncludes MyFile.txt
 
-# Custom output
-MergeIncludes ./docs/main.md -o ./dist/complete-guide.md
+# Custom output path
+MergeIncludes MyFile.txt -o Output.txt
 
 # Watch for changes
-MergeIncludes ./project/root.txt --watch
+MergeIncludes MyFile.txt --watch
 ```
+
+That's it. Really.
 
 ### 🎭 **Meta Demo: This README!**
 ```bash

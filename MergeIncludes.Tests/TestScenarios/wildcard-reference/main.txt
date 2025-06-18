@@ -1,0 +1,11 @@
+This is the main file.
+
+#include ./files/*.txt
+
+Now including config files:
+#include ./config/*.txt
+
+Finally including scripts:
+#include ./scripts/*.txt
+
+End of main file.

@@ -1,8 +1,8 @@
 # 🔄 MergeIncludes
 
-> **The most elegant way to merge modular text files with stunning visualization**
-> 
-> *🎯 This README demonstrates MergeIncludes in action - it's built from modular sections using the tool itself!*
+**Merge modular text files with `#include` directives**
+
+*This README is built using MergeIncludes itself*
 
 [![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4?style=for-the-badge&logo=dotnet)](https://dotnet.microsoft.com/)
 [![MIT License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
@@ -13,7 +13,17 @@ Perfect for **documentation assembly**, **configuration management**, **code gen
 
 ---
 
-Transform your modular text projects into unified masterpieces. **MergeIncludes** recursively processes `#include` directives with beautiful tree visualization, smart terminal integration, and blazing-fast performance.
+
+MergeIncludes processes text files containing `#include` directives and merges them into a single output file. Perfect for documentation, configuration files, and any text assembly workflow.
+
+**Input**: Multiple modular files with include directives  
+**Output**: Single unified file with all content merged
+
+![README Generation](./docs/assets/screenshots/readme-generation.png)
+
+Transform your modular text projects into unified masterpieces. **MergeIncludes** recursively processes `##include` directives with beautiful tree visualization, smart terminal integration, and blazing-fast performance.
+
+Perfect for **documentation assembly**, **configuration management**, **code generation**, and **complex text workflows**.
 
 
 - **Recursive Processing** - Handle nested includes to unlimited depth
@@ -35,25 +45,21 @@ Transform your modular text projects into unified masterpieces. **MergeIncludes*
 
 
 ```bash
-# Install as global tool (recommended)
 dotnet tool install --global MergeIncludes
-
-# Or build from source
-git clone <repository-url>
-cd MergeIncludes
-dotnet build -c Release
 ```
 
 ```bash
-# Basic merge (creates MyDocument.merged.txt)
-MergeIncludes ./MyDocument.txt
+# Merge a file (creates MyFile.merged.txt)
+MergeIncludes MyFile.txt
 
-# Custom output
-MergeIncludes ./docs/main.md -o ./dist/complete-guide.md
+# Custom output path
+MergeIncludes MyFile.txt -o Output.txt
 
 # Watch for changes
-MergeIncludes ./project/root.txt --watch
+MergeIncludes MyFile.txt --watch
 ```
+
+That's it. Really.
 
 ```bash
 # This very README is built using MergeIncludes!
@@ -65,6 +71,60 @@ MergeIncludes ./README-template.md --watch -o ../README.md
 ```
 
 *Yes, you're reading documentation that was assembled by the very tool it describes! 🤯*
+
+---
+
+
+```
+📁 project/
+├── main.txt
+├── sections/
+│   ├── intro.txt
+│   └── features.txt  
+└── footer.txt
+```
+
+**main.txt:**
+```text
+# My Project
+
+#include ./sections/intro.txt
+#include ./sections/features.txt
+#include ./footer.txt
+```
+
+
+Run `MergeIncludes main.txt` and get `main.merged.txt` with all content combined.
+
+![Basic Usage](./docs/assets/screenshots/basic-usage.png)
+
+
+**Documentation** - Assemble user guides from sections  
+**Configuration** - Merge environment configs  
+**Web Development** - Combine HTML templates  
+**Reports** - Build documents from data sections  
+**Code Generation** - Template-based file creation  
+
+
+```bash
+# Documentation site
+MergeIncludes ./docs/user-guide.md -o ./dist/manual.md
+
+# Configuration deployment  
+MergeIncludes ./config/production.yml -o ./deploy/app.yml
+
+# Static site generation
+MergeIncludes ./templates/index.html -o ./public/index.html
+```
+
+```
+📁 docs/
+├── 📄 README-template.md     ← Main template
+├── 📁 sections/              ← Modular sections
+└── 📁 shared/                ← Reusable components
+```
+
+*This very README demonstrates the power of modular documentation!*
 
 ---
 
@@ -125,149 +185,6 @@ $ MergeIncludes ./docs/README-template.md --watch -o ./README.md
 ---
 
 
-Transform any text file into a powerful template with these simple directives:
-
-| Directive | Behavior | Perfect For | Example |
-|-----------|----------|-------------|---------|
-| `#include` | Always includes content<br/>*(allows duplicates)* | Dynamic content, shared components | `#include ./sections/intro.md` |
-| `#require` | Include once only<br/>*(prevents duplicates)* | Libraries, configuration, headers | `#require ./config/database.yml` |
-| `*.wildcards` | Include multiple files<br/>*(alphabetical order)* | Batch processing, all files in folder | `#include ./chapters/ch*.md` |
-| `## comments` | Ignored in output<br/>*(template notes)* | Development notes, TODOs | `## TODO: Add examples` |
-
-
-**⚠️ Directives MUST start at the beginning of a line:**
-
-```text
-✅ VALID:
-    #include ./file.txt
-    // #include ./module.js
-    <!-- #include ./component.html -->
-    # This is a comment with include ./config.yml
-
-❌ INVALID (not processed):
-        #include ./file.txt        # Indented - ignored
-    text #include ./file.txt       # Mid-line - ignored
-```
-
-**Comment Integration:**
-- Comment prefixes (`//`, `#`, `<!-- -->`) are part of the directive
-- Allows natural integration into any file format
-- Comments are automatically stripped from output
-
-```text
-📝 Markdown         <!-- #include ./section.md -->
-🌐 HTML             <!-- #include ./component.html -->
-⚙️  YAML/Config     # #include ./database.yml
-🔧 JavaScript       // #include ./utils.js
-🐍 Python           # #include ./helpers.py
-📄 Plain Text       #include ./content.txt
-🎨 CSS              /* #include ./variables.css */
-📊 JSON             // #include ./schema.json
-🦀 Rust             // #include ./module.rs
-🔷 TypeScript       // #include ./types.ts
-🏗️  Dockerfile      # #include ./build-steps
-```
-
-
-Process multiple files with patterns (alphabetical order):
-
-```text
-Examples (escaped to prevent processing):
-  #include ./docs/01-*.md     → 01-intro.md, 01-setup.md
-  #include ./modules/core*.js → core.js, core-utils.js  
-  #include ./config/*.yml     → All YAML files
-```
-
-**Wildcard Behavior:**
-- `#include` with wildcards: All matching files included (duplicates allowed)
-- `#require` with wildcards: Each file included only once across all patterns
-
-
-**MergeIncludes processes directives even inside code blocks and comments!**
-
-This powerful feature allows for:
-- **Template generation** - Build code files from includes
-- **Documentation assembly** - Include real code examples
-- **Configuration management** - Merge configs within larger files
-
-**To prevent processing in examples:**
-- **Indent directives** (not at line start)
-- **Use escape techniques** shown in examples above
-- **Comment out** with extra characters: `# // #include ./file.txt`
-
-
-```
-📁 docs/
-├── 📄 user-guide.md          ← Root document
-├── 📁 chapters/
-│   ├── 📄 installation.md
-│   ├── 📄 configuration.md
-│   └── 📄 troubleshooting.md
-├── 📁 examples/
-│   ├── 📄 basic-usage.md
-│   └── 📄 advanced-tips.md
-└── 📁 shared/
-    ├── 📄 header.md
-    └── 📄 footer.md
-```
-
-```bash
-# Build complete documentation
-MergeIncludes ./docs/user-guide.md -o ./dist/complete-guide.md --watch
-```
-
-```
-📁 config/
-├── 📄 production.yml         ← Environment config
-├── 📁 modules/
-│   ├── 📄 database.yml
-│   ├── 📄 logging.yml
-│   └── 📄 security.yml
-└── 📁 secrets/
-    └── 📄 api-keys.yml
-```
-
-```bash
-# Deploy with merged configuration
-MergeIncludes ./config/production.yml -o ./deploy/app-config.yml
-```
-
-```
-📁 site/
-├── 📄 index.html             ← Main template
-├── 📁 components/
-│   ├── 📄 header.html
-│   ├── 📄 navigation.html
-│   └── 📄 footer.html
-└── 📁 content/
-    ├── 📄 hero-section.html
-    └── 📄 features.html
-```
-
-```
-📁 reports/
-├── 📄 monthly-report.md      ← Report template
-├── 📁 sections/
-│   ├── 📄 executive-summary.md
-│   ├── 📄 financial-data.md
-│   └── 📄 recommendations.md
-└── 📁 data/
-    ├── 📄 charts.md
-    └── 📄 tables.md
-```
-
-```
-📁 docs/
-├── 📄 README-template.md     ← Main template
-├── 📁 sections/              ← Modular sections
-└── 📁 shared/                ← Reusable components
-```
-
-*This very README demonstrates the power of modular documentation!*
-
----
-
-
 ```bash
 USAGE:
     MergeIncludes <ROOT_FILE> [OPTIONS]
@@ -310,6 +227,23 @@ MergeIncludes ./docs/README-template.md -o ./README.md
 ---
 
 
+| Directive | Purpose | Example |
+|-----------|---------|---------|
+| `#include` | Include file content | `#include ./section.md` |
+| `#require` | Include only once | `#require ./header.txt` |
+| `##include` | Show literal text | `##include ./example.txt` |
+
+- Plain text: `#include ./file.txt`
+- Markdown: `<!-- #include ./section.md -->`
+- Code: `// #include ./module.js`
+- Config: `# #include ./settings.yml`
+
+```text
+#include ./docs/*.md        # All .md files
+#include ./chapters/0*.txt  # Files starting with 0
+```
+
+
 - **Visual Indicators**: `⚠️` symbols mark duplicate references
 - **Reference Numbers**: `[1]`, `[2]`, `[3]` track file usage
 - **Smart Handling**: `#require` prevents duplicates, `#include` allows them
@@ -345,6 +279,30 @@ MergeIncludes ./docs/README-template.md -o ./README.md
 - **Invalid Syntax**: Detailed line-by-line feedback
 
 ---
+
+
+MergeIncludes shows you what it's doing with clear tree visualization:
+
+![Tree Visualization](./docs/assets/screenshots/tree-visualization.png)
+
+Watch mode rebuilds automatically when files change:
+
+![Watch Mode](./docs/assets/screenshots/watch-mode.png)
+
+
+This README is built from modular sections using wildcard includes:
+
+```bash
+# Build this README (uses wildcard: ./sections/*.md)
+MergeIncludes ./docs/README-template.md -o ./README.md
+
+# Watch for changes  
+./docs/update-readme.ps1 -Watch
+```
+
+The wildcard includes all numbered sections in order, demonstrating the guaranteed ordering feature.
+
+![Before and After](./docs/assets/screenshots/before-after.png)
 
 
 We welcome contributions! Here's how to get started:
@@ -399,33 +357,4 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 </div>
 
-
-**This README is built using MergeIncludes itself!** 🎉
-
-```bash
-# See the magic - build this README from its modular parts
-MergeIncludes ./docs/README-template.md -o ./README.md
-
-# Watch the docs update live as you edit sections
-MergeIncludes ./docs/README-template.md -o ./README.md --watch
-```
-
-**Source Structure:**
-```
-📁 docs/
-├── 📄 README-template.md     ← This template
-├── 📁 sections/
-│   ├── 📄 quick-start.md
-│   ├── 📄 directive-reference.md
-│   ├── 📄 use-cases.md
-│   └── 📄 command-reference.md
-└── 📁 shared/
-    ├── 📄 badges.md
-    ├── 📄 hero.md
-    └── 📄 footer.md
-```
-
-**Result:** The complete README.md you're reading right now! 📖✨
-
----
 

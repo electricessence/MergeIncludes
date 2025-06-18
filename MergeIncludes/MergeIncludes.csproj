@@ -6,7 +6,18 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
+		<ApplicationIcon>Icon.ico</ApplicationIcon>
+		<PackageIcon>Logo.png</PackageIcon>
 	</PropertyGroup>
+	<ItemGroup>
+	  <Content Include="Icon.ico" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Include="..\Logo.png">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Spectre.Console" Version="0.50.0" />
 		<PackageReference Include="Spectre.Console.Analyzer" Version="1.0.0">
