@@ -12,14 +12,19 @@ public static partial class Extensions
 	const string REQUIRE = "require";
 	const string EXACT = "exact";
 	const string METHOD = "method";
-	const string FILE = "file";
-	const string CommentPatternText = "##.+";
-	const string IncludePatternText = @$"#(?<{METHOD}>{INCLUDE}|{REQUIRE})(?<{EXACT}>-{EXACT})?\s+(?<{FILE}>.+)";
+	const string FILE = "file"; const string CommentPatternText = "##(?!include|require).+";
+	const string IncludePatternText = @$"(?<!#)#(?<{METHOD}>{INCLUDE}|{REQUIRE})(?<{EXACT}>-{EXACT})?\s+(?<{FILE}>.+)";
+	const string EscapePatternText = @$"##(?<{METHOD}>{INCLUDE}|{REQUIRE})(?<{EXACT}>-{EXACT})?\s+(?<{FILE}>.+)";
 
 	[GeneratedRegex(
-		@$"^(//\s*)?{IncludePatternText}|^(<!--\s*){IncludePatternText}(\s*-->)",
+		@$"^(//\s*)?{IncludePatternText}|^(<!--\s*){IncludePatternText}(\s*-->)|^(\s*#\s*)?{IncludePatternText}",
 		RegexOptions.Compiled | RegexOptions.IgnoreCase)]
 	private static partial Regex GetIncludePattern();
+
+	[GeneratedRegex(
+		@$"^(//\s*)?{EscapePatternText}|^(<!--\s*){EscapePatternText}(\s*-->)|^(\s*#\s*)?{EscapePatternText}",
+		RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+	private static partial Regex GetEscapePattern();
 
 	[GeneratedRegex(
 		@$"^(//\s*)?{CommentPatternText}|^(<!--\s*){CommentPatternText}(\s*-->)",
@@ -110,10 +115,9 @@ public static partial class Extensions
 		{
 			var rootFileName = root.FullName;
 			if (!active.Add(rootFileName))
-				throw new UnreachableException();
-
-			var commentPattern = GetCommentPattern();
+				throw new UnreachableException(); var commentPattern = GetCommentPattern();
 			var includePattern = GetIncludePattern();
+			var escapePattern = GetEscapePattern();
 			using var file = root.OpenRead();
 			using var reader = new StreamReader(file);
 			Lazy<string> path = new(() => root.Directory?.FullName.ThrowIfNull()!);
@@ -152,13 +156,21 @@ public static partial class Extensions
 			if (trimming && whiteSpace!.Count != 0)
 			{
 				foreach (var w in whiteSpace)
-					yield return w;
-
-				whiteSpace.Clear();
+					yield return w; whiteSpace.Clear();
 			}
 
 			if (commentPattern.IsMatch(line))
 			{
+				goto more;
+			}
+
+			// Check for escape sequence (##include or ##require)
+			var escape = escapePattern.Match(line);
+			if (escape.Success)
+			{
+				// Convert ##include to #include (literal output)
+				// Remove the comment prefix if present and convert ## to #
+				yield return GetEscaped(line);
 				goto more;
 			}
 
@@ -214,6 +226,21 @@ public static partial class Extensions
 			trimLeading = trimming;
 
 			goto more;
+
+			static string GetEscaped(string line)
+			{
+				if (line.AsSpan().TrimStart().StartsWith("//"))
+				{
+					return line.Replace("// ##include", "// #include").Replace("// ##require", "// #require");
+				}
+
+				if (line.AsSpan().TrimStart().StartsWith("<!--"))
+				{
+					return line.Replace("<!-- ##include", "<!-- #include").Replace("<!-- ##require", "<!-- #require");
+				}
+
+				return line.Replace("##include", "#include").Replace("##require", "#require");
+			}
 		}
 	}
 

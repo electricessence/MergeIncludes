@@ -5,7 +5,7 @@ namespace MergeIncludes.Services;
 /// <summary>
 /// Service for building side-by-side folder structure and reference trees
 /// </summary>
-public class DefaultTreeBuilder
+public partial class DefaultTreeBuilder
 {
 	/// <summary>
 	/// Builds side-by-side trees with aligned rows for folder structure and reference relationships
@@ -273,7 +273,7 @@ public class DefaultTreeBuilder
 		public FolderNode? Parent { get; set; }
 		public List<FolderNode> Children { get; set; } = [];
 	}
-	
+
 	/// <summary>
 	/// Extracts the file name from a reference tree line by removing tree formatting and reference numbers
 	/// </summary>
@@ -284,49 +284,9 @@ public class DefaultTreeBuilder
 
 		// Remove reference numbers like [1], [2], etc. that are only used for duplicates in reference tree
 		// Use regex to match patterns like " [1]", " [02]", " [123]" at the end
-		cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, @"\s+\[\d+\]$", "").Trim();
+		cleaned = NumberBracketPattern().Replace(cleaned, "").Trim();
 
 		return cleaned;
-	}
-
-	/// <summary>
-	/// Builds folder structure lines showing directory hierarchy
-	/// </summary>
-	private static List<string> BuildFolderStructureLines(List<FileInfo> allFiles, DirectoryInfo baseDirectory)
-	{
-		var lines = new List<string>();
-
-		// Group files by directory
-		var filesByDirectory = allFiles.GroupBy(f => f.Directory?.FullName ?? "")
-			.Where(g => !string.IsNullOrEmpty(g.Key))
-			.OrderBy(g => g.Key)
-			.ToList();
-
-		foreach (var directoryGroup in filesByDirectory)
-		{
-			var dirPath = directoryGroup.Key;
-
-			// Get relative path for display
-			var relativePath = GetRelativePath(baseDirectory.FullName, dirPath);
-			var displayPath = string.IsNullOrEmpty(relativePath) ? "." : relativePath;
-
-			lines.Add($"📁 {displayPath}");
-
-			// Add files in this directory with indentation
-			var filesInDir = directoryGroup.OrderBy(f => f.Name).ToList();
-			for (int i = 0; i < filesInDir.Count; i++)
-			{
-				var isLast = i == filesInDir.Count - 1;
-				var prefix = isLast ? "└── " : "├── ";
-				lines.Add($"  {prefix}{filesInDir[i].Name}");
-			}
-
-			// Add spacing between directories
-			if (directoryGroup != filesByDirectory.Last())
-				lines.Add("");
-		}
-
-		return lines;
 	}
 
 	/// <summary>
@@ -405,8 +365,11 @@ public class DefaultTreeBuilder
 		}
 		catch
 		{
-			// Fallback: convert backslashes to forward slashes for consistency
+			// Fall-back: convert backslashes to forward slashes for consistency
 			return targetPath.Replace('\\', '/');
 		}
 	}
+
+	[System.Text.RegularExpressions.GeneratedRegex(@"\s+\[\d+\]$")]
+	private static partial System.Text.RegularExpressions.Regex NumberBracketPattern();
 }
