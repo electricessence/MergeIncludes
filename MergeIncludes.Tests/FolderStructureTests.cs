@@ -17,30 +17,11 @@ public class FolderStructureTests
 		// Act - Use the StructureAndReferenceView directly
 		var structureAndReferenceView = new Renderables.StructureAndReferenceView(rootFile, fileRelationships);
 		console.Write(structureAndReferenceView);
-
 		// Assert - Verify console output
-		var output = console.Output;
+		var output = console.Output.TrimEnd();
 		await Verify(output)
 			.UseDirectory("Snapshots")
 			.UseFileName("ComplexFolderStructure");
-	}
-	[Fact]
-	public async Task ComplexFolderStructure_DetectsRepeatedDependencies()
-	{
-		// Arrange
-		var console = new TestConsole();
-		var rootFile = new FileInfo(Path.GetFullPath(@"TestScenarios\Shared\MainFolder\complex-root.txt"));
-		var fileRelationships = BuildComplexFileRelationships();
-
-		// Act - Use the StructureAndReferenceView directly for repeated dependencies
-		var structureAndReferenceView = new Renderables.StructureAndReferenceView(rootFile, fileRelationships);
-		console.Write(structureAndReferenceView);
-
-		// Assert - Verify console output
-		var output = console.Output;
-		await Verify(output)
-			.UseDirectory("Snapshots")
-			.UseFileName("ComplexFolderStructureWithRepeats");
 	}
 	private static Dictionary<string, List<string>> BuildComplexFileRelationships()
 	{

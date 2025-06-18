@@ -1,32 +1,32 @@
 📁 MainFolder           / complex-root.txt
 ├──                       ├── local.txt [1]
-├──                       │   └── common.txt [2]
+├── 📁 SubFolder2         │   └── common.txt [2]
 ├── 📁 SubFolder1         │       └── subcomponent1.txt [3]
 ├──                       │           └── local.txt [1] ⚠
 ├── 📁 SubFolder1         ├── component1.txt
 │   └──                   │   └── subcomponent1.txt [3]
 ├──                       │       └── local.txt [1]
-├──                       │           └── common.txt [2]
+├── 📁 SubFolder2         │           └── common.txt [2]
 ├── 📁 SubFolder1         │               └── subcomponent1.txt [3] ⚠
 ├── 📁 SubFolder2         ├── component2.txt
-│   ├──                   │   └── common.txt [2]
-│   └──                   │       └── subcomponent1.txt [3]
-├── 📁 SubFolder1         │           └── local.txt [1]
-├──                       │               └── common.txt [2] ⚠
-├── 📁 SubFolder2         ├── common.txt [2]
-│   ├──                   │   └── subcomponent1.txt [3]
-│   └──                   │       └── local.txt [1]
-├── 📁 SubFolder1         │           └── common.txt [2] ⚠
-├──                       ├── subcomponent1.txt [3]
-├── 📁 SubFolder1         │   └── local.txt [1]
-├──                       │       └── common.txt [2]
+│   └──                   │   └── common.txt [2]
+├── 📁 SubFolder1         │       └── subcomponent1.txt [3]
+├──                       │           └── local.txt [1]
+├── 📁 SubFolder2         │               └── common.txt [2] ⚠
+│   └──                   ├── common.txt [2]
+├── 📁 SubFolder1         │   └── subcomponent1.txt [3]
+├──                       │       └── local.txt [1]
+├── 📁 SubFolder2         │           └── common.txt [2] ⚠
+├── 📁 SubFolder1         ├── subcomponent1.txt [3]
+├──                       │   └── local.txt [1]
+├── 📁 SubFolder2         │       └── common.txt [2]
 ├── 📁 SubFolder1         │           └── subcomponent1.txt [3] ⚠
 ├── 📁 ../AnotherFolder   ├── external.txt
 ├── 📁 SubFolder2         │   └── common.txt [2]
-│   ├──                   │       └── subcomponent1.txt [3]
-│   └──                   │           └── local.txt [1]
-├── 📁 SubFolder1         │               └── common.txt [2] ⚠
+├── 📁 SubFolder1         │       └── subcomponent1.txt [3]
+├──                       │           └── local.txt [1]
+├── 📁 SubFolder2         │               └── common.txt [2] ⚠
 ├──                       └── local.txt [1]
-├──                           └── common.txt [2]
+├── 📁 SubFolder2             └── common.txt [2]
 ├── 📁 SubFolder1                 └── subcomponent1.txt [3]
 └──                                   └── local.txt [1] ⚠

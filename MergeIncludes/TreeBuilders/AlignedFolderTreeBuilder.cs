@@ -140,11 +140,12 @@ public static class AlignedFolderTreeBuilder
 		// Process each reference node to maintain 1:1 alignment
 		ProcessReferenceNodesForAlignment(tree, rootFile.Directory, referenceStructure.Skip(1));
 
-		return tree;
-	}    /// <summary>
-		 /// Process reference nodes to maintain 1:1 alignment with smart hierarchical structure
-		 /// Create hierarchy when files naturally nest in same/sub folders, flatten when they don't
-		 /// </summary>
+		return tree;	}
+	
+	/// <summary>
+	/// Process reference nodes to maintain 1:1 alignment with smart hierarchical structure
+	/// Create hierarchy when files naturally nest in same/sub folders, flatten when they don't
+	/// </summary>
 	private static void ProcessReferenceNodesForAlignment(
 		TreeMinimalWidth tree,
 		DirectoryInfo baseDirectory,
@@ -153,66 +154,43 @@ public static class AlignedFolderTreeBuilder
 		var nodeList = referenceNodes is IReadOnlyList<ReferenceNode> l ? l : referenceNodes.ToArray();
 		if (nodeList.Count == 0) return;
 
-		string? lastDirectoryPath = baseDirectory.FullName;
-		var folderNodes = new Dictionary<string, IHasTreeNodes>
-		{
-			[baseDirectory.FullName] = tree // Root folder
-		}; // Track folder nodes by path
+		string? lastDirectoryPath = null;
+		IHasTreeNodes? currentFolderNode = null;
 
 		for (int i = 0; i < nodeList.Count; i++)
 		{
 			var referenceNode = nodeList[i];
 			var currentDirectoryPath = referenceNode.Directory.FullName;
-			var currentLevel = referenceNode.Level;
 
-			// Look ahead to see if we can create a natural hierarchy
-			bool canCreateHierarchy = CanCreateNaturalHierarchy(nodeList, i, referenceNode);
+			// Check if we should create hierarchy: consecutive files from the same folder
+			bool shouldBeChild = ShouldBeChildOfPreviousFolder(nodeList, i, currentDirectoryPath);
 
-			if (canCreateHierarchy && currentLevel > 0)
+			if (shouldBeChild && currentFolderNode != null)
 			{
-				// Create hierarchy - this is a child that should nest under its folder
-				// Find the correct folder node for this file's directory
-				if (folderNodes.TryGetValue(currentDirectoryPath, out var folderNode))
-				{
-					// Add fake child to the correct folder
-					var spacer = new Text("", new Style(foreground: Color.Default));
-					folderNode.AddNode(spacer);
-				}
-				else
-				{
-					// Fallback - shouldn't happen but handle gracefully
-					var spacer = new Text("", new Style(foreground: Color.Default));
-					tree.AddNode(spacer);
-				}
+				// This file should be a child of the previous folder
+				var spacer = new Text("", new Style(foreground: Color.Default));
+				currentFolderNode.AddNode(spacer);
 			}
 			else
 			{
-				// Reset and show folder path - can't create natural hierarchy
-				if (!string.Equals(currentDirectoryPath, lastDirectoryPath, StringComparison.OrdinalIgnoreCase))
+				// This file starts a new folder or goes back to root
+				if (currentDirectoryPath.Equals(baseDirectory.FullName, StringComparison.OrdinalIgnoreCase))
 				{
-					// Directory changed - show the folder name
-					if (currentDirectoryPath.Equals(baseDirectory.FullName, StringComparison.OrdinalIgnoreCase))
-					{
-						// Back to root directory - show an empty spacer
-						var spacer = new Text("", new Style(foreground: Color.Default));
-						tree.AddNode(spacer);
-					}
-					else
-					{
-						// Different directory - show the folder name
-						var folderName = GetFolderDisplayName(baseDirectory, referenceNode.Directory);
-						var folderStyle = IsWindowsTerminal
-							? new Style(foreground: Color.Green, link: referenceNode.Directory.FullName)
-							: new Style(foreground: Color.Green);
+					// Back to root directory - show an empty spacer
+					var spacer = new Text("", new Style(foreground: Color.Default));
+					tree.AddNode(spacer);
+					currentFolderNode = null;
+				}
+				else if (!string.Equals(currentDirectoryPath, lastDirectoryPath, StringComparison.OrdinalIgnoreCase))
+				{
+					// Different directory - show the folder name
+					var folderName = GetFolderDisplayName(baseDirectory, referenceNode.Directory);
+					var folderStyle = IsWindowsTerminal
+						? new Style(foreground: Color.Green, link: referenceNode.Directory.FullName)
+						: new Style(foreground: Color.Green);
 
-						var folderText = new Text(folderName, folderStyle);
-						var folderNode = tree.AddNode(folderText);
-
-						// Track this folder node for future hierarchy creation
-						folderNodes[currentDirectoryPath] = folderNode;
-					}
-
-					lastDirectoryPath = currentDirectoryPath;
+					var folderText = new Text(folderName, folderStyle);
+					currentFolderNode = tree.AddNode(folderText);
 				}
 				else
 				{
@@ -221,47 +199,24 @@ public static class AlignedFolderTreeBuilder
 					tree.AddNode(spacer);
 				}
 			}
-		}
-	}
+
+			lastDirectoryPath = currentDirectoryPath;
+		}	}
 
 	/// <summary>
-	/// Determine if we can create a natural hierarchy for this reference node
+	/// Determine if this file should be a child of the previous folder
+	/// Simple rule: if consecutive files are from the same folder, make them children
 	/// </summary>
-	private static bool CanCreateNaturalHierarchy(IReadOnlyList<ReferenceNode> nodeList, int currentIndex, ReferenceNode currentNode)
+	private static bool ShouldBeChildOfPreviousFolder(IReadOnlyList<ReferenceNode> nodeList, int currentIndex, string currentDirectoryPath)
 	{
-		// If this is a root level file, no hierarchy
-		if (currentNode.Level == 0) return false;
+		if (currentIndex == 0) return false; // First file can't be a child		// Look at the previous file
+		var previousNode = nodeList[currentIndex - 1];
+		var previousDirectoryPath = previousNode.Directory.FullName;
 
-		// Check if the previous file at level-1 is the actual parent
-		var parentLevel = currentNode.Level - 1;
-
-		// Find the most recent node at the parent level
-		for (int i = currentIndex - 1; i >= 0; i--)
-		{
-			var candidateParent = nodeList[i];
-			if (candidateParent.Level == parentLevel)
-			{
-				// Found the parent - check if folders are compatible for hierarchy
-				var currentDir = currentNode.Directory.FullName;
-				var parentDir = candidateParent.Directory.FullName;
-
-				// Can create hierarchy if:
-				// 1. Same folder as parent
-				// 2. Subfolder of parent's folder
-				bool foldersCompatible = string.Equals(currentDir, parentDir, StringComparison.OrdinalIgnoreCase) ||
-					   currentDir.StartsWith(parentDir + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
-
-				return foldersCompatible;
-			}
-			else if (candidateParent.Level < parentLevel)
-			{
-				// We've gone too far back, no direct parent found
-				break;
-			}
-		}
-
-		return false;
+		// If same directory as previous file, this should be a child
+		return string.Equals(currentDirectoryPath, previousDirectoryPath, StringComparison.OrdinalIgnoreCase);
 	}
+
 	/// <summary>
 	/// Get the display name for a folder, showing relative path if outside base directory
 	/// </summary>
