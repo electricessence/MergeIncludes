@@ -1,6 +1,8 @@
-# 🔄 MergeIncludes
+# MergeIncludes
 
-**Merge modular text files with `#include` directives**
+**Merge modular text files with `#include` or `#require`directives.**
+
+![MergeIncludes Logo](Logo.png)
 
 *This README is built using MergeIncludes itself*
 
@@ -19,7 +21,7 @@ MergeIncludes processes text files containing `#include` directives and merges t
 **Input**: Multiple modular files with include directives  
 **Output**: Single unified file with all content merged
 
-![README Generation](./docs/assets/screenshots/readme-generation.png)
+![README Generation](./docs/images/merge-include-readme.png)
 
 Transform your modular text projects into unified masterpieces. **MergeIncludes** recursively processes `##include` directives with beautiful tree visualization, smart terminal integration, and blazing-fast performance.
 
