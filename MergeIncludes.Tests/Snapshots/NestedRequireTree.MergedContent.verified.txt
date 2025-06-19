@@ -1,2 +1,42 @@
-﻿Could not find include file on line 8 in:
-./types/05.partial.txt:8
+﻿// Generic license header placeholder
+// @version=1.0
+
+// Note: This is a test scenario for validating nested require tree functionality
+
+02.partial
+
+201.partial
+
+204.partial.txt
+
+
+202.partial.txt
+
+
+203.partial.txt
+
+
+205.partial.txt
+
+
+206.partial.txt
+
+
+207.partial.txt
+
+
+04.partial
+
+05.partial
+
+06.partial
+
+07.partial
+
+08.partial
+
+09.partial
+
+10.partial
+
+

@@ -1,10 +1,4 @@
-///////////////////////////////////////////////////
-// BASIC TYPE METHODS
-///////////////////////////////////////////////////
-// Methods are now embedded directly in their type partials
-// This file is preserved for backwards compatibility but no longer needed
-
-// Types with embedded methods
+05.partial
 // #require ./core/201.partial.txt
 // #require ./core/203.partial.txt
 // #require ./core/202.partial.txt

@@ -1,9 +1,3 @@
-///////////////////////////////////////////////////
-// SIGNAL REGISTRY METHODS
-///////////////////////////////////////////////////
-// Methods are now embedded directly in their type partials
-// This file is preserved for backwards compatibility but no longer needed
-
-// Types with embedded methods
+07.partial
 // #require ./core/206.partial.txt
 // #require ./core/207.partial.txt

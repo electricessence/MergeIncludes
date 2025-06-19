@@ -1,8 +1,2 @@
-///////////////////////////////////////////////////
-// SIGNAL GROUP METHODS
-///////////////////////////////////////////////////
-// Methods are now embedded directly in their type partials
-// This file is preserved for backwards compatibility but no longer needed
-
-// Types with embedded methods
+06.partial
 // #require ./core/205.partial.txt
