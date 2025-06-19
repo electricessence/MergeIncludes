@@ -39,7 +39,8 @@ public class ScenarioTests(ITestOutputHelper outputHelper)
 	[InlineData("TestScenarios/09_UniqueFilenames/root.txt", "UniqueFilenames")]
 	[InlineData("TestScenarios/10_DetailedFolderJumping/root.txt", "DetailedFolderJumping")]
 	[InlineData("TestScenarios/11_NestedRequireTree/types-modular.pine", "NestedRequireTree")]
-	[InlineData("TestScenarios/wildcard-reference/main.txt", "WildcardReference")]	[InlineData("TestScenarios/Shared/root-file.txt", "Shared")]
+	[InlineData("TestScenarios/wildcard-reference/main.txt", "WildcardReference")]
+	[InlineData("TestScenarios/Shared/root-file.txt", "Shared")]
 	[InlineData("TestScenarios/03_CircularReferences/manual-circular.txt", "ManualCircular")]
 	[InlineData("TestScenarios/12_FileNotFound/root.txt", "FileNotFound")]
 	public async Task ScenarioTest(string testFilePath, string scenarioName)

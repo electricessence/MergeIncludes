@@ -120,7 +120,8 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 							Header = new PanelHeader("[red]Failed to merge[/]"),
 							Border = BoxBorder.Rounded
 						});
-					}					else
+					}
+					else
 					{
 						var relativeErrorMessage = MakeErrorMessagePathsRelative(mergeResult.ErrorMessage ?? "", rootFile.Directory ?? new DirectoryInfo("."));
 						_console.Write(new Panel($"[red]{relativeErrorMessage}[/]")
@@ -306,7 +307,7 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 	/// <returns>A MergeResult containing the merged content or error information</returns>
 	public static async Task<MergeResult> MergeToMemoryAsync(Settings settings)
 	{
-		settings.ThrowIfNull().OnlyInDebug();		var rootFile = settings.GetRootFile();
+		settings.ThrowIfNull().OnlyInDebug(); var rootFile = settings.GetRootFile();
 		var list = new List<FileInfo>();
 		var fileRelationships = new Dictionary<string, List<string>>();
 
@@ -353,7 +354,8 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 			using var reader = new StreamReader(memoryStream);
 			var mergedContent = await reader.ReadToEndAsync();
 
-			return MergeResult.Success(mergedContent, list, fileRelationships);		}
+			return MergeResult.Success(mergedContent, list, fileRelationships);
+		}
 		catch (InvalidOperationException ex) when (ex.Message.Contains("Detected recursive reference"))
 		{
 			var relativeErrorMessage = MakeErrorMessagePathsRelative(ex.Message, rootFile.Directory!);
@@ -373,15 +375,15 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 	{
 		var processedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 		var visitedInCurrentBranch = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-		
+
 		await BuildFileRelationshipsRecursiveAsync(rootFile.FullName, settings, fileRelationships, processedFiles, visitedInCurrentBranch);
 	}
 	/// <summary>
 	/// Recursively analyzes a file and its includes to build proper parent-child relationships
 	/// </summary>
 	private static async Task BuildFileRelationshipsRecursiveAsync(
-		string filePath, 
-		MergeOptions settings, 
+		string filePath,
+		MergeOptions settings,
 		Dictionary<string, List<string>> fileRelationships,
 		HashSet<string> processedFiles,
 		HashSet<string> visitedInCurrentBranch)
@@ -401,7 +403,7 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 
 			// Always ensure this file has an entry in relationships, even if empty
 			if (!fileRelationships.ContainsKey(filePath))
-				fileRelationships[filePath] = new List<string>();
+				fileRelationships[filePath] = [];
 
 			// Only process each file once for detailed analysis, but allow it to appear in multiple relationships
 			if (processedFiles.Contains(filePath))
@@ -419,9 +421,9 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 			// Remove from visited when leaving this branch
 			visitedInCurrentBranch.Remove(filePath);
 		}
-	}	/// <summary>
-	/// Analyzes a specific file for include/require statements and processes them
-	/// </summary>
+	}   /// <summary>
+		/// Analyzes a specific file for include/require statements and processes them
+		/// </summary>
 	private static async Task AnalyzeFileIncludesAsync(
 		FileInfo fileInfo,
 		MergeOptions settings,
@@ -441,9 +443,7 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 		const string FILE = "file";
 		const string IncludePatternText = @$"(?<!#)#(?<{METHOD}>{INCLUDE}|{REQUIRE})(?<{EXACT}>-{EXACT})?\s+(?<{FILE}>.+)";
 
-		var includePattern = new Regex(
-			@$"^(//\s*)?{IncludePatternText}|^(<!--\s*){IncludePatternText}(\s*-->)|^(\s*#\s*)?{IncludePatternText}",
-			RegexOptions.Compiled | RegexOptions.IgnoreCase);
+		var includePattern = IncludePattern();
 
 		string? line;
 		while ((line = await reader.ReadLineAsync()) != null)
@@ -453,21 +453,21 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 			{
 				var includePath = includeMatch.Groups[FILE].Value.Trim();
 				var resolvedPaths = ResolveIncludePaths(includePath, fileInfo.Directory?.FullName);
-				
+
 				foreach (var fullIncludePath in resolvedPaths)
 				{
 					// Always add to children for tree building, even if it would create a cycle
 					children.Add(fullIncludePath);
-					
+
 					// Only recursively process if we haven't seen this in the current branch
 					// This allows us to track the relationship while preventing infinite recursion
 					if (!visitedInCurrentBranch.Contains(fullIncludePath))
 					{
 						await BuildFileRelationshipsRecursiveAsync(
-							fullIncludePath, 
-							settings, 
-							fileRelationships, 
-							processedFiles, 
+							fullIncludePath,
+							settings,
+							fileRelationships,
+							processedFiles,
 							new HashSet<string>(visitedInCurrentBranch, StringComparer.OrdinalIgnoreCase));
 					}
 				}
@@ -480,26 +480,26 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 	private static List<string> ResolveIncludePaths(string includePath, string? baseDirectory)
 	{
 		var resolvedPaths = new List<string>();
-		
+
 		if (string.IsNullOrEmpty(baseDirectory))
 			return resolvedPaths;
 
 		try
 		{
 			// Handle relative paths
-			var fullPath = Path.IsPathRooted(includePath) 
-				? includePath 
+			var fullPath = Path.IsPathRooted(includePath)
+				? includePath
 				: Path.GetFullPath(Path.Combine(baseDirectory, includePath));
 
 			var directory = Path.GetDirectoryName(fullPath);
 			var fileName = Path.GetFileName(fullPath);
-			
+
 			if (string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(fileName))
 				return resolvedPaths;
 
 			// Use Directory.GetFiles to handle wildcards like *.txt
 			var files = Directory.GetFiles(directory, fileName);
-			
+
 			foreach (var file in files)
 			{
 				if (File.Exists(file))
@@ -527,15 +527,16 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 		try
 		{
 			// Handle relative paths
-			var fullPath = Path.IsPathRooted(includePath) 
-				? includePath 
+			var fullPath = Path.IsPathRooted(includePath)
+				? includePath
 				: Path.GetFullPath(Path.Combine(baseDirectory, includePath));
 
 			// Check if file exists
 			if (File.Exists(fullPath))
 				return fullPath;
 
-			return null;		}
+			return null;
+		}
 		catch
 		{
 			return null;
@@ -556,14 +557,14 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 			for (int i = 0; i < lines.Length; i++)
 			{
 				var line = lines[i];
-				
+
 				// Handle paths with line numbers (e.g., "C:\full\path\to\file.txt:123")
 				var colonIndex = line.LastIndexOf(':');
 				if (colonIndex > 0 && colonIndex < line.Length - 1)
 				{
 					var pathPart = line.Substring(0, colonIndex);
 					var linePart = line.Substring(colonIndex);
-					
+
 					// Check if the path part looks like a file path
 					if (Path.IsPathRooted(pathPart) && File.Exists(pathPart))
 					{
@@ -579,17 +580,18 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 					for (int j = 0; j < words.Length; j++)
 					{
 						var word = words[j].TrimEnd('.', ',', ';', '!', '?'); // Remove punctuation
-						if (Path.IsPathRooted(word) && (File.Exists(word) || Directory.Exists(word)))						{
+						if (Path.IsPathRooted(word) && (File.Exists(word) || Directory.Exists(word)))
+						{
 							var relativePath = Path.GetRelativePath(rootDirectory.FullName, word);
 							var punctuation = words[j].Substring(word.Length); // Get the punctuation back
 							words[j] = $"./{relativePath.Replace('\\', '/')}{punctuation}";
 						}
 					}
-					
+
 					lines[i] = string.Join(' ', words);
 				}
 			}
-			
+
 			return string.Join('\n', lines);
 		}
 		catch
@@ -598,4 +600,7 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 			return errorMessage;
 		}
 	}
+
+	[GeneratedRegex(@"^(//\s*)?(?<!#)#(?<method>include|require)(?<exact>-exact)?\s+(?<file>.+)|^(<!--\s*)(?<!#)#(?<method>include|require)(?<exact>-exact)?\s+(?<file>.+)(\s*-->)|^(\s*#\s*)?(?<!#)#(?<method>include|require)(?<exact>-exact)?\s+(?<file>.+)", RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-US")]
+	private static partial Regex IncludePattern();
 }

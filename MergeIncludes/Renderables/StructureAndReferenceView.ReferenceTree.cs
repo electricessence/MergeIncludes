@@ -25,7 +25,7 @@ public sealed partial class StructureAndReferenceView
 
 		// Track visited paths to prevent infinite recursion due to circular references
 		var visitedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-		
+
 		BuildCompleteReferenceTreeRecursive(tree, rootFile.FullName, fileRelationships, fileIds, ref nextId, visitedPaths, repeatedFiles);
 
 		return tree;
@@ -77,8 +77,8 @@ public sealed partial class StructureAndReferenceView
 				}
 
 				var fileName = dependencyFile.Name;
-				var displayText = isRepeated && fileIds.TryGetValue(dependency, out var fileId) 
-					? $"{fileName} [{fileId}]" 
+				var displayText = isRepeated && fileIds.TryGetValue(dependency, out var fileId)
+					? $"{fileName} [{fileId}]"
 					: fileName;
 
 				if (isCircularReference)
@@ -174,8 +174,8 @@ public sealed partial class StructureAndReferenceView
 				}
 
 				var fileName = dependencyFile.Name;
-				var displayText = isRepeated && fileIds.TryGetValue(dependency, out var fileId) 
-					? $"{fileName} [{fileId}]" 
+				var displayText = isRepeated && fileIds.TryGetValue(dependency, out var fileId)
+					? $"{fileName} [{fileId}]"
 					: fileName;
 
 				if (isCircularReference)

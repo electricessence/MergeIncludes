@@ -140,8 +140,9 @@ public static class AlignedFolderTreeBuilder
 		// Process each reference node to maintain 1:1 alignment
 		ProcessReferenceNodesForAlignment(tree, rootFile.Directory, referenceStructure.Skip(1));
 
-		return tree;	}
-	
+		return tree;
+	}
+
 	/// <summary>
 	/// Process reference nodes to maintain 1:1 alignment with smart hierarchical structure
 	/// Create hierarchy when files naturally nest in same/sub folders, flatten when they don't
@@ -201,7 +202,8 @@ public static class AlignedFolderTreeBuilder
 			}
 
 			lastDirectoryPath = currentDirectoryPath;
-		}	}
+		}
+	}
 
 	/// <summary>
 	/// Determine if this file should be a child of the previous folder
