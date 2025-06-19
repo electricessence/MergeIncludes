@@ -1,0 +1,23 @@
+﻿This is the main file.
+
+Content from file A
+
+Content from file B
+
+Content from file C
+
+
+Now including config files:
+Content from config A
+
+Content from config B
+
+
+Finally including scripts:
+Content from script 1
+
+Content from script 2
+
+
+End of main file.
+

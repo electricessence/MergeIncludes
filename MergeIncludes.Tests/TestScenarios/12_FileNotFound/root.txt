@@ -1,0 +1,6 @@
+# File Not Found Scenario
+This scenario demonstrates the error handling when trying to include a file that doesn't exist.
+
+#include ./non-existent-file.txt
+
+This should generate a clear error message with relative paths.

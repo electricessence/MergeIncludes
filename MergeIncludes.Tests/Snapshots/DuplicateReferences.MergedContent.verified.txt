@@ -1,0 +1,30 @@
+﻿# Root File with Duplicates
+This demonstrates duplicate references.
+
+// Shared utility functions
+void shared_function() {
+    // shared implementation
+}
+
+// Component in SubFolder1
+// Shared utility functions
+void shared_function() {
+    // shared implementation
+}
+
+
+void component_function() {
+    // component implementation
+}
+
+// Shared utility functions
+void shared_function() {
+    // shared implementation
+}
+
+// Another component
+void another_function() {
+    // another implementation
+}
+
+

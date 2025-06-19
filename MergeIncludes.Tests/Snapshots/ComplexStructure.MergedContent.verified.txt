@@ -1,0 +1,68 @@
+﻿# Complex Root File with Repeated References
+This demonstrates a complex include structure with repeated dependencies.
+
+// Local utility functions
+void local_function() {
+    // local implementation
+}
+
+
+// Component 1
+// Subcomponent 1
+void subcomponent1_function() {
+    // implementation
+}
+
+// Common utilities
+void common_function() {
+    // shared implementation
+}
+
+
+void component1_function() {
+    // implementation
+}
+
+
+// Component 2
+// Common utilities
+void common_function() {
+    // shared implementation
+}
+
+// This is the same as SubFolder1/subcomponent1.txt for testing
+void subcomponent1_function() {
+    // duplicate implementation
+}
+
+
+void component2_function() {
+    // implementation
+}
+
+
+// Common utilities (copy)
+void common_function() {
+    // shared implementation copy
+}
+
+
+// Subcomponent 1
+void subcomponent1_function() {
+    // implementation
+}
+
+
+// External file
+void external_function() {
+    // external implementation
+}
+
+
+// Local utility functions
+void local_function() {
+    // local implementation
+}
+
+
+

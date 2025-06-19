@@ -185,7 +185,11 @@ public static partial class Extensions
 			var fileGroup = include.Groups[FILE];
 			var includePath = Path.GetFullPath(Path.Combine(path.Value, fileGroup.Value));
 			if (active.Contains(includePath))
-				throw new InvalidOperationException($"Detected recursive reference to {includePath}.");
+			{
+				// Make the path relative to the root directory for the error message
+				var relativePath = Path.GetRelativePath(root.Directory!.FullName, includePath);
+				throw new InvalidOperationException($"Detected recursive reference to {relativePath}.");
+			}
 
 			var require = include.Groups[METHOD].ValueSpan.Equals(REQUIRE, StringComparison.OrdinalIgnoreCase);
 			// Require means to only include it once.

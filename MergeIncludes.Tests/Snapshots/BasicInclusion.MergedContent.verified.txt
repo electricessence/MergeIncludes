@@ -1,0 +1,10 @@
+﻿# Simple Root File
+This is a basic test with simple includes.
+
+This is file1 in SubFolder1
+
+This is file2 in SubFolder2
+
+This is file3 in SubFolder1
+
+

@@ -1,0 +1,2 @@
+// Generic license header placeholder
+// @version=1.0

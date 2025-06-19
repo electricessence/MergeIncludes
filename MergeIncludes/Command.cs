@@ -120,10 +120,10 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 							Header = new PanelHeader("[red]Failed to merge[/]"),
 							Border = BoxBorder.Rounded
 						});
-					}
-					else
+					}					else
 					{
-						_console.Write(new Panel($"[red]{mergeResult.ErrorMessage}[/]")
+						var relativeErrorMessage = MakeErrorMessagePathsRelative(mergeResult.ErrorMessage ?? "", rootFile.Directory ?? new DirectoryInfo("."));
+						_console.Write(new Panel($"[red]{relativeErrorMessage}[/]")
 						{
 							Header = new PanelHeader("[red]Failed to merge[/]"),
 							Border = BoxBorder.Rounded
@@ -353,15 +353,16 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 			using var reader = new StreamReader(memoryStream);
 			var mergedContent = await reader.ReadToEndAsync();
 
-			return MergeResult.Success(mergedContent, list, fileRelationships);
-		}
+			return MergeResult.Success(mergedContent, list, fileRelationships);		}
 		catch (InvalidOperationException ex) when (ex.Message.Contains("Detected recursive reference"))
 		{
-			return MergeResult.Failure(ex.Message, list, fileRelationships);
+			var relativeErrorMessage = MakeErrorMessagePathsRelative(ex.Message, rootFile.Directory!);
+			return MergeResult.Failure(relativeErrorMessage, list, fileRelationships);
 		}
 		catch (Exception ex)
 		{
-			return MergeResult.Failure(ex.Message, list, fileRelationships);
+			var relativeErrorMessage = MakeErrorMessagePathsRelative(ex.Message, rootFile.Directory!);
+			return MergeResult.Failure(relativeErrorMessage, list, fileRelationships);
 		}
 	}
 
@@ -534,11 +535,67 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 			if (File.Exists(fullPath))
 				return fullPath;
 
-			return null;
-		}
+			return null;		}
 		catch
 		{
 			return null;
+		}
+	}
+
+	/// <summary>
+	/// Makes file paths in error messages relative to the root file directory
+	/// </summary>
+	private static string MakeErrorMessagePathsRelative(string errorMessage, DirectoryInfo rootDirectory)
+	{
+		if (string.IsNullOrEmpty(errorMessage) || rootDirectory == null)
+			return errorMessage;
+		try
+		{
+			// Look for file paths in the error message
+			var lines = errorMessage.Split('\n');
+			for (int i = 0; i < lines.Length; i++)
+			{
+				var line = lines[i];
+				
+				// Handle paths with line numbers (e.g., "C:\full\path\to\file.txt:123")
+				var colonIndex = line.LastIndexOf(':');
+				if (colonIndex > 0 && colonIndex < line.Length - 1)
+				{
+					var pathPart = line.Substring(0, colonIndex);
+					var linePart = line.Substring(colonIndex);
+					
+					// Check if the path part looks like a file path
+					if (Path.IsPathRooted(pathPart) && File.Exists(pathPart))
+					{
+						var relativePath = Path.GetRelativePath(rootDirectory.FullName, pathPart);
+						lines[i] = $"./{relativePath.Replace('\\', '/')}{linePart}";
+					}
+				}
+				// Handle paths without line numbers (e.g., "Detected recursive reference to C:\full\path\to\file.txt.")
+				else
+				{
+					// Look for absolute paths in the line
+					var words = line.Split(' ');
+					for (int j = 0; j < words.Length; j++)
+					{
+						var word = words[j].TrimEnd('.', ',', ';', '!', '?'); // Remove punctuation
+						if (Path.IsPathRooted(word) && (File.Exists(word) || Directory.Exists(word)))						{
+							var relativePath = Path.GetRelativePath(rootDirectory.FullName, word);
+							var punctuation = words[j].Substring(word.Length); // Get the punctuation back
+							words[j] = $"./{relativePath.Replace('\\', '/')}{punctuation}";
+						}
+					}
+					
+					lines[i] = string.Join(' ', words);
+				}
+			}
+			
+			return string.Join('\n', lines);
+		}
+		catch
+		{
+			// If anything goes wrong, return the original message
+			return errorMessage;
 		}
 	}
 }

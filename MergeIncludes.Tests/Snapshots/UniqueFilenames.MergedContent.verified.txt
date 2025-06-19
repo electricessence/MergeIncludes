@@ -1,0 +1,14 @@
+﻿# Test with unique filenames per folder
+This is unique1 in SubFolder1
+
+Content from unique2.txt in SubFolder2
+
+This is unique3 in SubFolder1
+
+This is unique4 in root
+
+Content from unique5.txt in SubFolder2
+
+This is unique6 in root
+
+

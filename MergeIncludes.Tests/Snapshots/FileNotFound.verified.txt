@@ -1,0 +1,10 @@
+﻿╭─Root File────────────────────────────────╮
+│ ./TestScenarios/12_FileNotFound/root.txt │
+╰──────────────────────────────────────────╯
+╭─Structure────────────────────────╮
+│ 📁 12_FileNotFound / root.txt    │
+╰──────────────────────────────────╯
+╭─Failed to merge───────────────────────────╮
+│ Could not find include file on line 4 in: │
+│ ./root.txt:4                              │
+╰───────────────────────────────────────────╯

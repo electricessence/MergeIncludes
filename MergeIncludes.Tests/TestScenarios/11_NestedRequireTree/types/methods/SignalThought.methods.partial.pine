@@ -1,8 +1,0 @@
-// #require ../core/SignalThought.partial.pine
-
-// SignalThought methods
-method toString(SignalThought this) =>
-    this.sentiment + " " + this.message
-
-method isEmpty(SignalThought this) =>
-    this.sentiment == "" and this.message == ""

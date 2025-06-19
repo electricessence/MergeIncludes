@@ -2,6 +2,6 @@
 This is the child file.
 
 ## Include back to the root - this creates a circular reference!
-#include ./test-circular.txt
+#include ./manual-circular.txt
 
 ## End of child file

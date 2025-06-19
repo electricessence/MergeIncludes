@@ -1,0 +1,43 @@
+// #include ./types/0000 - header.txt
+// @description Generic Module System - Test scenario for nested require trees
+// Note: This is a test scenario for validating hierarchical include functionality
+
+// #require ./types/0100 - constants.txt
+// #require ./types/0200 - core-types.txt
+// #require ./types/0300 - factories.txt
+// #require ./types/0400 - basic-methods.txt
+// #require ./types/0500 - group-methods.txt
+// #require ./types/0600 - registry-methods.txt
+// #require ./types/0700 - utilities.txt
+// #require ./types/0800 - rendering.txt
+// #require ./types/0900 - aggregation.txt
+
+///////////////////////////////////////////////////
+// MODULE ARCHITECTURE
+///////////////////////////////////////////////////
+//
+// DESIGN STRUCTURE:
+//
+// 1. CORE CONCEPTS:
+//    - EntityDefinition: Static declaration of entity properties
+//    - EntityConfiguration: Runtime behavior settings and parameters
+//
+// 2. DATA ORGANIZATION:
+//    - EntityInstance: Concrete data objects with values
+//    - EntityMetadata: Additional context and annotation information
+//
+// 3. PROCESSING LAYERS:
+//    - Static: Definitions and type information
+//    - Dynamic: Runtime instances and computed results
+//
+// 4. AUXILIARY SYSTEMS:
+//    - Optional metadata for debugging and logging
+//    - Does not affect core processing logic
+//    - Provides human-readable context when needed
+//
+// 5. MODULAR ORGANIZATION:
+//    - Each module handles a specific functional area
+//    - Clear separation between types, operations, and utilities
+//    - Supports maintainable and extensible architecture
+//
+///////////////////////////////////////////////////

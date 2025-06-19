@@ -1,0 +1,12 @@
+///////////////////////////////////////////////////
+// CORE TYPE DEFINITIONS
+///////////////////////////////////////////////////
+// Individual type definitions using modular partial files
+
+// #require ./core/201.partial.txt
+// #require ./core/204.partial.txt
+// #require ./core/203.partial.txt
+// #require ./core/202.partial.txt
+// #require ./core/205.partial.txt
+// #require ./core/206.partial.txt
+// #require ./core/207.partial.txt

@@ -1,0 +1,14 @@
+﻿# Alternating folder pattern
+Content from FolderA file1
+
+Content from FolderB file2
+
+Content from FolderA file3
+
+Content from FolderB file4
+
+Content from FolderA file5
+
+Content from FolderB file6
+
+

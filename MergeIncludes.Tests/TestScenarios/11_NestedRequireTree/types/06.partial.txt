@@ -5,4 +5,4 @@
 // This file is preserved for backwards compatibility but no longer needed
 
 // Types with embedded methods
-// #require ./core/SignalGroup.partial.pine
+// #require ./core/205.partial.txt
