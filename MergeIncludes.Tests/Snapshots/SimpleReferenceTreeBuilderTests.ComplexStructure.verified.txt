@@ -1,0 +1,12 @@
+﻿complex-root.txt
+├── local.txt [1]
+├── component1.txt
+│   ├── subcomponent1.txt [2]
+│   ├── local.txt [1]
+│   └── common.txt [3]
+├── component2.txt
+│   ├── common.txt [3]
+│   └── subcomponent1.txt [2]
+├── common.txt [3]
+├── subcomponent1.txt [2]
+└── external.txt

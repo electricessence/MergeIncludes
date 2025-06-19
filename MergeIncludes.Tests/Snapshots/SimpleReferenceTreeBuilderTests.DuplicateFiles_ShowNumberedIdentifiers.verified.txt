@@ -1,0 +1,8 @@
+﻿root.txt
+├── component1.txt
+│   ├── shared.txt [1]
+│   └── local1.txt
+├── component2.txt
+│   ├── shared.txt [1]
+│   └── local2.txt
+└── shared.txt [1]

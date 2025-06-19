@@ -1,0 +1,11 @@
+﻿types-modular.pine
+├── 0100 - constants.pine
+├── 0200 - core-types.pine
+│   ├── SignalThought.partial.pine
+│   ├── SignalDefinition.partial.pine
+│   ├── SignalConfiguration.partial.pine
+│   ├── SignalInstance.partial.pine
+│   ├── SignalGroup.partial.pine
+│   ├── SignalRegistry.partial.pine
+│   └── SignalsFramework.partial.pine
+└── 0300 - factories.pine

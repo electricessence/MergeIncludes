@@ -1,0 +1,8 @@
+﻿main.txt
+├── unique.txt
+├── component1.txt
+│   ├── shared.txt [1]
+│   └── component1-specific.txt
+├── component2.txt
+│   └── component2-specific.txt
+└── shared.txt [1]

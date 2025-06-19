@@ -1,26 +1,94 @@
 ﻿╭─Root File───────────────────────────────────────────────╮
 │ ./TestScenarios/11_NestedRequireTree/types-modular.pine │
 ╰─────────────────────────────────────────────────────────╯
-╭─Structure──────────────────────────────────────────────────────────╮
-│ 📁 11_NestedRequireTree / types-modular.pine                       │
-│ ├── 📁 types              ├── 0000 - header.pine                   │
-│ │   ├──                   ├── 0100 - constants.pine                │
-│ │   └──                   ├── 0200 - core-types.pine               │
-│ ├── 📁 core               │   ├── SignalThought.partial.pine       │
-│ │   ├──                   │   ├── SignalDefinition.partial.pine    │
-│ │   ├──                   │   ├── SignalConfiguration.partial.pine │
-│ │   ├──                   │   ├── SignalInstance.partial.pine      │
-│ │   ├──                   │   ├── SignalGroup.partial.pine         │
-│ │   ├──                   │   ├── SignalRegistry.partial.pine      │
-│ │   └──                   │   └── SignalsFramework.partial.pine    │
-│ └── 📁 types              ├── 0300 - factories.pine                │
-│     ├──                   ├── 0400 - basic-methods.pine            │
-│     ├──                   ├── 0500 - group-methods.pine            │
-│     ├──                   ├── 0600 - registry-methods.pine         │
-│     ├──                   ├── 0700 - utilities.pine                │
-│     ├──                   ├── 0800 - rendering.pine                │
-│     └──                   └── 0900 - aggregation.pine              │
-╰────────────────────────────────────────────────────────────────────╯
+╭─Structure────────────────────────────────────────────────────────────────────╮
+│ 📁                     types-modular.pine                                    │
+│ 11_NestedRequireTree  /├── 0000 - header.pine                                │
+│ ├── 📁 types           ├── 0100 - constants.pine                             │
+│ │   ├──                ├── 0200 - core-types.pine                            │
+│ │   └──                │   ├── SignalThought.partial.pine [1]                │
+│ ├── 📁 core            │   ├── SignalDefinition.partial.pine [2]             │
+│ │   ├──                │   ├── SignalConfiguration.partial.pine [3]          │
+│ │   ├──                │   │   └── SignalInstance.partial.pine [4]           │
+│ │   ├──                │   │       └── SignalThought.partial.pine [1]        │
+│ │   ├──                │   ├── SignalInstance.partial.pine [4]               │
+│ │   ├──                │   │   └── SignalThought.partial.pine [1]            │
+│ │   ├──                │   ├── SignalGroup.partial.pine [5]                  │
+│ │   ├──                │   │   └── SignalInstance.partial.pine [4]           │
+│ │   ├──                │   │       └── SignalThought.partial.pine [1]        │
+│ │   ├──                │   ├── SignalRegistry.partial.pine [6]               │
+│ │   ├──                │   │   ├── SignalDefinition.partial.pine [2]         │
+│ │   ├──                │   │   ├── SignalConfiguration.partial.pine [3]      │
+│ │   ├──                │   │   │   └── SignalInstance.partial.pine [4]       │
+│ │   ├──                │   │   │       └── SignalThought.partial.pine [1]    │
+│ │   ├──                │   │   └── SignalGroup.partial.pine [5]              │
+│ │   ├──                │   │       └── SignalInstance.partial.pine [4]       │
+│ │   ├──                │   │           └── SignalThought.partial.pine [1]    │
+│ │   ├──                │   └── SignalsFramework.partial.pine [7]             │
+│ │   ├──                │       ├── SignalDefinition.partial.pine [2]         │
+│ │   ├──                │       ├── SignalConfiguration.partial.pine [3]      │
+│ │   ├──                │       │   └── SignalInstance.partial.pine [4]       │
+│ │   ├──                │       │       └── SignalThought.partial.pine [1]    │
+│ │   ├──                │       ├── SignalGroup.partial.pine [5]              │
+│ │   ├──                │       │   └── SignalInstance.partial.pine [4]       │
+│ │   ├──                │       │       └── SignalThought.partial.pine [1]    │
+│ │   ├──                │       ├── SignalInstance.partial.pine [4]           │
+│ │   ├──                │       │   └── SignalThought.partial.pine [1]        │
+│ │   ├──                │       └── SignalRegistry.partial.pine [6]           │
+│ │   ├──                │           ├── SignalDefinition.partial.pine [2]     │
+│ │   ├──                │           ├── SignalConfiguration.partial.pine [3]  │
+│ │   ├──                │           │   └── SignalInstance.partial.pine [4]   │
+│ │   ├──                │           │       └── SignalThought.partial.pine    │
+│ │   ├──                │           │           [1]                           │
+│ │   ├──                │           └── SignalGroup.partial.pine [5]          │
+│ │   ├──                │               └── SignalInstance.partial.pine [4]   │
+│ │   └──                │                   └── SignalThought.partial.pine    │
+│ ├── 📁 types           │                       [1]                           │
+│ │   └──                ├── 0300 - factories.pine                             │
+│ ├── 📁 core            ├── 0400 - basic-methods.pine                         │
+│ │   ├──                │   ├── SignalThought.partial.pine [1]                │
+│ │   ├──                │   ├── SignalConfiguration.partial.pine [3]          │
+│ │   ├──                │   │   └── SignalInstance.partial.pine [4]           │
+│ │   ├──                │   │       └── SignalThought.partial.pine [1]        │
+│ │   └──                │   └── SignalInstance.partial.pine [4]               │
+│ ├── 📁 types           │       └── SignalThought.partial.pine [1]            │
+│ ├── 📁 core            ├── 0500 - group-methods.pine                         │
+│ │   ├──                │   └── SignalGroup.partial.pine [5]                  │
+│ │   └──                │       └── SignalInstance.partial.pine [4]           │
+│ ├── 📁 types           │           └── SignalThought.partial.pine [1]        │
+│ ├── 📁 core            ├── 0600 - registry-methods.pine                      │
+│ │   ├──                │   ├── SignalRegistry.partial.pine [6]               │
+│ │   ├──                │   │   ├── SignalDefinition.partial.pine [2]         │
+│ │   ├──                │   │   ├── SignalConfiguration.partial.pine [3]      │
+│ │   ├──                │   │   │   └── SignalInstance.partial.pine [4]       │
+│ │   ├──                │   │   │       └── SignalThought.partial.pine [1]    │
+│ │   ├──                │   │   └── SignalGroup.partial.pine [5]              │
+│ │   ├──                │   │       └── SignalInstance.partial.pine [4]       │
+│ │   ├──                │   │           └── SignalThought.partial.pine [1]    │
+│ │   ├──                │   └── SignalsFramework.partial.pine [7]             │
+│ │   ├──                │       ├── SignalDefinition.partial.pine [2]         │
+│ │   ├──                │       ├── SignalConfiguration.partial.pine [3]      │
+│ │   ├──                │       │   └── SignalInstance.partial.pine [4]       │
+│ │   ├──                │       │       └── SignalThought.partial.pine [1]    │
+│ │   ├──                │       ├── SignalGroup.partial.pine [5]              │
+│ │   ├──                │       │   └── SignalInstance.partial.pine [4]       │
+│ │   ├──                │       │       └── SignalThought.partial.pine [1]    │
+│ │   ├──                │       ├── SignalInstance.partial.pine [4]           │
+│ │   ├──                │       │   └── SignalThought.partial.pine [1]        │
+│ │   ├──                │       └── SignalRegistry.partial.pine [6]           │
+│ │   ├──                │           ├── SignalDefinition.partial.pine [2]     │
+│ │   ├──                │           ├── SignalConfiguration.partial.pine [3]  │
+│ │   ├──                │           │   └── SignalInstance.partial.pine [4]   │
+│ │   ├──                │           │       └── SignalThought.partial.pine    │
+│ │   ├──                │           │           [1]                           │
+│ │   └──                │           └── SignalGroup.partial.pine [5]          │
+│ └── 📁 types           │               └── SignalInstance.partial.pine [4]   │
+│     ├──                │                   └── SignalThought.partial.pine    │
+│     └──                │                       [1]                           │
+│                        ├── 0700 - utilities.pine                             │
+│                        ├── 0800 - rendering.pine                             │
+│                        └── 0900 - aggregation.pine                           │
+╰──────────────────────────────────────────────────────────────────────────────╯
 ╭─Successfully merged include references to:─────────────────────╮
 │ ./TestScenarios/11_NestedRequireTree/types-modular.merged.pine │
 ╰────────────────────────────────────────────────────────────────╯

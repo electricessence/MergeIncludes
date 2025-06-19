@@ -46,11 +46,14 @@ public sealed partial class StructureAndReferenceView : IRenderable
 	{
 		// Create the left column: folder structure tree using aligned builder
 		var folderTree = AlignedFolderTreeBuilder.FromDependencies(rootFile, fileRelationships);
-		// Create the middle separator column with just "/"
+		// Create the middle separator column with just "/"		var separator = new Text(" / ", new Style(Color.Grey));
+		// Create the separator for the middle column
 		var separator = new Text(" / ", new Style(Color.Grey));
 
-		// Create the right column: reference tree
-		var referenceTree = CreateReferenceTree(rootFile, fileRelationships);		// Create a table with three columns for side-by-side display
+		// Create the right column: reference tree using SimpleReferenceTreeBuilder
+		var referenceTree = SimpleReferenceTreeBuilder.BuildReferenceTree(rootFile.FullName, fileRelationships);
+
+		// Create a table with three columns for side-by-side display
 		var table = new Table()
 			.Border(TableBorder.None)
 			.HideHeaders()

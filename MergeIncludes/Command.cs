@@ -2,6 +2,7 @@
 using Spectre.Console.Cli;
 using Spectre.Console.Extensions;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 using Throw;
 
 namespace MergeIncludes;
@@ -296,7 +297,6 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 
 		visited.Remove(parentPath);
 	}
-
 	/// <summary>
 	/// Performs the merge operation and returns the result without writing to a file.
 	/// This method is primarily intended for testing and scenarios where you want 
@@ -306,18 +306,29 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 	/// <returns>A MergeResult containing the merged content or error information</returns>
 	public static async Task<MergeResult> MergeToMemoryAsync(Settings settings)
 	{
-		settings.ThrowIfNull().OnlyInDebug();
-		var rootFile = settings.GetRootFile();
+		settings.ThrowIfNull().OnlyInDebug();		var rootFile = settings.GetRootFile();
 		var list = new List<FileInfo>();
 		var fileRelationships = new Dictionary<string, List<string>>();
 
-		// Track which file is currently being processed for includes
-		var currentlyProcessingFile = rootFile.FullName;
+		// Build relationships first, independent of merge success
+		// This ensures we have the structure to display even if the merge fails
+		try
+		{
+			await BuildFileRelationshipsAsync(rootFile, settings, fileRelationships);
+		}
+		catch
+		{
+			// If relationship building fails, continue with empty relationships
+			// Better to try the merge and show a partial view than fail completely
+		}
 
 		// Use a MemoryStream to buffer the output
 		using var memoryStream = new MemoryStream();
-		using var writer = new StreamWriter(memoryStream);try
-		{           // Process the files and write to the memory buffer
+		using var writer = new StreamWriter(memoryStream);
+
+		try
+		{
+			// Process the files and write to the memory buffer while tracking file list
 			await foreach (var line in rootFile.MergeIncludesAsync(settings, info =>
 			{
 				// Check if we're trying to include the output file (only relevant if settings has output file)
@@ -330,16 +341,8 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 
 				// Track all files for the flat list (used for watching)
 				list.Add(info);
-
-				// Record the parent-child relationship using the currently processing file
-				if (!fileRelationships.TryGetValue(currentlyProcessingFile, out List<string>? value))
-				{
-					value = [];
-					fileRelationships[currentlyProcessingFile] = value;
-				}
-
-				value.Add(info.FullName);
-			}))			{
+			}))
+			{
 				await writer.WriteLineAsync(line);
 			}
 
@@ -359,6 +362,183 @@ public sealed partial class CombineCommand(IAnsiConsole console)
 		catch (Exception ex)
 		{
 			return MergeResult.Failure(ex.Message, list, fileRelationships);
+		}
+	}
+
+	/// <summary>
+	/// Builds file relationships by analyzing include/require statements in each file
+	/// </summary>
+	private static async Task BuildFileRelationshipsAsync(FileInfo rootFile, MergeOptions settings, Dictionary<string, List<string>> fileRelationships)
+	{
+		var processedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		var visitedInCurrentBranch = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		
+		await BuildFileRelationshipsRecursiveAsync(rootFile.FullName, settings, fileRelationships, processedFiles, visitedInCurrentBranch);
+	}
+	/// <summary>
+	/// Recursively analyzes a file and its includes to build proper parent-child relationships
+	/// </summary>
+	private static async Task BuildFileRelationshipsRecursiveAsync(
+		string filePath, 
+		MergeOptions settings, 
+		Dictionary<string, List<string>> fileRelationships,
+		HashSet<string> processedFiles,
+		HashSet<string> visitedInCurrentBranch)
+	{
+		// Prevent infinite recursion in current branch, but still track the relationship
+		if (visitedInCurrentBranch.Contains(filePath))
+			return;
+
+		// Mark as visited in current branch
+		visitedInCurrentBranch.Add(filePath);
+
+		try
+		{
+			var fileInfo = new FileInfo(filePath);
+			if (!fileInfo.Exists)
+				return;
+
+			// Always ensure this file has an entry in relationships, even if empty
+			if (!fileRelationships.ContainsKey(filePath))
+				fileRelationships[filePath] = new List<string>();
+
+			// Only process each file once for detailed analysis, but allow it to appear in multiple relationships
+			if (processedFiles.Contains(filePath))
+				return;
+
+			processedFiles.Add(filePath);
+
+			var children = fileRelationships[filePath];
+
+			// Read and analyze the file for include/require statements
+			await AnalyzeFileIncludesAsync(fileInfo, settings, children, fileRelationships, processedFiles, visitedInCurrentBranch);
+		}
+		finally
+		{
+			// Remove from visited when leaving this branch
+			visitedInCurrentBranch.Remove(filePath);
+		}
+	}	/// <summary>
+	/// Analyzes a specific file for include/require statements and processes them
+	/// </summary>
+	private static async Task AnalyzeFileIncludesAsync(
+		FileInfo fileInfo,
+		MergeOptions settings,
+		List<string> children,
+		Dictionary<string, List<string>> fileRelationships,
+		HashSet<string> processedFiles,
+		HashSet<string> visitedInCurrentBranch)
+	{
+		using var file = fileInfo.OpenRead();
+		using var reader = new StreamReader(file);
+
+		// Use the same regex pattern as Extensions.cs for consistency
+		const string INCLUDE = "include";
+		const string REQUIRE = "require";
+		const string EXACT = "exact";
+		const string METHOD = "method";
+		const string FILE = "file";
+		const string IncludePatternText = @$"(?<!#)#(?<{METHOD}>{INCLUDE}|{REQUIRE})(?<{EXACT}>-{EXACT})?\s+(?<{FILE}>.+)";
+
+		var includePattern = new Regex(
+			@$"^(//\s*)?{IncludePatternText}|^(<!--\s*){IncludePatternText}(\s*-->)|^(\s*#\s*)?{IncludePatternText}",
+			RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+		string? line;
+		while ((line = await reader.ReadLineAsync()) != null)
+		{
+			var includeMatch = includePattern.Match(line);
+			if (includeMatch.Success)
+			{
+				var includePath = includeMatch.Groups[FILE].Value.Trim();
+				var resolvedPaths = ResolveIncludePaths(includePath, fileInfo.Directory?.FullName);
+				
+				foreach (var fullIncludePath in resolvedPaths)
+				{
+					// Always add to children for tree building, even if it would create a cycle
+					children.Add(fullIncludePath);
+					
+					// Only recursively process if we haven't seen this in the current branch
+					// This allows us to track the relationship while preventing infinite recursion
+					if (!visitedInCurrentBranch.Contains(fullIncludePath))
+					{
+						await BuildFileRelationshipsRecursiveAsync(
+							fullIncludePath, 
+							settings, 
+							fileRelationships, 
+							processedFiles, 
+							new HashSet<string>(visitedInCurrentBranch, StringComparer.OrdinalIgnoreCase));
+					}
+				}
+			}
+		}
+	}
+	/// <summary>
+	/// Resolves include paths, expanding wildcards like the original Register method
+	/// </summary>
+	private static List<string> ResolveIncludePaths(string includePath, string? baseDirectory)
+	{
+		var resolvedPaths = new List<string>();
+		
+		if (string.IsNullOrEmpty(baseDirectory))
+			return resolvedPaths;
+
+		try
+		{
+			// Handle relative paths
+			var fullPath = Path.IsPathRooted(includePath) 
+				? includePath 
+				: Path.GetFullPath(Path.Combine(baseDirectory, includePath));
+
+			var directory = Path.GetDirectoryName(fullPath);
+			var fileName = Path.GetFileName(fullPath);
+			
+			if (string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(fileName))
+				return resolvedPaths;
+
+			// Use Directory.GetFiles to handle wildcards like *.txt
+			var files = Directory.GetFiles(directory, fileName);
+			
+			foreach (var file in files)
+			{
+				if (File.Exists(file))
+				{
+					resolvedPaths.Add(file);
+				}
+			}
+		}
+		catch
+		{
+			// Ignore errors and return empty list
+		}
+
+		return resolvedPaths;
+	}
+
+	/// <summary>
+	/// Resolves a relative include path to a full path
+	/// </summary>
+	private static string? GetFullIncludePath(string includePath, string? baseDirectory)
+	{
+		if (string.IsNullOrEmpty(baseDirectory))
+			return null;
+
+		try
+		{
+			// Handle relative paths
+			var fullPath = Path.IsPathRooted(includePath) 
+				? includePath 
+				: Path.GetFullPath(Path.Combine(baseDirectory, includePath));
+
+			// Check if file exists
+			if (File.Exists(fullPath))
+				return fullPath;
+
+			return null;
+		}
+		catch
+		{
+			return null;
 		}
 	}
 }

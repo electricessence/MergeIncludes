@@ -1,0 +1,3 @@
+﻿root.txt
+└── child.txt
+    └── root.txt
