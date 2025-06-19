@@ -1,0 +1,3 @@
+Root content
+//require shared/common.txt
+//require folder1/common.txt

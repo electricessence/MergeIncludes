@@ -198,5 +198,37 @@ public class SimpleReferenceTreeBuilderTests
         await Verify(output)
             .UseDirectory("Snapshots")
             .UseMethodName("MixedUniqueAndDuplicateFiles_ShowCorrectColorsAndIds");
+    }    [Fact]
+    public async Task ReproduceSignalFrameworkDuplicateIssue_ShouldNumberAllDuplicates()
+    {
+        // Arrange - This reproduces the exact scenario from the signal framework where 
+        // one file gets [1] but another file doesn't get numbered
+        var rootPath = "01.txt";
+        var relationships = new Dictionary<string, List<string>>
+        {
+            [rootPath] = ["02.txt", "03.txt", "04.txt", "05.txt", "06.txt", "07.txt"],
+            ["04.txt"] = ["08.txt"],
+            ["08.txt"] = ["09.txt"],
+            ["09.txt"] = ["10.txt", "11.txt", "12.txt"],
+            ["10.txt"] = ["13.txt", "14.txt"],
+            ["11.txt"] = ["13.txt"], // Same file as above - should be [1]
+            ["13.txt"] = ["15.txt"], // This appears in both paths above
+            ["12.txt"] = ["13.txt"], // Same file again - should still be [1]
+            // Note: 15.txt appears multiple times via different 13.txt references
+        };
+
+        // Act
+        var tree = SimpleReferenceTreeBuilder.BuildReferenceTree(rootPath, relationships);
+
+        // Assert
+        var console = new TestConsole();
+        console.Write(tree);
+        var output = console.Output;
+
+        // Both 13.txt AND 15.txt should be numbered
+        // since they both appear multiple times in the tree
+        await Verify(output)
+            .UseDirectory("Snapshots")
+            .UseMethodName("ReproduceSignalFrameworkDuplicateIssue_ShouldNumberAllDuplicates");
     }
 }

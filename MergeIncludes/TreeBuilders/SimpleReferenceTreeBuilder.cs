@@ -16,9 +16,7 @@ public static class SimpleReferenceTreeBuilder
     {
         var rootFileName = Path.GetFileName(rootFilePath);
         var rootLink = HyperLink.For(rootFilePath, rootFileName, new Style(Color.Yellow));
-        var tree = new TreeMinimalWidth(rootLink);
-        
-        // First pass: count how many times each file appears
+        var tree = new TreeMinimalWidth(rootLink);        // First pass: count how many times each file appears
         var fileCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         CountFileOccurrences(rootFilePath, fileRelationships, fileCounts, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
         
@@ -35,32 +33,36 @@ public static class SimpleReferenceTreeBuilder
         
         // Build the tree recursively starting from the root
         BuildTreeRecursive(tree, rootFilePath, fileRelationships, new HashSet<string>(), fileIds, firstOccurrence);
-        
-        return tree;
+          return tree;
     }
     
     /// <summary>
     /// Count how many times each file appears in the entire tree
     /// </summary>
     private static void CountFileOccurrences(string filePath, Dictionary<string, List<string>> fileRelationships, 
-        Dictionary<string, int> fileCounts, HashSet<string> visited)
+        Dictionary<string, int> fileCounts, HashSet<string> visitedInThisPath)
     {
-        if (visited.Contains(filePath))
+        // Prevent infinite recursion in this specific path
+        if (visitedInThisPath.Contains(filePath))
             return;
             
-        visited.Add(filePath);
+        visitedInThisPath.Add(filePath);
         
         if (fileRelationships.TryGetValue(filePath, out var children))
         {
             foreach (var childPath in children)
             {
-                var childFileName = Path.GetFileName(childPath);
-                fileCounts.TryGetValue(childFileName, out var currentCount);
-                fileCounts[childFileName] = currentCount + 1;
+                // Count this occurrence of the child file (always count, regardless of global visits)
+                fileCounts.TryGetValue(childPath, out var currentCount);
+                fileCounts[childPath] = currentCount + 1;
                 
-                CountFileOccurrences(childPath, fileRelationships, fileCounts, visited);
+                // Recursively count occurrences in child's subtree with a copy of the current path tracking
+                var childVisitedPath = new HashSet<string>(visitedInThisPath, StringComparer.OrdinalIgnoreCase);
+                CountFileOccurrences(childPath, fileRelationships, fileCounts, childVisitedPath);
             }
         }
+        
+        visitedInThisPath.Remove(filePath);
     }
       
     /// <summary>
@@ -76,12 +78,12 @@ public static class SimpleReferenceTreeBuilder
             
         // Add to visited for this branch
         visitedInCurrentBranch.Add(currentFilePath);
-        
-        // Get children of current file
+          // Get children of current file
         if (fileRelationships.TryGetValue(currentFilePath, out var children))
         {
             foreach (var childPath in children)
-            {                var childFileName = Path.GetFileName(childPath);
+            {
+                var childFileName = Path.GetFileName(childPath);
                 
                 // Create display text based on whether this file has duplicates and if it's the first occurrence
                 var displayText = CreateDisplayText(childPath, childFileName, fileIds, firstOccurrence);
@@ -100,14 +102,14 @@ public static class SimpleReferenceTreeBuilder
     /// </summary>
     private static IRenderable CreateDisplayText(string filePath, string fileName, Dictionary<string, int> fileIds, Dictionary<string, bool> firstOccurrence)
     {
-        // Check if this file has duplicates (has an assigned ID)
-        if (fileIds.TryGetValue(fileName, out var fileId))
+        // Check if this file has duplicates (has an assigned ID) - use full path as key
+        if (fileIds.TryGetValue(filePath, out var fileId))
         {
             // This file appears multiple times - ALL instances get the same ID
-            if (!firstOccurrence.ContainsKey(fileName))
+            if (!firstOccurrence.ContainsKey(filePath))
             {
                 // First occurrence - show ID, normal color
-                firstOccurrence[fileName] = true;
+                firstOccurrence[filePath] = true;
                 var displayText = $"{fileName} [{fileId}]";
                 return HyperLink.For(filePath, displayText, new Style(Color.Cyan1));
             }
