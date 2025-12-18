@@ -20,8 +20,8 @@ cd MergeIncludes
 # Pack the project as a tool (without modifying the .csproj)
 dotnet pack -c Release -p:PackAsTool=true -p:ToolCommandName=mergeincludes -p:PackageIcon="" MergeIncludes/MergeIncludes.csproj
 
-# Install globally from the local package
-dotnet tool install --global --add-source ./MergeIncludes/bin/Release MergeIncludes --version 3.1.0
+# Install globally from the local package (check MergeIncludes.csproj for current version)
+dotnet tool install --global --add-source ./MergeIncludes/bin/Release MergeIncludes
 ```
 
 After installation, you can use `mergeincludes` from anywhere:
