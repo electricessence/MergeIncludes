@@ -8,6 +8,34 @@ Currently, you can run it directly from source using the .NET SDK:
 dotnet run --project MergeIncludes
 ```
 
+### Installing from Source as a Global Tool
+
+If you have the source code, you can install MergeIncludes as a global .NET tool on your machine:
+
+```bash
+# Clone the repository (if you haven't already)
+git clone https://github.com/electricessence/MergeIncludes.git
+cd MergeIncludes
+
+# Pack the project as a tool (without modifying the .csproj)
+dotnet pack -c Release -p:PackAsTool=true -p:ToolCommandName=mergeincludes -p:PackageIcon="" MergeIncludes/MergeIncludes.csproj
+
+# Install globally from the local package
+dotnet tool install --global --add-source ./MergeIncludes/bin/Release MergeIncludes --version 3.1.0
+```
+
+After installation, you can use `mergeincludes` from anywhere:
+
+```bash
+mergeincludes --help
+```
+
+To uninstall:
+
+```bash
+dotnet tool uninstall --global mergeincludes
+```
+
 ## 🛠️ Usage
 
 ```sh
